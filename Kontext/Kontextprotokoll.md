@@ -32,6 +32,14 @@ This log records the material context and evidence behind the current file class
 | SRC-016 | User clarification in this conversation | 2026-11-01 15:45:16 (+01:00) | Value/reference type distinction, implicit pointer-like value identifying a variable, variables holding either kind, and collections of named or indexed fields | User-stated model and requirement; representation, lifetime, aliasing, and collection semantics remain unspecified. |
 | SRC-017 | User clarification in this conversation | 2026-11-01 15:54:23 (+01:00) | Multiple-result parameters and returns logically behave like single temporary collections | User-stated semantic model; concrete type, syntax, and runtime representation remain unspecified. |
 | SRC-018 | User clarification in this conversation | 2026-11-01 15:56:54 (+01:00) | Reference values behave as if governed by GC; predictable lifetimes may permit optimization | User-stated semantic model; optimization criteria and techniques remain unspecified. |
+| SRC-019 | User clarification in this conversation | 2026-11-01 16:11:26.061 (+01:00) | Closest-namespace lookup and explicit overload grouping with compatibility/exact-type ranking and a unique-candidate requirement | User-stated name-resolution policy; namespace/import details and overload ranking for mixed matches remain unspecified. |
+| SRC-020 | `/bigdata/KAI/NewLang/IDEAS/OtherStuff.txt` and `/bigdata/KAI/NewLang/IDEAS/newlang.ye` | Inspected 2026-11-01 | Proposed NewLang object/type model: modules as classes; package interfaces; classes, inheritance/interfaces, fields/methods/constructors; flat and reference types; class/metaclass objects; mixins; parameterized classes | Design notes and a Java-like grammar proposal, not evidence of a complete implementation; class-variable semantics are explicitly unresolved. |
+| SRC-021 | `/bigdata/KAI/NewLang/IDEAS/Implementation.txt` | Inspected 2026-11-01 | Proposed reflective bytecode/native interoperability through class wrappers and interfaces/abstract classes | Implementation sketch only; not verified complete or selected as the design for other experiments. |
+| SRC-022 | `/bigdata/KAI/projects/GenLang/docs/language.md` | Inspected 2026-11-01 | C-style language specification, function declarations, and struct/union/enum type keywords/examples | No object-oriented class, inheritance, or dispatch model was found in the reviewed specification; this does not prove absence elsewhere. |
+| SRC-023 | `/bigdata/KAI/projects/LangLLVM/src/Design: Declarations, Definitions.md` and `/bigdata/KAI/projects/LangLLVM/src/mylang.pegjs` | Inspected 2026-11-01 | Binding/template/function design note and C++ grammar productions for classes, base clauses, and virtual members | The custom design note does not specify an object model; C++ grammar productions are parser material, not proof of adopted C++ semantics. |
+| SRC-024 | OPPrs source inventory as summarized in KP-002 | Inspected 2026-11-01 | Parser-focused experiments, including operator/syntax tree machinery | No language-level object model identified in the reviewed parser projects. |
+| SRC-025 | User request in this conversation | 2026-11-01 17:32:17.450 (+01:00) | Requests a description of object models found in previous experiments | A request for historical synthesis, not approval of any model for the next language. |
+| SRC-026 | User decision in this conversation | 2026-11-01 17:46:04.712 (+01:00) | Select NewLang's object model and explicitly exclude its bytecode part | Approval of the language-level object model; implementation architecture is excluded. |
 
 ## Entries
 
@@ -396,3 +404,64 @@ This does not require a particular tracing/reference-counting collector or any o
 #### Consequences and next step
 
 DEC-017 records the lifetime model in [Language Design](../Language-Design.md). Q-011 now includes the proof criteria and behavior-preservation conditions for lifetime optimizations, in addition to the still-open identity and collection semantics.
+
+### KP-017 - Closest-namespace lookup and explicit overload groups
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 16:11:26.061 (+01:00)
+- Capture: contemporaneous; user specified namespace lookup and overload selection
+- Sources: SRC-019
+- Related requirements/decisions/questions: DEC-012, DEC-018, Q-009
+- Supersedes: The previously open general lookup and overload-resolution choices in KP-003 and KP-011; namespace ordering details and exact ranking remain open.
+
+#### User decision
+
+The user specified a namespace hierarchy containing predefined, imported, and block-related namespaces, with name lookup selecting the declaration in the closest namespace.
+
+Overloading must be explicit: declaring same-named functions alone does not form an overload group. An explicit overload declaration identifies the functions to group. Resolution first applies type compatibility rules. If more than one candidate remains, identical types take precedence over merely compatible types. The resolution must leave exactly one candidate.
+
+The unique-candidate requirement means an unresolved tie cannot be selected arbitrarily. The precise error behavior, namespace/import ordering, overload declaration syntax and validation, and ranking when a call has a mixture of identical and merely compatible argument types were not specified.
+
+#### Consequences and next step
+
+DEC-018 records these rules in [Language Design](../Language-Design.md). Q-009 now tracks the remaining namespace, declaration, ranking, and type-checking details.
+
+### KP-018 - Object models across prior experiments
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 17:32:17.450 (+01:00)
+- Capture: contemporaneous; user requested a historical comparison
+- Sources: SRC-020, SRC-021, SRC-022, SRC-023, SRC-024, SRC-025
+- Related requirements/decisions/questions: Q-003; no new language-design decision
+- Supersedes: No earlier findings; refines the cross-project object-oriented feature inventory by distinguishing design intent from parser grammar and implementation evidence.
+
+#### Findings
+
+NewLang has the clearest and most extensive object model proposal. `OtherStuff.txt` says modules are classes and packages group modules behind exported interfaces. It proposes reference classes and flat/value types, with subtype values allowed in reference-typed variables but exact declared types for flat variables; flat values are destroyed on leaving scope, while unreachable reference values are eventually garbage-collected. It further sketches class/metaclass objects, one class object per parameterization, and lazy class-object creation. Mixins are described as outside the `Object` inheritance tree and not instantiable by themselves. `newlang.ye` supplies Java-like syntax for classes with a superclass and implemented interfaces, fields, methods, constructors, modifiers, and nested declarations. These are proposals/grammar, not proof of a functioning implementation. The semantics of class variables are explicitly posed as an open question; local functions as function objects are also only a question.
+
+NewLang's `Implementation.txt` separately proposes reflective bytecode/native interoperation through derived wrappers that redirect virtual calls between interpreter and native code, with native compilation targets implementing an interface or abstract class. This is an implementation architecture sketch, not another language-level object model and not evidence of completion.
+
+The reviewed GenLang specification is C-like and procedural, with functions and C-style aggregate types (`struct`, `union`, `enum`); it does not specify classes, inheritance, or virtual dispatch. LangLLVM's adopted declaration note has no object-model semantics. Although its PEG grammar contains C++ class/base/virtual productions, that is grammar/parser material and cannot be treated as a custom-language design decision. OPPrs focuses on expression parsing; its internal operator/tree objects do not constitute a source-language object model.
+
+#### Status and limits
+
+This comparison answers the request to describe the models, but does not choose one for the next experiment. Coverage is based on the specifically cited notes, grammar, and language specification; “not found” means absent from those reviewed sources, not proven absent from every file or historical version.
+
+### KP-019 - NewLang object model selected; bytecode architecture excluded
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 17:46:04.712 (+01:00)
+- Capture: contemporaneous; user approved a model after the comparison in KP-018
+- Sources: SRC-020, SRC-021, SRC-026
+- Related requirements/decisions/questions: DEC-015, DEC-017, DEC-019, Q-012
+- Supersedes: KP-018's then-current status that no object model had been selected; the historical comparison itself remains valid.
+
+#### User decision
+
+The user said to copy NewLang's object model and ignore its bytecode part. DEC-019 therefore adopts the language-level model in `OtherStuff.txt` and the class syntax in `newlang.ye`, while excluding the bytecode, interpreter, compiler-backend, and native-interoperability architecture sketched in `Implementation.txt`.
+
+The adopted model includes modules as classes and packages as collections of modules exposing interfaces; classes with fields, methods, constructors, modifiers and nested classes/interfaces, inheritance and implemented interfaces; flat/value types with exact declared types and scope-exit destruction; and reference classes whose variables may hold subtype instances and whose unreachable references are collected. It also includes class/metaclass objects, one class object for each parameterization with lazy instantiation, and parameterizable mixins that are outside the `Object` hierarchy and not independently instantiable. Parameterized constructed reference types include containers. This is adoption of the model as documented, not a claim that the source proposal was fully specified or implemented.
+
+#### Open details and consequences
+
+The source explicitly questions class-variable semantics and local functions as function objects; neither is resolved by this adoption. The precise role of methods and instantiations in the reference-type list, packed types, and package/import configuration remain underspecified. Q-012 tracks these items and integration with the already selected closest-namespace lookup in DEC-018.

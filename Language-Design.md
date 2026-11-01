@@ -45,9 +45,13 @@ In that model, `TYPE` may itself include an initializer expression; the design n
 
 This selects the LangLLVM model over GenLang's type-first declaration syntax. It does not settle scope and visibility, initialization and inference details, or whether declarations without bodies are distinct from definitions (Q-009, Q-010).
 
-**Decision DEC-012 — approved:** The language has no keywords as a separate lexical category; keyword-like constructs are represented by predefined identifiers. While such an identifier has not been redefined, its semantic effect should closely emulate the corresponding construct as if it were a keyword. Redefining it means it no longer has that predefined semantic effect. The exact name-resolution and redefinition scope rules remain open (Q-009).
+**Decision DEC-012 — approved:** The language has no keywords as a separate lexical category; keyword-like constructs are represented by predefined identifiers. While such an identifier has not been redefined, its semantic effect should closely emulate the corresponding construct as if it were a keyword. Redefining it means it no longer has that predefined semantic effect. Name lookup uses the namespace hierarchy in DEC-018; exact redefinition semantics remain open (Q-009).
 
 Square brackets are the selected delimiters for template parameters and arguments (DEC-011); no angle-bracket template syntax is adopted.
+
+**Decision DEC-018 — approved:** Name lookup proceeds through a hierarchy of predefined, imported, and block-related namespaces, selecting a name from the closest namespace. Declaring a function with the same name does not by itself create an overload set: functions are overloaded only through explicit overload declarations that identify the functions grouped together. Resolve a call among that group first by type compatibility (DEC-014); when multiple candidates remain, identical types rank ahead of merely compatible types. Resolution must leave exactly one candidate; otherwise it does not resolve.
+
+The precise namespace ordering and import behavior, the syntax and validation of overload declarations, and how to rank candidates when argument lists mix identical and merely compatible types remain open (Q-009).
 
 ## Type system
 
@@ -68,3 +72,16 @@ The exact representation and semantics remain open: in particular, what “ident
 **Decision DEC-016 — approved:** Multiple parameters and multiple return values are modeled logically as one temporary collection each. This is a semantic model; it does not yet choose a concrete collection type, syntax, storage strategy, or whether the temporary is observable as an ordinary value (Q-011).
 
 **Decision DEC-017 — approved:** Reference values behave as if managed by garbage collection. Implementations may optimize particular cases when lifetimes are predictable enough to do so. Such optimizations must preserve the observable behavior of the garbage-collected reference model; the specific analysis, optimization techniques, and fallback mechanism remain unspecified (Q-011).
+
+## Object model
+
+**Decision DEC-019 — approved:** Adopt NewLang's language-level object model from `NewLang/IDEAS/OtherStuff.txt` and its class grammar in `NewLang/IDEAS/newlang.ye`. Do not adopt NewLang's bytecode, interpreter, compiler-backend, or native-interoperability architecture from `NewLang/IDEAS/Implementation.txt`.
+
+The selected model includes:
+
+- Modules are classes. Packages are collections of modules that expose one or more interfaces; source-global names are rooted in a package and may include namespace components.
+- Classes have fields, methods, constructors, modifiers, and may contain nested classes/interfaces; they may have a superclass, implement interfaces, and be parameterized. Classes have class objects; each parameterization has a distinct class object, instantiated when first needed.
+- `Object` is the primitive reference type. Derived classes, `Class`, `Metaclass`, methods, and instantiations are among the proposed constructed reference types; constructed reference types may be parameterized, including container types. Mixins are not derived from `Object`, are not independently instantiable, and may also be parameterized.
+- Flat/value types include primitive integer, floating-point, and character types, and constructed enums (including boolean), subranges, sets of subranges, fixed-index arrays, and structs. Flat values have their exact declared type and are destroyed when they leave scope. Reference-typed variables may hold values of a subtype of their declared type; references retain the GC-like behavior in DEC-017.
+
+This adopts the model at the level described by the notes, not every Java-like construct in the separate Java 8 grammar/reference tree. Exact class-variable semantics, local functions as possible function objects, the role/type semantics of methods and instantiations as reference types, packed types, and details of package/import configuration and namespace components remain open (Q-012). Previously selected safety-first compatibility rules (DEC-014) and the user's field-collection requirement (REQ-002) continue to apply.
