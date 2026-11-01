@@ -51,6 +51,17 @@ This log records the material context and evidence behind the current file class
 | SRC-035 | User clarification in this conversation | 2026-11-01 19:05:36.092 (+01:00) | Resolve remaining precedence conflicts in favor of GenLang ordering; initially asks to remove `::` and `::=`, specifies `**` one level tighter than `*` and right-associative, and requests a non-numeric ordered table in the design | The subsequent clarification in this conversation withdraws the removal request for `::` and `::=`; see SRC-036. |
 | SRC-036 | User correction in this conversation | 2026-11-01 (after 19:05:36; exact time not provided) | Keep `::` and `::=` unchanged after noting `::=` is the selected type-declaration marker; `::` has no current use case | Supersedes only the request in SRC-035 to drop those tokens; no replacement syntax or semantics for `::` is selected. |
 | SRC-037 | User clarification in this conversation | 2026-11-01 19:27:31.747 (+01:00) | Place `::` at the same relative level as `:`, and place `:=` and `::=` at the same level as `=` | User-approved refinement of DEC-022; does not change the selected declaration meanings in DEC-011. |
+| SRC-038 | User request in this conversation | 2026-11-01 19:47:42.245 (+01:00) | Compile the questions that must be answered in Language-Design.md before parser creation can begin | Request for an actionable readiness checklist; it does not itself approve answers to the listed open questions. |
+| SRC-039 | `/bigdata/KAI/NewLang/IDEAS/Syntax.txt` | Inspected 2026-11-01 | Exploratory proposals for comment forms, string/character/raw-string syntax, escapes, Unicode source escapes, identifier properties, and whitespace | Explicitly tentative in places; not a complete lexical specification. |
+| SRC-040 | `/bigdata/KAI/NewLang/parser/NLparser/Scanner.cc` | Inspected 2026-11-01 | Implemented scanner behavior for comments, XID identifiers and normalization, numbers, quoted strings/chars, raw strings, and escapes | Prototype behavior conflicts with some NewLang notes and normalizes the entire source before identifier scanning; not normative for the new language. |
+| SRC-041 | `/bigdata/KAI/projects/GenLang/docs/language.md`, `packages/genlang/src/combined-definitions.json`, and `packages/compiler/src/lexer/genlang/TokenConverters.ts` | Inspected 2026-11-01 | GenLang prose and generated implementation patterns/converters for comments, identifiers, numeric/string/character literals | Prose and implementation differ in identifier-property spelling; this records experiment evidence, not a selected policy. |
+| SRC-042 | `/bigdata/KAI/projects/LangLLVM/src/mylang.pegjs` | Inspected 2026-11-01 | C++-style PEG rules for comments, identifiers, escapes, and literal forms | Parser/reference grammar material, not proof of a separate LangLLVM custom-language lexical specification. |
+| SRC-043 | `/bigdata/KAI/projects/OPPlang/OPPrs/miniopp/src/lexer/config/matchers.mts`, `miniopp/src/lexer/next_token.mts`, and `minipratt.js/shunting-yard.ts` | Inspected 2026-11-01 | Identifier/number/whitespace token matchers and a character-wise expression parser lexer | Parser demos only; no complete comment/string/character syntax was found in these inspected files. |
+| SRC-044 | User decision in this conversation | 2026-11-01 21:22:17 (+01:00) | Select non-nested `//` and `/*...*/` comments; XID identifiers with NFKC internal names and NFC user-facing form; single-quoted characters, double-quoted strings, integer forms, universal-character names, NewLang Perl-style escapes, and decimal/hex ISO floating forms; requests raw-string options before choosing | Approved lexical direction; detailed productions and raw-string delimiter remain open. |
+| SRC-045 | Official language references: [Go specification](https://go.dev/ref/spec#String_literals), [Rust Reference](https://doc.rust-lang.org/reference/tokens.html#raw-string-literals), [C++ string literals](https://en.cppreference.com/w/cpp/language/string_literal), [C# raw strings](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/raw-string), [Python lexical analysis](https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals) | Consulted 2026-11-01 | Raw-string delimiter families and examples | Used to show alternatives, not to choose one. |
+| SRC-046 | User follow-up in this conversation | 2026-11-01 (after SRC-044; exact time not provided) | Requests concrete examples of the raw-string options | Clarification request only; no syntax choice made. |
+| SRC-047 | User decision in this conversation | 2026-11-01 (after SRC-046; exact time not provided) | Selects the NewLang tagged-backtick raw-string option | Approves the delimiter family; exact tag grammar and raw-content semantics remain open. |
+| SRC-048 | User request in this conversation | 2026-11-01 21:46:33.577 (+01:00) | Requests a table of all agreed token syntaxes in Language-Design.md | Documentation consolidation request; it does not add or change a syntax decision. |
 
 ## Entries
 
@@ -580,3 +591,85 @@ DEC-022 records the adopted table in Language-Design.md. This resolves the next 
 #### Decision
 
 The user places `::` at the same relative level as `:`, and `:=` and `::=` at the same level as `=`. DEC-023 records these placements in the authoritative design table. `::` remains without a current use case or specified meaning. `:=` and `::=` retain their variable/type declaration meanings from DEC-011; listing them in the precedence table establishes their relative level only and does not make them expression operators.
+
+### KP-025 - Parser-readiness questions
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 19:47:42.245 (+01:00)
+- Capture: contemporaneous; user asks for an actionable compilation of unresolved questions that must be answered before parser creation
+- Sources: SRC-038; current approved choices and open questions in Language-Design.md and Wissensstand.md were cross-checked
+- Related requirements/decisions/questions: DEC-006 through DEC-023, Q-003, Q-006 through Q-015
+- Status: Checklist added to Language-Design.md; no answers or new design decisions were supplied.
+
+#### Result
+
+The checklist distinguishes prerequisites for any parser slice (scope, lexical rules, expression grammar, and parser-output contract) from productions required only if that slice includes declarations, functions/types/blocks, or packages/classes. It also calls out syntax recognition for predefined identifiers, since the design has no separate keyword token category and permits redefinition. Type-checking, runtime, and other semantic questions can be deferred if the selected parser slice does not need them to determine syntax.
+
+### KP-026 - Comment, identifier, and literal syntax survey
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 20:15:18.404 (+01:00)
+- Capture: contemporaneous; user asks for an experiment-based survey of comments, identifiers, and constants, including conflicts
+- Sources: SRC-039 through SRC-043
+- Related requirements/decisions/questions: DEC-006, DEC-007, Q-006, Q-014, Q-015
+- Status: Findings recorded in the Wissensstand; no syntax choice for the new language was made by this request.
+
+#### Findings
+
+NewLang's syntax notes are tentative and differ from its scanner prototype: the notes contemplate recursive comments and list Perl-like/string-source escapes, while the scanner implements non-nested C-style comments, XID scanning followed by NFKC identifier normalization, numeric/string/character scanning, and a distinct tagged backtick raw-string path. The whole source is normalized to NFC before scanning, so the prototype applies NFC then NFKC to identifiers.
+
+GenLang specifies non-nested `//` and `/*...*/` comments; Unicode ID properties plus underscore and NFKC identifiers; integer bases, decimal/hex floats, quoted character and string forms, backtick raw strings, and escape sequences. Its prose names UAX #31 XID guidance, while its generated regex uses ID_Start/ID_Continue, an implementation discrepancy.
+
+LangLLVM's inspected PEG supplies C++-style comments, ASCII/UCN identifiers, and extensive C++ literal forms; it remains reference grammar rather than an approved custom syntax source. OPPrs examples expose only a minimal identifier/decimal-number lexer (and whitespace skipping in `miniopp`); no full comment or string/character grammar was found there.
+
+At the time of KP-026, the then-current language choices DEC-006/007 differed from GenLang and the NewLang scanner: NFC identifier equality and XID_Start/XID_Continue with no extra start character. KP-027 later supersedes DEC-006's normalization key and selects comment and ordinary literal forms; the Unicode property version remains open (Q-006), and detailed lexical rules remain open (Q-014).
+
+### KP-027 - Lexical decisions and raw-string alternatives
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 21:22:17 (+01:00)
+- Capture: contemporaneous; user selects base comment/identifier/literal forms and requests comparison of raw-string choices before selecting one
+- Sources: SRC-039 through SRC-045
+- Related requirements/decisions/questions: DEC-006, DEC-007, DEC-024, DEC-025, Q-006, Q-014, Q-016
+- Supersedes: DEC-006's NFC equality-key rule and KP-026's current-status conclusion that no comment/ordinary-literal syntax was selected; raw-string syntax remains undecided.
+
+#### Decisions recorded
+
+The user selected non-nested `//` and `/*...*/` comments; case-sensitive XID identifiers with NFKC internal names and an NFC form for user interaction; single-quoted character literals and double-quoted strings; decimal and `0b`, `0o`, `0d`, `0x`, or `base#number` integers; C++-style `\uXXXX` and `\UXXXXXXXX` universal-character names for source characters generally; NewLang's Perl-style escapes for strings and characters; and decimal plus hexadecimal floating-point forms from ISO floating-point standards.
+
+At this point in the discussion, the user had deferred raw-string syntax until after seeing alternatives. The design presents fixed backticks (Go/GenLang), Rust hash-counted delimiters, C++ tagged delimiters (also present in LangLLVM's PEG), C# variable quote runs, Python raw prefixes, and the specialized tagged-backtick attempt in NewLang's scanner. The references illustrate tradeoffs only; Q-016 was open at this checkpoint and was later partially resolved by KP-029.
+
+At this point in the chronology, raw-string behavior was not selected. The later decision KP-029 chooses NewLang's tagged-backtick delimiter family. Precise Perl escape subset/edge cases, universal-character translation phase, integer digit/separator rules, precise ISO floating grammar/edition/suffixes, and Unicode property version remain open.
+
+### KP-028 - Concrete raw-string examples
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after SRC-044; exact time not provided)
+- Capture: contemporaneous; user asks to see examples of the raw-string alternatives
+- Sources: SRC-045, SRC-046; raw-string experiment evidence in SRC-039 through SRC-042
+- Related questions: Q-016
+- Status: Examples added to Language-Design.md; no delimiter family selected.
+
+Examples illustrate Go/GenLang backticks, Rust hash-counted delimiters, C++ tags, C# quote runs, Python raw prefixes, and NewLang's scanner prototype. They demonstrate delimiter handling only; they do not establish newline or escape behavior for the new language.
+
+### KP-029 - Select tagged-backtick raw-string delimiters
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after SRC-046; exact time not provided)
+- Capture: contemporaneous; user selects the `newlang-tagged-backtick` option after asking for examples
+- Sources: SRC-039, SRC-040, SRC-047
+- Related decisions/questions: DEC-026, Q-016
+- Supersedes: The unresolved delimiter-family status in KP-027/028; tag grammar and content semantics remain open.
+
+#### Decision recorded
+
+Adopt the NewLang scanner's tagged-backtick delimiter structure: opening backtick + tag + double quote, followed by content, then double quote + the same tag + closing backtick. The tag's allowed spelling and whether raw content supports newlines or any escape processing are still undecided. No implementation or tests were requested or performed.
+
+### KP-030 - Consolidated token syntax table
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 21:46:33.577 (+01:00)
+- Capture: contemporaneous; user requests a table of all agreed token syntaxes in Language-Design.md
+- Sources: SRC-048; approved decisions DEC-008 through DEC-026
+- Related questions: Q-006 through Q-016
+- Status: Added the “Agreed token syntax summary” to Language-Design.md and linked it from the current knowledge view. It consolidates approved spellings and labels details that remain open; it does not create new language decisions.
