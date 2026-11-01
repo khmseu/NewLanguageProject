@@ -40,6 +40,17 @@ This log records the material context and evidence behind the current file class
 | SRC-024 | OPPrs source inventory as summarized in KP-002 | Inspected 2026-11-01 | Parser-focused experiments, including operator/syntax tree machinery | No language-level object model identified in the reviewed parser projects. |
 | SRC-025 | User request in this conversation | 2026-11-01 17:32:17.450 (+01:00) | Requests a description of object models found in previous experiments | A request for historical synthesis, not approval of any model for the next language. |
 | SRC-026 | User decision in this conversation | 2026-11-01 17:46:04.712 (+01:00) | Select NewLang's object model and explicitly exclude its bytecode part | Approval of the language-level object model; implementation architecture is excluded. |
+| SRC-027 | User decision in this conversation | 2026-11-01 17:59:12.529 (+01:00) | Require proper tail calls and continuations | User-selected language/runtime capabilities; precise continuation semantics and execution representation remain open. |
+| SRC-028 | `/bigdata/KAI/NewLang/IDEAS/Implementation.txt` | Inspected 2026-11-01 | Note says ordinary processor stack conflicts with `call/cc` and motivates a consistent calling convention for perfect tail-call optimization | Historical implementation rationale only; not selected as the next language's execution architecture. |
+| SRC-029 | User request in this conversation | 2026-11-01 18:05:09.685 (+01:00) | Requests one combined list of operators from experiments, including priority, associativity, semantic notes, and conflicts | Research/synthesis request; not approval of any operator set or precedence table for the next language. |
+| SRC-030 | `/bigdata/KAI/projects/GenLang/docs/language.md` and `packages/genlang/src/combined-definitions.json` | Inspected 2026-11-01 | GenLang operator precedence/associativity list, operator grammar/examples, generated token descriptions and priorities | Specification and generated table disagree on `@` priority; `->` and definition-operator associativity/semantics have internal discrepancies. |
+| SRC-031 | `/bigdata/KAI/NewLang/parser/NLparser/Parser.cc`, `Scanner.cc`, and `/bigdata/KAI/NewLang/prec.y` | Inspected 2026-11-01 | Parser prototype operator-priority/associativity declarations and separate Bison arithmetic sample | `treeGen()` is incomplete; sample grammar has no semantic actions; values/meaning belong to different experiments in the same tree. |
+| SRC-032 | `/bigdata/KAI/projects/OPPlang/OPPrs/minipratt/src/bin/pratt.rs`, `shunting-yard.rs`, `minipratt.js/shunting-yard.ts`, and `miniopp/src/parser/config/propsdata.mts` | Inspected 2026-11-01 | Pratt binding-power pairs, parser tests, and generated shift/reduce token table | Algorithm demonstrations, not a complete language specification; TypeScript and Rust variants do not expose identical operator sets. |
+| SRC-033 | `/bigdata/KAI/projects/LangLLVM/src/mylang.pegjs` | Inspected 2026-11-01 | C++-style layered operator grammar | Parser grammar only; not an approved custom-language operator specification. |
+| SRC-034 | User clarification in this conversation | 2026-11-01 18:39:57.143 (+01:00) | Select `@` priority 190, left-associative `.`, `^` as XOR, `**` as power, `->` as function definition, and `?` priority 45 using GenLang values; asks for remaining relative conflicts | User-approved partial operator specification; no priority for `**` or decisions on the remaining conflicts were supplied. |
+| SRC-035 | User clarification in this conversation | 2026-11-01 19:05:36.092 (+01:00) | Resolve remaining precedence conflicts in favor of GenLang ordering; initially asks to remove `::` and `::=`, specifies `**` one level tighter than `*` and right-associative, and requests a non-numeric ordered table in the design | The subsequent clarification in this conversation withdraws the removal request for `::` and `::=`; see SRC-036. |
+| SRC-036 | User correction in this conversation | 2026-11-01 (after 19:05:36; exact time not provided) | Keep `::` and `::=` unchanged after noting `::=` is the selected type-declaration marker; `::` has no current use case | Supersedes only the request in SRC-035 to drop those tokens; no replacement syntax or semantics for `::` is selected. |
+| SRC-037 | User clarification in this conversation | 2026-11-01 19:27:31.747 (+01:00) | Place `::` at the same relative level as `:`, and place `:=` and `::=` at the same level as `=` | User-approved refinement of DEC-022; does not change the selected declaration meanings in DEC-011. |
 
 ## Entries
 
@@ -465,3 +476,107 @@ The adopted model includes modules as classes and packages as collections of mod
 #### Open details and consequences
 
 The source explicitly questions class-variable semantics and local functions as function objects; neither is resolved by this adoption. The precise role of methods and instantiations in the reference-type list, packed types, and package/import configuration remain underspecified. Q-012 tracks these items and integration with the already selected closest-namespace lookup in DEC-018.
+
+### KP-020 - Proper tail calls and continuations required
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 17:59:12.529 (+01:00)
+- Capture: contemporaneous; user selected proper tail calls and continuations as required capabilities
+- Sources: SRC-027, SRC-028
+- Related requirements/decisions/questions: DEC-019, DEC-020, Q-013
+- Supersedes: The previously unresolved feature-selection item in the effort inventory; it does not reverse DEC-019's exclusion of the NewLang bytecode architecture.
+
+#### User decision and relationship to prior architecture choice
+
+The user stated that the language should “support proper tail calls and continuations.” DEC-020 records both as required capabilities. Proper tail calls are a guarantee for calls in tail position, not merely an optional optimization.
+
+The prior choice to ignore NewLang's bytecode architecture remains in force. This selects the control-flow capabilities, not NewLang's VM or its proposed C/C++ backend. NewLang's implementation note provides historical context: it says an ordinary processor stack conflicts with `call/cc` and motivates a consistent calling convention for perfect tail-call optimization. That is source-backed rationale from the experiment, not an additional user-stated implementation requirement.
+
+#### Open details and consequences
+
+The continuation interface and semantics remain unspecified, including full versus delimited capture, one-shot versus multi-shot use, interaction with exceptions/coroutines, and precisely which expressions are tail calls. The runtime must also retain captured state consistently with DEC-017's GC-like reference semantics. Q-013 tracks these semantic and representation questions; no implementation strategy or bytecode is selected.
+
+### KP-021 - Combined operator inventory and source conflicts
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 18:05:09.685 (+01:00)
+- Capture: contemporaneous; user requested a cross-experiment operator inventory
+- Sources: SRC-029 through SRC-033
+- Related requirements/decisions/questions: DEC-008, DEC-009, DEC-010, DEC-011, Q-007, Q-008
+- Supersedes: No prior decision; provides source evidence for resolving Q-007 without selecting the final next-language operator table.
+
+#### Findings
+
+The Wissensstand's “Combined operator inventory from the experiments” records the grouped symbols, source priority/precedence values, associativity, and semantic descriptions where available.
+
+GenLang has the most explicit language-spec table: priority 180 for delimiters/APPLY, then 170 dot/arrow, through 10 semicolon, with higher numbers declared tighter. Its generated operator table assigns `@` priority 190 while the prose places it at 170. Its prose calls `->` a function-definition operator, but its expression productions and examples use `->` for pointer-member access. The generated table gives `<-` priority 50 and non-associative, while `?` is also at 50 and right-associative. The prose groups `::` and `::=` with right-associative assignment, whereas generated metadata marks both non-associative. Semantic labels include arithmetic, bitwise/logical, comparison, increment/decrement, declaration, assignment, ternary, and Go-like channel operation.
+
+NewLang's `Parser.cc` declares its own table, with smaller numeric values acting as tighter priorities in the comparison logic. It gives `::` the tightest declared priority, APPLY/dot/arrow the same next level, then unary-like operators and member-pointer/arithmetic/bitwise/logical/conditional/assignment/throw/comma/semicolon tiers. Its tree-generation routine has placeholders and is incomplete. Separately, `prec.y` is a small Bison arithmetic sample with left-associative addition and multiplication groups, unary `NEG`, and right-associative `PWR`; its token spelling and runtime semantics are not supplied. In the parser table `^` has a bitwise tier; the arithmetic sample has a distinct token named `PWR`.
+
+OPPrs contributes parser examples rather than language semantics. Pratt examples encode priorities in `(left,right)` binding-power pairs: assignment and ternary are right-associative; arithmetic is left-associative; dot is right-associative in tests, in conflict with the left-associative declaration in GenLang and NewLang. The TypeScript and Rust examples are not identical, and `miniopp`'s shift/reduce table does not give a single readable priority ranking in the inspected data.
+
+LangLLVM's PEG grammar contains C++-style layered operator productions, but no independent numeric operator table or custom-language semantic spec. It is included only as parser evidence.
+
+#### Conflicts and status
+
+Notable conflicts are recorded without resolving them: priority numbers increase with binding strength in GenLang but decrease in the NewLang parser prototype; OPPrs uses binding-power pairs. Dot is left-associative in GenLang/NewLang and right-associative in OPPrs examples. `^` is XOR in GenLang and the NewLang parser table, while a separate NewLang arithmetic sample uses a `PWR` token. `!` is described as unary logical NOT in GenLang but appears postfix in OPPrs; its OPPrs semantics are not stated. GenLang's `->`, `@`, `<-`, `?`, `::`, and `::=` metadata/prose have the discrepancies listed above. The selected binding syntax (DEC-011) also conflicts with the older GenLang definition spellings and meanings.
+
+This inventory does not approve any of those historical precedence tables. Q-007 remains open for choosing the actual operator set, priorities, associativity and APPLY binding in light of DEC-008 through DEC-010; semantic legality is separately tracked in Q-008.
+
+### KP-022 - Partial operator choices and normalized precedence comparison
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 18:39:57.143 (+01:00)
+- Capture: contemporaneous; user specified selected operator meanings/values and asked for conflicts after normalizing scales
+- Sources: SRC-030 through SRC-034
+- Related requirements/decisions/questions: DEC-008, DEC-009, DEC-010, DEC-011, DEC-021, Q-007, Q-008
+- Supersedes: The unresolved choices for the specific symbols `@`, `.`, `^`, `**`, `->`, and `?` in KP-021; it does not resolve the remaining relative-order conflicts.
+
+#### User decisions
+
+The user set `@` to priority 190; chose left associativity for `.`; assigned `^` to XOR and `**` to exponentiation; assigned `->` the function-definition meaning; and set `?` to priority 45, using GenLang's numeric scale. DEC-021 records these choices. From the GenLang scale, `.` and `->` are at 170, and `^` at 110. No priority for `**` was stated. The source discrepancy over `@` remains historically true (GenLang prose 170 versus generated table 190), but the next language's value is selected as 190.
+
+#### Relative-order comparison
+
+Raw priority magnitudes were normalized to stronger/weaker/equal relations, accounting for the inverse scale direction in NewLang's incomplete parser prototype. The Wissensstand records the complete comparison. Remaining disagreements are:
+
+1. GenLang makes APPLY stronger than `.`, while NewLang gives them equal priority.
+2. GenLang makes bitwise operators stronger than relational/equality operators, while NewLang's table puts relational/equality operators stronger than bitwise operators.
+3. GenLang's selected `?` priority 45 is stronger than assignment at 30 and colon at 40; NewLang puts `?`, assignment, and colon at one shared priority.
+4. GenLang's generated table places `::` at the weak assignment tier; NewLang's prototype makes `::` its strongest declared operator. The meanings are not established as equivalent, and `::` is not a selected binding marker in DEC-011.
+
+Other common tiers broadly agree after scale normalization, including multiplicative > additive > shifts, relational > equality, and bitwise AND > XOR > OR > logical AND > logical OR. Some syntax/semantic roles are not comparable: for example, OPPrs postfix `!` has no stated meaning, and the NewLang Bison sample uses a `PWR` token without spelling it. Therefore no `**` priority is inferred. `->`'s selected meaning is resolved, but its source associativity differs (GenLang none, NewLang left) and remains open.
+
+#### Status
+
+The comparison identifies remaining historical conflicts; it does not choose among them. The later decision in KP-023 resolves their relative ordering for the next language. Q-008 still covers semantic legality for the implicit `APPLY`/`EMPTY` insertions.
+
+### KP-023 - Adopted relative operator precedence table
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 19:05:36.092 (+01:00) for the initial instruction; exact time of the subsequent correction is not provided
+- Capture: contemporaneous; user selects GenLang ordering for the remaining relative-priority conflicts, specifies power priority/associativity, and corrects the request to remove declaration-related tokens
+- Sources: SRC-030, SRC-034, SRC-035, SRC-036
+- Related requirements/decisions/questions: DEC-008, DEC-009, DEC-010, DEC-011, DEC-021, DEC-022, Q-007, Q-008
+- Supersedes: KP-022's status of the listed relative-order conflicts and the unresolved priority of `**`; historical cross-experiment findings remain valid.
+
+#### Decisions
+
+The user chose GenLang's relative ordering for the remaining conflicts and requested that the approved table use distinct lines for distinct binding levels, from tighter to looser, without numeric priority values. The user set `**` to one level tighter than `*` (GenLang's 155 position) and right-associative.
+
+The user initially asked to drop `::` and `::=`, then corrected that request after noticing `::=` is the selected LangLLVM type-declaration marker. The final instruction is to keep both unchanged; the user noted that `::` currently has no use case. Accordingly, the design retains `::` at GenLang's assignment-level ordering with its meaning/use unspecified, and retains `::=` as DEC-011 declaration syntax, outside expression precedence.
+
+DEC-022 records the adopted table in Language-Design.md. This resolves the next language's precedence choices for APPLY vs dot, bitwise vs comparisons, `?` vs assignment/colon, and `::` vs assignment. It does not erase the historical differences in the source experiments. Operator semantics/forms and `->` associativity remain open under Q-007; semantic legality of implicit insertions remains Q-008.
+
+### KP-024 - Refine declaration-marker precedence placement
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 19:27:31.747 (+01:00)
+- Capture: contemporaneous; user assigns relative levels for `::`, `:=`, and `::=`
+- Sources: SRC-037
+- Related requirements/decisions/questions: DEC-011, DEC-022, DEC-023, Q-007
+- Supersedes: The `::` assignment-level placement in KP-023; it does not change DEC-011's declaration syntax or other entries in the precedence table.
+
+#### Decision
+
+The user places `::` at the same relative level as `:`, and `:=` and `::=` at the same level as `=`. DEC-023 records these placements in the authoritative design table. `::` remains without a current use case or specified meaning. `:=` and `::=` retain their variable/type declaration meanings from DEC-011; listing them in the precedence table establishes their relative level only and does not make them expression operators.

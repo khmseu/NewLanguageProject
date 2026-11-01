@@ -134,9 +134,9 @@ Effort is a rough relative estimate for a TypeScript implementation, assuming a 
 | Modules, packages, namespaces, imports/exports and package configuration | NewLang grammar/design | L | Name resolution, file layout, dependency graph, visibility and separate compilation. |
 | Channel send/receive operator `<-` | GenLang spec | L-XL | Syntax is small; meaningful channel semantics require concurrency, scheduling, blocking and errors. |
 | Coroutines with arguments/results passed on control transfer | NewLang notes | XL | Suspended execution state, resumption protocol, stack/frame representation and interaction with exceptions/GC. |
-| Proper tail calls and continuations / `call/cc` | NewLang implementation rationale | XL | Requires compatible calling convention and explicit control/runtime representation; conflicts with relying on ordinary host/C++ stack calls. |
+| Proper tail calls and continuations | User decision DEC-020; also discussed in NewLang implementation rationale | XL | Proper tail calls are required as a semantic guarantee. Choose continuation operations and a control/runtime representation that preserves captured state and DEC-017's GC-like reference behavior; bytecode is not mandated. |
 | Reflection metadata and native-code module interoperability | NewLang bytecode/runtime notes | XL | Metadata format, stable type/member identity, ABI, loading, safety and versioning. |
-| Bytecode VM / stack machine and native or LLVM/C/C++ code-generation backends | NewLang architecture; LangLLVM LLVM experiment | XL | This is an implementation architecture, not a surface-language feature. Pick an execution model before promising reflection, interop or continuations. |
+| Bytecode VM / stack machine and native or LLVM/C/C++ code-generation backends | NewLang architecture; LangLLVM LLVM experiment | XL | This is an implementation architecture, not a surface-language feature. DEC-019 excludes NewLang's bytecode architecture; DEC-020 nevertheless requires an execution model capable of proper tail calls and continuations. Reflection and native interop remain unselected. |
 | Parser/grammar generator and AST construction from EBNF/BNF | NewLang notes and Perl/Bison tools | L | Grammar representation, ambiguity/error handling and generated AST/API; separable from the language feature set. |
 
 ### Declaration concepts found in the experiments
@@ -150,6 +150,91 @@ These are separate experiment designs, not one unified or selected declaration s
 | NewLang | Compilation-unit and namespace context: `package <localpkgname>{.namespace};`, followed by struct definitions. Modules are proposed as classes and packages as collections of modules with exported interfaces. Separately, notes describe flat/reference type constructors, constants and functions with argument/result lists, and raise the possibility of local functions as function objects. | Concepts in `NewLang/IDEAS/OtherStuff.txt`; not a complete declaration grammar. No concrete variable/function binding markers or full declaration productions were found in the inspected notes. Do not treat the separate ANSI C grammar in the NewLang tree as NewLang syntax; it is reference material. |
 
 **Current status:** DEC-011 selects LangLLVM's name-first binding markers, square-bracket template syntax, function expression, and function type forms over GenLang's type-first syntax. Scope, visibility, precise initialization/inference rules, and the relation between declarations and definitions remain open.
+
+### Combined operator inventory from the experiments
+
+This is an evidence inventory, not by itself the next language's operator specification. Priority numbers are only comparable within the individual source table. `higher`/`lower` below describes binding strength, not the magnitude of the source's number. Associativity labels are reproduced from source; `n/a` means the operator's grammar role does not form an ordinary infix chain. DEC-021 and DEC-022 record the user's selected operator meanings and adopted relative order; historical cross-experiment differences are summarized after the tables.
+
+#### GenLang language specification and generated definitions
+
+The specification says higher numeric priority binds more tightly. The generated definitions table supplies the `@` row at priority 190, while the prose specification lists it with the priority-170 group; this is called out below.
+
+| Priority | Operators | Associativity in source | Semantic notes stated by source |
+|---:|---|---|---|
+| 190 generated / 170 prose | `@` | none | Name-declaration operator. Priority discrepancy: `combined-definitions.json` says 190; `docs/language.md` groups it at 170. The next-language value is selected as 190 (DEC-021). |
+| 180 | `APPLY` (implicit whitespace), `(` `)` `{` `}` `[` `]` | left for APPLY; delimiters are open/close in generated data (prose calls them left) | APPLY represents function application; brackets/grouping. The next design inserts APPLY between adjacent operands (DEC-008) and adopts its GenLang ordering above dot (DEC-022). |
+| 170 | `.`; `->` | left; none | Dot is described as member access in examples and is selected as left-associative (DEC-021). `->` is labeled “function definition” in the priority table but used for pointer-member access in the expression grammar/examples; the next-language meaning is selected as function definition (DEC-021). |
+| 160 | `++` `--` `!` `~` | none | Increment/decrement; logical NOT; bitwise NOT. Prefix and postfix increment/decrement forms appear in the grammar. |
+| 150 | `*` `/` `%` | left | Multiplication, division, modulo. |
+| 140 | `+` `-` | left | Addition and subtraction; unary minus is also in the grammar. |
+| 130 | `<<` `>>` | left | Left and right shift. |
+| 120 / 110 / 100 | `&` / `^` / `|` | left | Bitwise AND / XOR / OR. `^` as XOR is selected (DEC-021). `&` and `*` also occur as unary operators; the grammar does not fully specify unary `*` semantics, while `&x` appears in a pointer example. |
+| 90 / 80 | `<` `<=` `>` `>=` / `==` `!=` | left | Relational comparisons / equality and inequality. |
+| 70 / 60 | `&&` / `||` | left | Logical AND / OR. |
+| 50 source / 45 selected | `<-` / `?` | none for `<-`; right for `?` | `<-` is described as a Go-like channel operation; `?` begins a ternary conditional. The next-language priority for `?` is selected as 45 (DEC-021), below `<-` at 50 and above `:` at 40. |
+| 40 | `:` | right | Ternary separator in the grammar; the source also lists it as a colon operator. |
+| 30 | `=` `+=` `-=` `*=` `/=` `%=` `&=` `|=` `^=` `<<=` `>>=`; `::` `::=` | right for assignments; none for `::` and `::=` in generated data, although prose groups all as right | Assignments/compound assignments and explicit/implicit definition. This differs from selected declaration meanings `:` constant, `:=` variable, `::=` type (DEC-011). |
+| 20 / 10 | `,` / `;` | left | Comma separator / statement terminator. |
+
+#### NewLang parser precedence prototype
+
+`Parser.cc` declares the following values. The parser compares incoming and stacked priorities so that a *smaller* number is treated as tighter binding. However, `treeGen()` is visibly incomplete (placeholder branches), so this is prototype evidence rather than a verified complete parse table.
+
+| Priority (smaller = tighter, as implied by parser) | Operators | Declared associativity | Semantic notes / limits |
+|---:|---|---|---|
+| 100,000,000 | `::` | left | No operator meaning specified in this table. |
+| 200,000,000 | implicit `APPLY`, `.`, `->` | left | Application is synthesized; member meaning for `.`/`->` is not given here. APPLY ties with member access. |
+| 300,000,000 | `++` `--` `!` `~` `sizeof` `new` `delete` | right | Looks like unary/postfix/operator keywords; exact forms and semantics are not defined here. Unary `+` `-` `*` `&` and alternate `++`/`--` definitions are commented out. |
+| 400,000,000 | `.*` `->*` | left | C++-style pointer-to-member spellings in a parser experiment. |
+| 500,000,000 / 600,000,000 | `*` `/` `%` / `+` `-` | left | Arithmetic operator grouping; no evaluator semantics specified in this table. |
+| 700,000,000 | `<<` `>>` | left | Shift operators. |
+| 800,000,000 / 900,000,000 | `<` `<=` `>` `>=` / `==` `!=` | left | Relational / equality groups. |
+| 1,000,000,000 / 1,100,000,000 / 1,200,000,000 | `&` / `^` / `|` | left | Bitwise groups; here `^` is assigned a bitwise-style tier, not the separate arithmetic sample's `PWR`. |
+| 1,300,000,000 / 1,400,000,000 | `&&` / `||` | left | Logical groups. |
+| 1,500,000,000 | `?` `:` `=` and compound assignments | right | Conditional/assignment group. |
+| 1,600,000,000 | `throw` | right | Throw-like operator keyword. |
+| 1,700,000,000 / 1,800,000,000 | `,` / `;` | left | Comma / statement separator. |
+
+A separate NewLang Bison arithmetic grammar (`prec.y`) declares `+`/`-` left, then `*`/`/` left, then unary `NEG`, and finally right-associative `PWR`; later Bison declarations have higher precedence. `PWR`'s spelling is not shown and the grammar has no semantic actions. This is a small arithmetic parser sample, not the same table as `Parser.cc`.
+
+#### User-selected operator decisions and adopted relative order
+
+DEC-021 records the initial selections: `@` 190, left-associative `.`, `->` as function definition, `^` as XOR, and `?` 45; `**` is exponentiation. DEC-022 now adopts GenLang's relative ordering for the remaining conflicts and sets `**` one distinct level tighter than `*`, right-associative. The source-only `@` discrepancy (GenLang prose 170 vs generated data 190) is resolved for the next language by selecting 190, though the historical discrepancy remains. The complete normative, non-numeric order is in [Language Design](../Language-Design.md#expression-token-stream-and-implicit-insertions).
+
+The historical differences between GenLang and NewLang remain evidence about the experiments, but DEC-022 resolves their relative ordering for the next language:
+
+| Operator relationship | GenLang-scale selected/referenced order | NewLang parser prototype order | Assessment |
+|---|---|---|---|
+| `APPLY` vs `.` | APPLY stronger than dot (180 > 170) | APPLY and dot tie (both 200, smaller is stronger) | Resolved for the next language: APPLY is tighter, following GenLang. |
+| Bitwise `&`, `^`, `|` vs relational/equality operators | All bitwise tiers are stronger than relational/equality (120–100 > 90–80) | Relational/equality are stronger than bitwise tiers (800–900 < 1000–1200) | Resolved for the next language: bitwise operators are tighter, following GenLang. |
+| `?` vs assignment | `?` stronger than assignment (45 > 30) | `?` and assignment tie (both 1500) | Resolved for the next language: `?` is tighter, following GenLang. |
+| `?` vs `:` | `?` stronger than `:` (45 > 40) | `?` and `:` tie (both 1500) | Resolved for the next language: `?` is tighter, following GenLang. |
+| `::` vs assignment | GenLang generated table puts `::` at assignment priority 30 | NewLang puts `::` at 100,000,000, its tightest declared level | Historical conflict; current design places `::` with `:` by explicit user decision DEC-023, despite its GenLang assignment-level position. Its meaning/use remains unspecified. |
+
+Other tested common-tier relationships broadly agree after reversing NewLang's numeric direction, including multiplicative > additive > shifts, relational > equality, and bitwise OR/logical AND/logical OR ordering. DEC-022 adopts GenLang's order for the next language except for explicit user-selected placements, including `::` and declaration markers.
+
+Associativity/role differences remain distinct from priority conflicts: OPPrs uses postfix `!` more tightly than `.`, unlike the adopted GenLang order of dot above the unary tier; OPPrs supplies no semantics for postfix `!`, while GenLang describes logical NOT. GenLang marks `->` non-associative whereas NewLang marks it left-associative; the selected function-definition meaning does not settle its associativity. The new language explicitly makes `**` right-associative and one level tighter than `*`; this is a design choice, not an inference from NewLang's Bison `PWR` token (whose spelling is unknown).
+
+#### OPPrs Pratt / iterative binding-power experiments
+
+These are parser-algorithm examples, not a language-wide operator specification. Binding powers are pairs `(left, right)`; the pair encodes associativity for infix operators (e.g. `(5,6)` parses left-associatively, `(2,1)` right-associatively). These values are not comparable to the integer priority scales above.
+
+| Form | Operators | Binding power(s) | Effective association / observed meaning |
+|---|---|---|---|
+| Prefix | `+` `-` | right BP 9 (Rust Pratt); TypeScript frame parser uses `(99,9)` | Prefix nesting; numeric value is parser-specific. |
+| Postfix | `!` `[` | left BP 11 | Postfix `!` and indexing are syntactic examples; `!` is not assigned factorial semantics. |
+| Infix | `=` | `(2,1)` | Right-associative assignment-shaped example. |
+| Infix | `? :` | `?` `(4,3)`, with `:` consumed by ternary parser | Right-associative conditional (`a ? b : c ? d : e` nests on the right). |
+| Infix | `+` `-` | `(5,6)` | Left-associative. |
+| Infix | `*` `/` | `(7,8)` | Left-associative. |
+| Infix | `.` | `(14,13)` | Right-associative in parser tests (`f . g . h` => `f . (g . h)`). This differs from GenLang and NewLang's declared left association. |
+| Grouping | `(` `)` | parser-specific special case | Parentheses group; no ordinary associativity. |
+
+The TypeScript `minipratt.js` and Rust `minipratt` examples do not have identical operator sets: Rust includes ternary and indexing in this implementation, while the inspected TypeScript version demonstrates assignment, arithmetic, dot, postfix `!`, and grouping. `miniopp` has a generated shift/reduce relation table and Unicode operator-token families, but no single human-readable numeric priority/associativity listing in the inspected artifacts.
+
+#### LangLLVM grammar material
+
+`LangLLVM/src/mylang.pegjs` includes a broad C++-style operator grammar: postfix calls/index/member access and increment/decrement; prefix `++ -- * & + - ! ~ sizeof alignof new delete`; pointer-to-member `.* ->*`; arithmetic, shifts, comparisons, bitwise/logical operators, `? :`, throw, assignments, and comma. Its layered grammar provides relative parse precedence and repetition/recursion patterns, but the inspected file is parser grammar material and does not provide a distinct custom-language numeric-priority/associativity table or semantic specification. Do not merge these productions as approved operators for the new language.
 
 ### Obvious conflicts and decisions to resolve
 
@@ -165,7 +250,8 @@ These are separate experiment designs, not one unified or selected declaration s
 | Single-result vs multiple-result functions and coroutine transfers | Both shape function types, call conventions, assignment syntax and native interfaces. | Decide whether all callables can return tuples/multiple values and how suspension values differ. |
 | Overloads vs named/dictionary arguments and conversions | Overload sets require explicit declarations identifying their member functions; resolution filters by type compatibility and prefers identical types over merely compatible types (DEC-018). NewLang notes leave named/dictionary argument behavior partly open. | Define overload declaration syntax/validation and deterministic ranking for mixed exact/compatible argument lists (Q-009); decide separately whether named/dictionary arguments are supported. |
 | OO inheritance vs mixins/metaclasses/parameterized types | These are separate composition and dispatch mechanisms with interacting type identity and initialization rules. | Resolved in favor of NewLang's combined model (DEC-019); define the remaining interactions and open class-variable semantics (Q-012). |
-| Ordinary host/native stack vs proper tail calls and continuations | C++/native calling conventions and host stacks do not directly provide the proposed control semantics. | Choose interpreter/frame representation and backend constraints early if call/cc or guaranteed tail calls matter. |
+| Operator priorities, associativity, and meanings | GenLang, NewLang's parser prototype, a separate NewLang Bison sample, and OPPrs use different numeric scales, binding-power pairs, and some conflicting labels/meanings. The user selected operator choices and the relative precedence table in DEC-021/022. | Relative ordering follows GenLang and is resolved in DEC-022. Remaining work is operator forms/semantics and unresolved associativity, including `->` and `::` (Q-007). |
+| Ordinary host/native stack vs proper tail calls and continuations | NewLang's implementation note says an ordinary processor stack conflicts with `call/cc`, and calls for compatible calling conventions to achieve perfect tail-call optimization. The new language requires proper tail calls and continuations (DEC-020), but excludes NewLang's bytecode VM (DEC-019). | Select a non-bytecode or bytecode execution architecture that can guarantee proper tail calls and implement the chosen continuation semantics; specify the continuation facility in Q-013. |
 | Parser algorithm and language grammar | LR/Bison, operator-precedence and Pratt experiments are alternative implementation techniques; none requires adopting the associated sample grammar. | Select algorithm based on intended grammar; do not treat parser prototypes as user-visible features. |
 
 ### Unicode identifier normalization: standards research
@@ -205,32 +291,37 @@ The cheapest useful starting slice is source positions/diagnostics, literals, id
 | DEC-017 | Reference values behave as if garbage-collected; implementations may optimize cases with sufficiently predictable lifetimes. | User-approved lifetime model; optimization must preserve the GC-model behavior. Specific techniques and proof criteria remain open. | KP-016 |
 | DEC-018 | Resolve names through predefined, imported, and block-related namespace hierarchy, preferring the closest namespace; create overload groups only through explicit declarations; resolve by type compatibility, preferring identical types, with exactly one candidate required. | User-approved lookup and overload policy; namespace/import details, overload declaration syntax, and ranking among mixed exact/compatible arguments remain open. | KP-017 |
 | DEC-019 | Adopt NewLang's language-level object model: modules as classes; packages expose module interfaces; classes with inheritance/interfaces; flat/value types and reference classes; class/metaclass objects, parameterized class objects, and non-instantiable `Object`-independent mixins. Exclude its bytecode/interpreter/backend/native-interop architecture. | User-approved selection; exact class-variable semantics and several type/package details remain open. | KP-019 |
+| DEC-020 | Require proper tail calls and continuations as language/runtime capabilities. Proper tail calls are guaranteed semantics; no particular continuation facility or execution architecture is selected. | User-approved capability requirement; continuation operations, capture/multiplicity semantics, tail-position rules, and runtime representation remain open. | KP-020 |
+| DEC-021 | Use GenLang's priority scale for selected operators: `@` 190; `.` left-associative at 170; `->` function definition at 170; `^` XOR at 110; `?` at 45; `**` means exponentiation. | User-approved partial operator specification; `**` priority was initially open and is now specified by DEC-022. | KP-022 |
+| DEC-022 | Adopt the complete non-numeric relative operator precedence table from tightest to loosest, with `**` right-associative one level above `*`. | User-approved ordering based on GenLang except for subsequent explicit refinements in DEC-023. | KP-023 |
+| DEC-023 | Place `::` with `:`, and place `:=` and `::=` with `=` in the relative precedence table. | User-approved placement; declaration meanings from DEC-011 are unchanged, and the markers are not thereby made expression operators. | KP-024 |
 | Q-001 | Establish provenance of the uncertain NewLang root files, archives, backups, and `GenLang/ARCHIVE.zip`. | Open; contents/origins not fully inspected. | KP-001 |
 | Q-002 | Decide whether the next deliverable should be a complete file-by-file manifest or a proposed cleanup/move plan. | Open; not requested yet. | KP-001 |
 | Q-003 | Determine which feature candidates belong in the next attempt, and define the minimum initial slice. | Open; this turn provides inventory/conflicts/effort only. | KP-003 |
 | Q-004 | Choose NFC or NFKC identifier policy, and decide whether normalized form is applied for identifier equivalence or required in source spelling. | Resolved by DEC-006; retained here as the history of the question. | KP-004, KP-005 |
 | Q-005 | Choose identifier start/continue properties and any extra start characters or exclusions. | Resolved by DEC-007: use UAX #31 R1 (`XID_Start XID_Continue*`), with no extra start characters. | KP-004, KP-005, KP-006 |
 | Q-006 | Choose the Unicode data version that defines `XID_Start` and `XID_Continue`. | Open; use one consistent version once selected. | KP-006 |
-| Q-007 | Specify operand-priority rules, including implicit `APPLY`, used to build the expression tree. | Open; the user selected priority-based tree construction but has not specified the priority rules. | KP-007 |
+| Q-007 | Complete the next language's operator inventory, forms, semantics, and remaining associativity choices without treating parser prototypes as normative. | Precedence ordering, including APPLY and right-associative `**` one level above `*`, is adopted by DEC-022. GenLang ordering is used except for explicit choices: `::` is placed with `:`, and `:=`/`::=` with `=` (DEC-023). `::` meaning/use, `->` associativity, and other operator semantics/forms remain open. | KP-007, KP-021, KP-022, KP-023, KP-024 |
 | Q-008 | Specify semantic-context legality rules for inserted `APPLY` operators and `EMPTY` operands. | Open; validation belongs to semantic analysis, not parsing. | KP-007 |
 | Q-009 | Define scope/visibility details, namespace ordering and import behavior, redefinition semantics, overload declaration syntax and validation, mixed exact/compatible candidate ranking, initialization, inference/checking, and safety proof criteria for the selected LangLLVM bindings. | Partially resolved by DEC-011/012/013/014/018: binding syntax, predefined-identifier model, closest-namespace lookup, explicit overload grouping, static typing and safety-first compatibility are chosen; listed details remain open. | KP-009, KP-010, KP-011, KP-012, KP-013, KP-017 |
 | Q-010 | Decide whether declarations without bodies/prototypes are distinct from definitions with bodies, or whether binding forms alone suffice. | Open; LangLLVM's design note raises but does not resolve this question. | KP-009, KP-010 |
 | Q-011 | Specify reference identity/aliasing and field/temporary collection types and operations; define proof criteria and behavior-preserving optimizations for predictable reference lifetimes. | Partially resolved by DEC-015/016/017: reference values have GC-like behavior and predictable lifetimes may be optimized; detailed identity, collection, and optimization semantics remain open. | KP-014, KP-015, KP-016 |
 | Q-012 | Specify class-variable semantics; decide whether local functions are function objects; clarify method/instantiation type roles, packed types, and how NewLang package/import configuration and namespace components integrate with DEC-018 lookup. | Open; DEC-019 adopts the model where notes are explicit but does not resolve questions or underspecified mechanics in those notes. | KP-018, KP-019 |
+| Q-013 | Specify what continuation operations are provided (including full/delimited and one-shot/multi-shot behavior), what control state they capture, interactions with exceptions/coroutines and GC, and which calls qualify as tail calls. | Open; DEC-020 requires proper tail calls and continuations but does not select their full semantics or implementation. | KP-020 |
 
 ## Work status and verification
 
 - Identified: the four `langlist` roots, dominant experiment roots, clear upstream/reference trees, and generated/dependency groupings.
 - Evidence checked: root directory entries; project manifests/READMEs; NewLang grammar headers and Makefiles; selected source files; `GenLang` language specification; `LangLLVM` package and grammar; `OPPrs` package metadata and parser/sample grammars.
 - Experiment-feature evidence: selected NewLang architecture, syntax and grammar files; GenLang specification and parser/generator/interpreter sources; LangLLVM grammar/design/test sources; miniopp, Rust Pratt, TypeScript Pratt and Bison utility sources.
-- Consolidation: candidate feature matrix, conflict analysis, and relative TypeScript effort estimates are recorded here. The NewLang language-level object model is selected by DEC-019; remaining feature selection and the minimum initial slice remain open (Q-003). No implementation has been approved or verified.
+- Consolidation: candidate feature matrix, conflict analysis, and relative TypeScript effort estimates are recorded here. The NewLang language-level object model is selected by DEC-019, and proper tail calls/continuations are required by DEC-020; remaining feature selection and the minimum initial slice remain open (Q-003). No implementation has been approved or verified.
 - Not verified: complete file-by-file provenance, all nested archive contents, all source histories, or licenses beyond inspected headers/metadata.
 - Implementation claims are limited to mechanisms directly visible in the selected code; no builds or tests were run for this research task.
 - Source trees remain unchanged.
 
 ## Next steps
 
-1. Specify operand priorities and semantic legality for implicit insertions, including unary operators (Q-007/008); resolve remaining declaration/type/object semantics (Q-009/010/011/012); choose a Unicode property data version (Q-006); then define the remaining feature subset and minimum initial slice (Q-003) for the next TypeScript attempt.
+1. Resolve remaining operator meanings/forms and associativity choices (Q-007), plus semantic legality for implicit insertions (Q-008); resolve remaining declaration/type/object/control-flow semantics (Q-009/010/011/012/013); choose a Unicode property data version (Q-006); then define the remaining feature subset and minimum initial slice (Q-003) for the next TypeScript attempt.
 2. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate files.
 
 ## Handover

@@ -29,7 +29,41 @@ The transformed sequence alternates operands and operators.
 
 **Decision DEC-010 — approved:** Unary prefix and postfix operators are represented using an implicit `EMPTY` operand, not separate unary-operator syntax in the tree. A prefix operator has `EMPTY` on its left; a postfix operator has `EMPTY` on its right. This is the tree representation; semantic analysis determines whether the operator is valid in that unary context.
 
-The full operator-priority rules, including the priority of implicit `APPLY`, and the semantic legality rules for inserted elements remain to be specified (Q-007, Q-008).
+The adopted relative operator priorities are listed in DEC-022. Semantic legality rules for inserted elements remain open (Q-008); operator semantics and the remaining associativity choices are tracked in Q-007.
+
+**Decision DEC-021 — approved:** Use GenLang's numeric priority scale as the starting point for the next language. Set `@` to priority 190; keep `.` left-associative; use `^` for XOR and `**` for exponentiation; use `->` for function definition; and set `?` to priority 45. DEC-022 resolves the remaining relative-order conflicts and assigns `**` a priority.
+
+**Decision DEC-022 — approved:** Adopt the following relative precedence for the next language, from tightest to loosest. Each line is a distinct priority level; operators on one line share a level. This uses GenLang's relative ordering to resolve the historical conflicts, with the explicit placements below, and makes `**` right-associative.
+
+| Relative level (tightest first) | Operators | Associativity / notes |
+|---|---|---|
+| Tightest | `@` | No associativity specified; name-declaration operator. |
+|  | implicit `APPLY`, `(` `)` `{` `}` `[` `]` | APPLY is left-associative; delimiters group syntax. |
+|  | `.` `->` | `.` is left-associative; `->` means function definition, with associativity still open. |
+|  | `++` `--` `!` `~` | No infix associativity specified in the GenLang table; prefix/postfix forms and semantics remain subject to Q-007. |
+|  | `**` | Right-associative exponentiation; one level tighter than `*`. |
+|  | `*` `/` `%` | Left-associative. |
+|  | `+` `-` | Left-associative. |
+|  | `<<` `>>` | Left-associative. |
+|  | `&` | Left-associative bitwise AND. |
+|  | `^` | Left-associative XOR. |
+|  | <code>&#124;</code> | Left-associative bitwise OR. |
+|  | `<` `<=` `>` `>=` | Left-associative relational operators. |
+|  | `==` `!=` | Left-associative equality operators. |
+|  | `&&` | Left-associative logical AND. |
+|  | <code>&#124;&#124;</code> | Left-associative logical OR. |
+|  | `<-` | No associativity specified; source describes a channel operation. |
+|  | `?` | Right-associative; begins a ternary conditional. |
+|  | `:` `::` | `:` is right-associative and separates a ternary conditional; `::` has no specified meaning/use or associativity. |
+|  | `=` `:=` `::=` `+=` `-=` `*=` `/=` `%=` `&=` <code>&#124;=</code> `^=` `<<=` `>>=` | Assignment operators are right-associative. `:=` and `::=` are declaration markers (DEC-011), placed at this level without thereby making them expression operators. |
+|  | `,` | Left-associative separator. |
+| Loosest | `;` | Statement terminator. |
+
+**Decision DEC-023 — approved:** Place `::` at the same relative precedence level as `:`, and place `:=` and `::=` at the same level as `=`. These are relative placements only; the meanings selected in DEC-011 remain unchanged.
+
+`**` occupies the level immediately above `*`; no numeric priorities are part of this table. `::` is placed with `:` despite having no current use case. The `:=` variable and `::=` type declaration markers from DEC-011 are placed with `=` in this relative ordering; these are declaration markers, not expression operators.
+
+The table adopts GenLang's relative order for APPLY versus `.`, bitwise versus comparison operators, and `?` versus assignment/`:`, resolving those historical differences for this design. The placement of `::` and the declaration markers is explicitly selected here rather than copied from GenLang. Historical source disagreements remain documented in the project knowledge view. Q-007 tracks operator meanings/forms and unresolved associativity, not these adopted relative priorities.
 
 ## Declarations and bindings
 
@@ -85,3 +119,9 @@ The selected model includes:
 - Flat/value types include primitive integer, floating-point, and character types, and constructed enums (including boolean), subranges, sets of subranges, fixed-index arrays, and structs. Flat values have their exact declared type and are destroyed when they leave scope. Reference-typed variables may hold values of a subtype of their declared type; references retain the GC-like behavior in DEC-017.
 
 This adopts the model at the level described by the notes, not every Java-like construct in the separate Java 8 grammar/reference tree. Exact class-variable semantics, local functions as possible function objects, the role/type semantics of methods and instantiations as reference types, packed types, and details of package/import configuration and namespace components remain open (Q-012). Previously selected safety-first compatibility rules (DEC-014) and the user's field-collection requirement (REQ-002) continue to apply.
+
+## Control flow
+
+**Decision DEC-020 — approved:** The language must support proper tail calls and continuations. Proper tail calls are a semantic guarantee, not merely an optimization: calls in tail position must not require unbounded additional continuation space. The specific continuation facility and operations are not yet selected; in particular, this decision alone does not choose full versus delimited continuations, one-shot versus multi-shot continuations, or a particular `call/cc` interface (Q-013).
+
+This requirement constrains the implementation's control representation and calling convention, but does not select NewLang's bytecode VM or any other backend. The implementation must preserve the GC-like reference behavior in DEC-017 when continuations retain execution state.
