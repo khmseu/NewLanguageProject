@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This is the evolving design record for the next language experiment. Approved choices and explicitly labeled open alternatives are recorded here; unresolved feature conflicts remain in [the project knowledge view](./Kontext/Wissensstand.md). The implementation language is tentatively TypeScript, not a finalized commitment.
+This is the evolving design record for the next language experiment. Approved choices and explicitly labeled open alternatives are recorded here; unresolved feature conflicts remain in [the project knowledge view](./Kontext/Wissensstand.md). TypeScript is confirmed as the implementation language (DEC-054).
 
 ## Identifier normalization
 
@@ -20,15 +20,17 @@ DEC-031 fixes the Unicode data version and requires implementations to use it co
 
 **Decision DEC-025 — approved:** Use `//` line comments and `/* ... */` block comments; block comments do not nest. Character literals use single quotes (`'...'`) and ordinary strings use double quotes (`"..."`). Integers may be written as unmarked decimal, with `0b`, `0o`, `0d`, or `0x` base markers, or using `base#number`. Apply C++-style universal-character names `\uXXXX` and `\UXXXXXXXX` to source characters generally, and support the Perl-style escapes described in NewLang's syntax notes in character and ordinary string literals. Floating-point literals include decimal and hexadecimal forms from ISO floating-point language standards.
 
-The precise lexical productions remaining include numeric token boundaries and suffixes, and the ISO standard/version and precision grammar for floating-point literals (Q-014). Ordinary literal escape forms and their phase interactions are specified in DEC-039–045. Non-universal raw-string backslash behavior remains open (LP-24), as do detailed source mappings through translation and normalization (LP-23).
+The precise lexical productions remaining include further numeric token boundaries and the ISO standard/version and precision grammar for floating-point literals (Q-014). DEC-047 specifies numeric suffix spelling and radix/suffix disambiguation. Ordinary literal escape forms and their phase interactions are specified in DEC-039–045. DEC-055 makes non-universal raw-string backslashes literal. Detailed source mappings through translation and normalization remain open (LP-23).
 
-**Decision DEC-026 — approved:** Raw strings use NewLang's tagged-backtick delimiter structure: opening backtick, tag, and double quote; content; then double quote, the same tag, and closing backtick. For example, `` `END"raw content"END` ``. DEC-027 specifies tag characters and newline handling; non-universal raw escape behavior remains open (Q-016).
+**Decision DEC-026 — approved:** Raw strings use NewLang's tagged-backtick delimiter structure: opening backtick, tag, and double quote; content; then double quote, the same tag, and closing backtick. For example, `` `END"raw content"END` ``. DEC-027 specifies tag characters and newline handling; DEC-055 makes non-universal backslashes literal.
 
 **Decision DEC-027 — approved:** Translate `\uXXXX` and `\UXXXXXXXX` universal-character names globally before tokenization, including in comments and raw strings. Consequently, translated characters can affect comment and literal delimiters. Raw-string tags consist of zero or more ASCII letters, digits, or underscores (`[A-Za-z0-9_]*`), with no fixed length limit. Raw strings may span lines; recognized line endings in their contents are normalized to LF.
 
-DEC-032 specifies recognized physical line endings, DEC-035 specifies Unicode-escape eligibility, validation, and generated line-break behavior, and DEC-036 specifies mixed-origin CRLF and whole-source NFC. DEC-029 requires original-source mapping; DEC-036 selects its span units, but detailed mapping remains open. For non-universal raw escapes, the user rejected both proposed alternatives—all other backslashes literal, or a delimiter-specific escape—and did not select a replacement; this is a blocker (LP-24).
+DEC-032 specifies recognized physical line endings, DEC-035 specifies Unicode-escape eligibility, validation, and generated line-break behavior, and DEC-036 specifies mixed-origin CRLF and whole-source NFC. DEC-029 requires original-source mapping; DEC-036 selects its span units, but detailed mapping remains open. For non-universal raw escapes, the user first rejected both proposed alternatives—all other backslashes literal, or a delimiter-specific escape—and later selected literal backslashes after reviewing NewLang's scanner (DEC-055).
 
-**Decision DEC-028 — approved:** For integer `base#number` literals, the decimal base is from 2 through 36, with digit values represented by `0`–`9` and case-insensitive `A`–`Z`/`a`–`z` as applicable. A single underscore may separate digits in an integer literal, but may not occur immediately after a radix prefix or `#` as a digit separator. Accept both lowercase and uppercase radix-marker letters (`0b`/`0B`, `0o`/`0O`, `0d`/`0D`, and `0x`/`0X`). Leading zeros in unmarked decimal integers do not change the base: `012` means decimal twelve. Support typed numeric suffixes; their exact syntax, allowed types, and application to particular numeric forms remain open.
+The raw-string question concerns spellings such as `` `END"\n"END` ``: whether `\n` contributes literal backslash and `n`, or has some escape meaning. It does not reopen global `\u`/`\U` translation, which already applies inside raw strings. The user requested this clarification without selecting a replacement rule.
+
+**Decision DEC-028 — approved:** For integer `base#number` literals, the decimal base is from 2 through 36, with digit values represented by `0`–`9` and case-insensitive `A`–`Z`/`a`–`z` as applicable. A single underscore may separate digits in an integer literal, but may not occur immediately after a radix prefix or `#` as a digit separator. Accept both lowercase and uppercase radix-marker letters (`0b`/`0B`, `0o`/`0O`, `0d`/`0D`, and `0x`/`0X`). Leading zeros in unmarked decimal integers do not change the base: `012` means decimal twelve. Support typed numeric suffixes; DEC-047 specifies their spelling and radix disambiguation. The meanings of individual suffixes and allowed numeric types remain open.
 
 **Decision DEC-029 — approved:** Adopt the following lexer and source-location rules:
 
@@ -36,8 +38,8 @@ DEC-032 specifies recognized physical line endings, DEC-035 specifies Unicode-es
 - Use longest-match tokenization for the selected token set; recognize comments and literals as such rather than interpreting their contents as operators. Comments separate tokens: `a/*x*/b` yields two identifiers, not `ab`.
 - Report malformed recognized tokens explicitly with source locations, including unterminated comments/literals, malformed escapes, and invalid numeric digits. The boundaries of malformed numeric-looking sequences and the error-recovery policy remain open.
 - Treat leading `+` and `-` as operators, not part of numeric tokens; an exponent sign belongs to the numeric literal.
-- Ordinary character and string literals cannot contain unescaped physical line breaks; DEC-035 extends this restriction to escape-generated line breaks. Escaped delimiters, backslashes, named escapes, fixed control escapes, braced hex escapes, and generated-backslash interactions are specified in DEC-029/030/035/039–045. Raw-string non-universal backslashes remain open (LP-24).
-- Support decimal floats such as `1.5` and `1e3`, and hexadecimal floats such as `0x1.8p+2` with a mandatory `p`/`P` binary exponent. Exact grammar, standard edition, suffixes, and token boundaries remain open.
+- Ordinary character and string literals cannot contain unescaped physical line breaks; DEC-035 extends this restriction to escape-generated line breaks. Escaped delimiters, backslashes, named escapes, fixed control escapes, braced hex escapes, and generated-backslash interactions are specified in DEC-029/030/035/039–045. Raw-string non-universal backslashes are literal (DEC-055).
+- Support decimal floats such as `1.5` and `1e3`, and hexadecimal floats such as `0x1.8p+2` with a mandatory `p`/`P` binary exponent. DEC-033 specifies their shapes and DEC-047 specifies suffix spelling; the exact standard edition and further numeric boundaries remain open.
 - Attach original-source spans to lexer tokens and operator/operand tree nodes, preserving mappings through universal-character translation and normalization. DEC-036 specifies byte-offset units; detailed mapping behavior remains open.
 
 **Decision DEC-030 — approved:** In ordinary character and string literals:
@@ -45,9 +47,9 @@ DEC-032 specifies recognized physical line endings, DEC-035 specifies Unicode-es
 - A character literal must produce exactly one Unicode scalar value after escape processing. For example, `'😀'` is one scalar; a sequence of two scalars is not a valid character literal, even if it is perceived as one character.
 - `\N{name}` supports Unicode 18 character names and official aliases, with ASCII case-insensitive matching and otherwise exact spacing/punctuation; it resolves to one scalar, not a named sequence (DEC-030/040).
 - In an ordinary string, a backslash immediately followed by a physical line ending continues the string: remove the backslash, the line ending, and any immediately following spaces and tabs. This continuation is not allowed in character literals. DEC-032 specifies recognized physical line endings; DEC-035 extends string continuation to escape-generated endings.
-- An unrecognized ordinary escape, such as `\q`, is an error. This rule does not decide the separate non-universal raw-string escape behavior (LP-24).
+- An unrecognized ordinary escape, such as `\q`, is an error. This rule does not apply to raw strings, where non-universal backslashes are literal (DEC-055).
 
-DEC-039–045 specify the remaining ordinary escape forms, validation, name lookup, and interactions with global translation. Non-universal raw-string backslashes remain a separate unresolved question (LP-24).
+DEC-039–045 specify the remaining ordinary escape forms, validation, name lookup, and interactions with global translation. Non-universal raw-string backslashes are literal (DEC-055).
 
 **Decision DEC-031 — approved:** Source files use UTF-8 only; DEC-029's malformed-input diagnostics and optional initial UTF-8 BOM apply. Use Unicode 18.0.0 consistently for identifier properties, identifier normalization, and Unicode character-name data. The language specification pins this exact data version; changing it requires a deliberate specification revision rather than silently following a compiler or host-runtime update.
 
@@ -70,17 +72,17 @@ hex-float      = ("0x" | "0X")
                  binary-exp
 ```
 
-`digit` is an ASCII decimal digit, and `hex-digit` is an ASCII decimal digit or `A`–`F`/`a`–`f`. Thus a significand has at least one digit, hexadecimal floats require a `p`/`P` exponent, and a single underscore used as a digit separator appears only between digits of the same component. For example, `.5`, `1.`, `1e3`, `0x1p0`, `0x1.p0`, and `0x.8p0` are supported. The syntax of any suffix and the exact ISO/IEEE reference edition remain open.
+`digit` is an ASCII decimal digit, and `hex-digit` is an ASCII decimal digit or `A`–`F`/`a`–`f`. Thus a significand has at least one digit, hexadecimal floats require a `p`/`P` exponent, and a single underscore used as a digit separator appears only between digits of the same component. For example, `.5`, `1.`, `1e3`, `0x1p0`, `0x1.p0`, and `0x.8p0` are supported. DEC-047 specifies suffix spelling; the exact ISO/IEEE reference edition remains open.
 
-Assuming `foo` is not a valid suffix, tokenize `1.foo` as the float `1.` followed by identifier `foo`, to which DEC-008's implicit `APPLY` rule applies. Report an invalid-digit error for `0b102`; also report an invalid-digit error for `123foo` when `foo` is not a valid suffix. These decisions do not by themselves determine every other number/identifier boundary or the suffix grammar (LP-14/25).
+Tokenize `1.foo` as the float `1.` followed by identifier `foo`, to which DEC-008's implicit `APPLY` rule applies. Report an invalid-digit error for `0b102` and `123foo`. Under DEC-047, a suffix must start with `#`, so an attached bare `foo` cannot be a suffix. These decisions do not by themselves determine every other number/identifier boundary (LP-14/25).
 
 **Decision DEC-034 — approved:** Apply these additional numeric-boundary rules:
 
 - After an operand, `.5` remains a floating-point token under context-independent longest matching. For example, `a.5`, `a .5`, and `a/*comment*/.5` contain identifier `a` followed by float `.5`, with implicit `APPLY`.
-- If a floating-point core ending in a digit is immediately followed by an identifier that is not a valid suffix, report an invalid-digit error. For example, `1.2foo` and `1e3foo` are errors when `foo` is not a suffix. The selected `1.foo` behavior is unchanged: its float core ends in a dot.
+- If a floating-point core ending in a digit is immediately followed by a bare identifier, report an invalid-digit error. For example, `1.2foo` and `1e3foo` are errors; DEC-047 requires a suffix to start with `#`. The selected `1.foo` behavior is unchanged: its float core ends in a dot.
 - An exponent introducer recognized for a numeric literal must be followed by decimal exponent digits after any optional sign. Incomplete exponents such as `1e+` and `0x1p` are malformed numeric literals.
 
-For these malformed numeric patterns, issue the specified diagnostic rather than splitting back to an earlier valid token. Exact typed-suffix syntax and precedence against exponent-like suffixes remain open (LP-25).
+For these malformed numeric patterns, issue the specified diagnostic rather than splitting back to an earlier valid token. DEC-047 separates suffixes from exponent markers with `#`; further numeric boundary cases remain open (LP-25).
 
 **Decision DEC-035 — approved:** Apply these rules to global universal-character translation:
 
@@ -89,7 +91,7 @@ For these malformed numeric patterns, issue the specified diagnostic rather than
 - Translate in one pass. A backslash produced by an escape cannot itself start another universal-character escape. For example, `\u005Cu0041` produces the characters `\u0041`, without translating them again. A later original-source backslash can still be eligible under the rule above.
 - Escape-generated hard-break characters have the same lexical effects as the physical endings in DEC-032: they terminate line comments, are forbidden unescaped in ordinary character and string literals, and are normalized to LF in raw strings. They may also participate in ordinary-string continuation, extending DEC-030's physical-only rule. After translation, remove the backslash, line ending, and immediately following spaces and tabs; character literals still cannot use continuation. The backslash may itself be generated: `"\u005C\u000A"` produces an empty ordinary string.
 
-DEC-036 specifies mixed-origin CRLF grouping and the phase ordering relative to normalization. Detailed original-source mapping remains open (LP-23). The unrelated non-universal raw-string escape rule remains unresolved (LP-24).
+DEC-036 specifies mixed-origin CRLF grouping and the phase ordering relative to normalization. Detailed original-source mapping remains open (LP-23). Non-universal raw-string backslashes are literal (DEC-055).
 
 **Decision DEC-036 — approved:** Apply these source-processing and location rules:
 
@@ -99,7 +101,7 @@ DEC-036 specifies mixed-origin CRLF grouping and the phase ordering relative to 
 - Represent original-source spans on lexer tokens and operator/operand tree nodes as zero-based, half-open UTF-8 byte ranges `[start,end)`. Count an initial UTF-8 BOM in these offsets even though it produces no token: an `a` immediately after the BOM has span `[3,4)`. Preserve mappings back through Unicode translation and source and identifier normalization.
 - Display diagnostic locations using physical lines and columns in the original file. Escape-generated line breaks do not advance the physical line count; translated logical locations may be provided additionally. For example, in `// x\u000A y` on one physical line, `y` is on physical line 1 even though it is on translated logical line 2. Human-facing columns are one-based and count Unicode scalar values in the original physical source line; tabs count as one column (DEC-046). Editor protocol positions are converted separately from original UTF-8 byte spans to the negotiated encoding.
 
-The detailed mapping of normalized characters and nodes back to original bytes, including canonical composition and reordering, remains open (LP-23). Non-universal raw-string escapes and typed numeric-suffix syntax remain separate blockers (LP-24/25).
+The detailed mapping of normalized characters and nodes back to original bytes, including canonical composition and reordering, remains open (LP-23). Non-universal raw-string backslashes are literal (DEC-055); DEC-047 specifies numeric suffix syntax.
 
 Other raw-string syntaxes are retained below as comparisons; they are not selected.
 
@@ -140,7 +142,7 @@ NewLang scanner prototype:
 `END"Raw content: `, "quotes", and \slashes"END`
 ```
 
-The NewLang tagged-backtick form is selected by DEC-026; DEC-027 specifies its tag characters and newline normalization. Other examples are comparisons, not selections. Non-universal raw escape and delimiter-collision behavior remain open.
+The NewLang tagged-backtick form is selected by DEC-026; DEC-027 specifies its tag characters and newline normalization. Other examples are comparisons, not selections. DEC-055 makes non-universal raw backslashes literal; as a consequence, raw content cannot contain its own closing sequence `"TAG` `` ` ``, so a different tag must be chosen.
 
 External references: [Go string literals](https://go.dev/ref/spec#String_literals), [Rust raw string literals](https://doc.rust-lang.org/reference/tokens.html#raw-string-literals), [C++ string literals](https://en.cppreference.com/w/cpp/language/string_literal), [C# raw string literals](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/raw-string), and [Python string and bytes literals](https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals). Experiment evidence is in [GenLang's lexical specification](/bigdata/KAI/projects/GenLang/docs/language.md), [its generated token definitions](/bigdata/KAI/projects/GenLang/packages/genlang/src/combined-definitions.json), [NewLang's syntax notes](/bigdata/KAI/NewLang/IDEAS/Syntax.txt), [NewLang's scanner](/bigdata/KAI/NewLang/parser/NLparser/Scanner.cc), and [LangLLVM's PEG](/bigdata/KAI/projects/LangLLVM/src/mylang.pegjs).
 
@@ -162,24 +164,25 @@ This table consolidates the currently agreed source forms; it is an inventory, n
 | Named character escape | `\N{name}` | Looks up Unicode 18.0.0 character names and name aliases, case-insensitively; names are single-scalar only, with no named sequences (DEC-030/040). Unknown names are errors. |
 | Character literal | `'...'` | Whole-source NFC precedes tokenization and ordinary escapes; the decoded result must be exactly one Unicode scalar, with no post-escape normalization (DEC-030/039). No unescaped line breaks or continuation. |
 | Ordinary string literal | `"..."` | Whole-source NFC precedes tokenization and ordinary escapes. No unescaped line breaks; backslash followed by a line ending continues the string, removing both and immediately following spaces/tabs (DEC-030/035). Decoded values are not normalized again after escapes (DEC-039). |
-| Raw string literal | `` `TAG"..."TAG` `` | Tags match `[A-Za-z0-9_]*` after whole-source NFC, including empty, without a fixed length limit. Physical and escape-generated line endings normalize to LF, including LS and PS (DEC-032/035/036). Non-universal raw escape behavior remains a blocker (Q-016, LP-24). |
+| Raw string literal | `` `TAG"..."TAG` `` | Tags match `[A-Za-z0-9_]*` after whole-source NFC, including empty, without a fixed length limit. Physical and escape-generated line endings normalize to LF, including LS and PS (DEC-032/035/036). Non-universal backslashes are literal: `` `END"\n"END` `` contains backslash and `n` (DEC-055). Global `\u`/`\U` translation still applies first (DEC-027). |
 | Perl-style character/string escapes | `\a`, `\b`, `\cX`, `\e`, `\f`, `\n`, `\N{...}`, `\r`, `\t`, `\v`, `\x{...}` | DEC-030/040–045 select named single-scalar lookup, fixed control escapes, `\x{hex}`, and no `\N{U+...}`; `\o{...}` is not selected. A generated backslash may start any ordinary escape but cannot restart global Unicode translation. For `\cX`, `?` maps to DEL; ASCII `@`–`~` maps to `X & 0x1F`; other values are errors. |
-| Integer literal | Decimal digits; `0b`/`0B`, `0o`/`0O`, `0d`/`0D`, `0x`/`0X`; or `base#number` | Bases 2–36 for `base#number`; case-insensitive letter digits; single `_` only between digits. Unmarked leading zeros remain decimal (DEC-028). `0b102` is an invalid-digit error; `123foo` is also an invalid-digit error if `foo` is not a valid suffix (DEC-033). Other suffix and boundary/range rules remain open (Q-014). |
-| Floating-point literal | Decimal or hexadecimal form as specified in DEC-033 | Hexadecimal floats require a `p`/`P` binary exponent; single `_` digit separators occur only between digits of a component. DEC-034 specifies additional malformed-number boundaries. Leading signs are operators; exponent signs are part of the literal. Typed suffix spelling/application, remaining boundaries, exact ISO/IEEE edition, and precision rules remain open (Q-014). |
+| Integer literal | Decimal digits; `0b`/`0B`, `0o`/`0O`, `0d`/`0D`, `0x`/`0X`; or `base#number` | Bases 2–36 for `base#number`; case-insensitive letter digits; single `_` only between digits. Unmarked leading zeros remain decimal (DEC-028). `0b102` and `123foo` are invalid-digit errors (DEC-033/047). Further boundary/range rules remain open (Q-014). |
+| Floating-point literal | Decimal or hexadecimal form as specified in DEC-033 | Hexadecimal floats require a `p`/`P` binary exponent; single `_` digit separators occur only between digits of a component. DEC-034 specifies additional malformed-number boundaries. Leading signs are operators; exponent signs are part of the literal. DEC-047 specifies suffix spelling; remaining boundaries, exact ISO/IEEE edition, and precision rules remain open (Q-014). |
+| Numeric suffix | `#` followed by `[A-Za-z0-9]+` | ASCII case-insensitive; no empty body or underscore. After an unmarked integer from 2 through 36, the first `#` selects radix notation and a second `#` selects a suffix. Use `0d` to force decimal interpretation (DEC-047). |
 | Grouping / collection delimiters | `(` `)`, `{` `}`, `[` `]` | Parentheses group; braces delimit function expressions/bodies; square brackets delimit template parameters/arguments. Full grammar remains open (Q-015). |
 | Member-access / dot operator | `.` | Left-associative; exact operator form/semantics remain open (Q-007). |
-| Function type arrow | `->` | Used in `(INPARAMS) -> (OUTPARAMS)` and as a function-definition operator; non-associative (DEC-037). Mixed ties with `.` and other form details remain open (LP-26/Q-007). |
-| Binding / declaration markers | `:` `:=` `::=` | Name-first forms: constant, variable, and type declarations respectively; each may be followed by `[TEMPLATEPARAMS]`. Detailed declaration grammar remains open (Q-009/010). |
+| Function type arrow | `->` | Used in `(INPARAMS) -> (OUTPARAMS)` and as a function-definition operator; non-associative (DEC-037). `.` binds tighter (DEC-049); other form details remain open (Q-007). |
+| Binding operators | `:` `:=` `::=` | Constant, variable, and type binding meanings respectively; each requires a left `@name` operand (DEC-052). Other binding/type/initializer semantics remain open (Q-009/010). |
 | Initializer / assignment | `=` | Also appears as the initializer marker within a type form; expression form and semantics are tracked in Q-007/009. |
-| Name-declaration operator | `@` | Exact syntactic form/semantics remain open (Q-007). |
+| Name-declaration operator | `@name` | Supplies the required left operand for binding meanings of `:`, `:=`, and `::=` (DEC-052); detailed name-declaration semantics remain open (Q-007). |
 | Arithmetic / bitwise / comparison / logical operators | `++` `--` `!` `~` `**` `*` `/` `%` `+` `-` `<<` `>>` `&` `^` <code>&#124;</code> `<` `<=` `>` `>=` `==` `!=` `&&` <code>&#124;&#124;</code> | `**` is exponentiation and right-associative; `^` is XOR. Other semantics and prefix/postfix forms are not fully specified (Q-007). Their relative levels are in DEC-022. |
 | Channel operator | `<-` | Retained from the adopted precedence inventory; exact meaning/form remains open (Q-007). |
 | Conditional operators | `?` `:` | `?` begins the conditional; `:` separates its arms. Exact grammar/associativity details are in Q-007. |
-| Other colon operator | `::` | Same relative level as `:`; no current use or meaning is selected (Q-007). |
+| Reserved token | `::` | Reserved, without a current expression meaning; retains its placement alongside `:` (DEC-050). |
 | Compound assignment operators | `+=` `-=` `*=` `/=` `%=` `&=` <code>&#124;=</code> `^=` `<<=` `>>=` | Present in the selected precedence inventory; detailed semantics/forms remain open (Q-007). |
 | Argument/element separator | `,` | Left-associative in the precedence table; exact grammar depends on the construct. |
-| Statement terminator | `;` | Selected as the loosest token; newlines do not insert or replace semicolons. Which productions require a terminator remains open (DEC-037/Q-014). |
-| Implicit parser tokens (not source spellings) | `APPLY`, `EMPTY` | Insert `APPLY` between adjacent operands and `EMPTY` between adjacent operators; unary prefix/postfix operators use `EMPTY` on the missing side (DEC-008/010). Semantic legality remains open (Q-008). |
+| Sequencing operator | `;` | Loosest operator; evaluates the left expression before the right. It is not a required statement terminator, and newlines do not insert it. Result-value and associativity details remain open (DEC-051). |
+| Implicit parser tokens (not source spellings) | `APPLY`, `EMPTY` | Make only the insertions needed to alternate operands and operators: `APPLY` between adjacent operands and `EMPTY` between adjacent operators (DEC-008/048). Unary prefix/postfix forms use `EMPTY` on the missing side (DEC-010). Semantic legality remains open (Q-008). |
 
 Longest-match tokenization, explicit lexical diagnostics, and original-source spans are specified by DEC-029/036. Detailed numeric boundaries and source-mapping mechanics are still open.
 
@@ -192,7 +195,7 @@ To restore alternation in the token stream:
 - Insert an implicit `APPLY` operator between two directly adjacent operands. It has no explicit source spelling.
 - Insert an implicit `EMPTY` operand between two directly adjacent operators. It has no explicit source spelling.
 
-The transformed sequence alternates operands and operators.
+The transformed sequence alternates operands and operators. DEC-048 confirms that these are minimal insertions, not additional construct-specific insertion rules.
 
 **Decision DEC-009 — approved:** Parse the resulting stream into a tree using operand-priority rules. Whether an inserted `APPLY` or `EMPTY` is legal in its resulting semantic context is checked during semantic analysis, not parsing.
 
@@ -200,9 +203,9 @@ The transformed sequence alternates operands and operators.
 
 The adopted relative operator priorities are listed in DEC-022. Semantic legality rules for inserted elements remain open (Q-008); operator semantics and the remaining associativity choices are tracked in Q-007.
 
-**Decision DEC-037 — approved:** The first parser targets the full selected language, including declarations, functions, types, blocks, classes/interfaces, packages, and imports; this choice does not complete their grammars or authorize implementation. Newlines remain whitespace, and `;` is explicit wherever a production requires a statement terminator; there is no automatic semicolon insertion. The exact productions requiring `;` remain open.
+**Decision DEC-037 — approved, sequencing interpretation refined by DEC-051:** The first parser targets the full selected language, including declarations, functions, types, blocks, classes/interfaces, packages, and imports; this choice does not complete their source forms or authorize implementation. Newlines remain whitespace, with no automatic semicolon insertion. DEC-051 specifies `;` as an expression-sequencing operator rather than a required statement terminator. DEC-053 places predefined-identifier recognition in semantic analysis, not in construct-specific parser productions.
 
-The `->` operator is non-associative: ungrouped chains such as `A -> B -> C` require explicit grouping or must be rejected. This does not decide the legality of grouped forms or mixed ties with the left-associative `.` at the same precedence. The offered mixed-tie rules were not selected; this remains a parser blocker (LP-26).
+The `->` operator is non-associative: ungrouped chains such as `A -> B -> C` require explicit grouping or must be rejected. This does not decide the legality of grouped forms. DEC-049 subsequently makes `.` bind tighter than `->`, resolving their former mixed-precedence tie (LP-26).
 
 The parser must produce both the selected operator/operand tree, including implicit `APPLY`/`EMPTY` representation, and a lossless concrete syntax tree for the original source. When produced, the concrete tree must preserve the original bytes, including an initial BOM, comments, whitespace, and escape spellings, so the input can be reconstructed even though parsing uses translated and NFC-normalized text. DEC-008's comment stripping applies to the operator/operand stream, not to this lossless representation. The mapping between the representations remains open (LP-23); DEC-038 specifies the CST policy for syntax errors.
 
@@ -224,6 +227,26 @@ The parser must produce both the selected operator/operand tree, including impli
 
 **Decision DEC-046 — approved:** Human-facing diagnostic columns are one-based and count Unicode scalar values in the original physical source line; each tab counts as one column. This convention does not change the zero-based, half-open original UTF-8 byte spans selected by DEC-036. Editor protocol positions are a separate representation and must be converted to the negotiated encoding.
 
+**Decision DEC-047 — approved:** Every numeric suffix starts with `#`, followed by one or more ASCII alphanumeric characters (`[A-Za-z0-9]+`), matched case-insensitively. The suffix body is not empty and contains no underscore. For an unmarked decimal integer whose value is from 2 through 36, the first `#` introduces `base#number`; a further `#` introduces its suffix. Invalid digits in this selected radix interpretation are errors, not a reason to fall back to a decimal suffix. Outside that base range, the first `#` can introduce a decimal suffix. An explicit `0d` marker forces decimal interpretation. Thus `16#ff` denotes base-16 digits, `36#1#I32` has suffix `I32`, and `0d16#ff` has a decimal core and suffix `ff`. Suffix names and type meanings remain semantic questions.
+
+**Decision DEC-048 — approved clarification of DEC-008/010:** Make the minimal insertions needed to produce an alternating operand/operator sequence: insert `APPLY` between adjacent operands and `EMPTY` between adjacent operators. Do not add construct-specific insertion requirements. The existing `EMPTY` representation of a missing unary operand remains unchanged.
+
+**Decision DEC-049 — approved:** Make `.` bind tighter than `->`, splitting their former shared priority level. Keep `.` left-associative and `->` non-associative; leave both below `APPLY` and above the next operator level.
+
+**Decision DEC-050 — approved:** Reserve `::` without assigning it a current expression meaning. Its existing relative placement alongside `:` remains unchanged.
+
+**Decision DEC-051 — approved:** `;` is an operator that sequentially processes expressions: evaluate the left expression before the right. It remains the loosest operator; it is not a required statement terminator. This refines DEC-037's earlier statement-terminator description without changing the newline-as-whitespace rule. Its result-value convention and associativity are not specified by this decision.
+
+**Decision DEC-052 — approved:** The binding meanings of `:`, `:=`, and `::=` require a left `@name` operand. These bindings are expressions in the operator/operand model, not a separate parser-recognized declaration category. This refines the bare-name sketches in DEC-011; `:` also retains its separate conditional role.
+
+**Decision DEC-053 — approved:** The parser does not recognize keyword-like meanings of predefined identifiers. Semantic analysis looks identifiers up in the symbol table; the resulting binding may carry the semantic meaning associated with a keyword-like construct. Redefinition therefore affects semantic interpretation, not lexical classification or a parser keyword recognizer.
+
+**Decision DEC-054 — approved:** TypeScript is confirmed as the implementation language for the next attempt. This supersedes the tentative status of DEC-004.
+
+**Decision DEC-055 — approved:** In raw strings, every backslash that is not part of a globally translated `\uXXXX`/`\UXXXXXXXX` universal-character escape (DEC-027/035) is literal content. Raw strings have no ordinary escapes, so `` `END"\n"END` `` contains a backslash followed by `n`. This matches NewLang's scanner prototype (KP-074) and supersedes the earlier rejection of this alternative.
+
+**Decision DEC-056 — approved:** The current `?` and `:` priorities are retained. Conditional nesting in the then-branch requires explicit parentheses, for example `a ? (b ? c : d) : e`; no special conditional parser rule or semantic reassociation is provided.
+
 **Decision DEC-021 — approved:** Use GenLang's numeric priority scale as the starting point for the next language. Set `@` to priority 190; keep `.` left-associative; use `^` for XOR and `**` for exponentiation; use `->` for function definition; and set `?` to priority 45. DEC-022 resolves the remaining relative-order conflicts and assigns `**` a priority.
 
 **Decision DEC-022 — approved:** Adopt the following relative precedence for the next language, from tightest to loosest. Each line is a distinct priority level; operators on one line share a level. This uses GenLang's relative ordering to resolve the historical conflicts, with the explicit placements below, and makes `**` right-associative.
@@ -232,7 +255,8 @@ The parser must produce both the selected operator/operand tree, including impli
 |---|---|---|
 | Tightest | `@` | No associativity specified; name-declaration operator. |
 |  | implicit `APPLY`, `(` `)` `{` `}` `[` `]` | APPLY is left-associative; delimiters group syntax. |
-|  | `.` `->` | `.` is left-associative; `->` means function definition and is non-associative (DEC-037). Mixed ties remain open (LP-26). |
+|  | `.` | Left-associative member access; tighter than `->` (DEC-049). |
+|  | `->` | Function definition/type arrow; non-associative (DEC-037). |
 |  | `++` `--` `!` `~` | No infix associativity specified in the GenLang table; prefix/postfix forms and semantics remain subject to Q-007. |
 |  | `**` | Right-associative exponentiation; one level tighter than `*`. |
 |  | `*` `/` `%` | Left-associative. |
@@ -247,32 +271,56 @@ The parser must produce both the selected operator/operand tree, including impli
 |  | <code>&#124;&#124;</code> | Left-associative logical OR. |
 |  | `<-` | No associativity specified; source describes a channel operation. |
 |  | `?` | Right-associative; begins a ternary conditional. |
-|  | `:` `::` | `:` is right-associative and separates a ternary conditional; `::` has no specified meaning/use or associativity. |
-|  | `=` `:=` `::=` `+=` `-=` `*=` `/=` `%=` `&=` <code>&#124;=</code> `^=` `<<=` `>>=` | Assignment operators are right-associative. `:=` and `::=` are declaration markers (DEC-011), placed at this level without thereby making them expression operators. |
+|  | `:` `::` | `:` is right-associative and has conditional and binding meanings; `::` is reserved (DEC-050/052). |
+|  | `=` `:=` `::=` `+=` `-=` `*=` `/=` `%=` `&=` <code>&#124;=</code> `^=` `<<=` `>>=` | Assignment/binding operators are right-associative. Binding meanings of `:=` and `::=` require a left `@name` operand (DEC-052). |
 |  | `,` | Left-associative separator. |
-| Loosest | `;` | Statement terminator. |
+| Loosest | `;` | Expression sequencing; left expression is evaluated before the right. Associativity remains unspecified (DEC-051). |
 
-**Decision DEC-023 — approved:** Place `::` at the same relative precedence level as `:`, and place `:=` and `::=` at the same level as `=`. These are relative placements only; the meanings selected in DEC-011 remain unchanged.
+**Decision DEC-023 — approved:** Place `::` at the same relative precedence level as `:`, and place `:=` and `::=` at the same level as `=`. These are relative placements only; DEC-052 subsequently clarifies their binding-expression interpretation and required left `@name` operand.
 
-`**` occupies the level immediately above `*`; no numeric priorities are part of this table. `::` is placed with `:` despite having no current use case. The `:=` variable and `::=` type declaration markers from DEC-011 are placed with `=` in this relative ordering; these are declaration markers, not expression operators.
+`**` occupies the level immediately above `*`; no numeric priorities are part of this table. `::` remains reserved at the level of `:`. The `:=` variable and `::=` type binding operators from DEC-011/052 are placed with `=` in this relative ordering.
 
-The table adopts GenLang's relative order for APPLY versus `.`, bitwise versus comparison operators, and `?` versus assignment/`:`, resolving those historical differences for this design. The placement of `::` and the declaration markers is explicitly selected here rather than copied from GenLang. Historical source disagreements remain documented in the project knowledge view. Q-007 tracks operator meanings/forms and unresolved associativity, not these adopted relative priorities.
+The table adopts GenLang's relative order for APPLY versus `.`, bitwise versus comparison operators, and `?` versus assignment/`:`, resolving those historical differences for this design. The placement of reserved `::` and the binding operators is explicitly selected here rather than copied from GenLang. Historical source disagreements remain documented in the project knowledge view. Q-007 tracks operator meanings/forms and unresolved associativity, not these adopted relative priorities.
+
+### Conditional precedence check
+
+**Analysis, not an additional parser rule:** With `?` tighter than `:` and both right-associative, an ordinary binary-precedence tree has the following shapes (KP-073):
+
+| Source | Binary-operator grouping |
+|---|---|
+| `a ? b : c` | `(a ? b) : c` |
+| `a ? b : c ? d : e` | `(a ? b) : ((c ? d) : e)` |
+| `a ? b ? c : d : e` | `(a ? (b ? c)) : (d : e)` |
+
+The else-branch nesting has the familiar conditional subtree, but the then-branch nesting does not: the usual meaning of the last source is `a ? (b ? c : d) : e`, represented here as `(a ? ((b ? c) : d)) : e`. Explicit parentheses produce that tree. A later semantic pairing or reinterpretation could account for the unparenthesized form, but scalar priorities alone do not produce this familiar then-branch subtree. DEC-056 resolves this: then-branch nesting requires explicit parentheses, and the current priorities are retained (LP-19).
+
+**Analysis of a rejected alternative: `?` and `:` at one priority (KP-074; not adopted, see DEC-056).**
+
+| Source | Same level, right-associative | Same level, left-associative |
+|---|---|---|
+| `a ? b : c` | `a ? (b : c)` | `(a ? b) : c` |
+| `a ? b : c ? d : e` | `a ? (b : (c ? (d : e)))` | `(((a ? b) : c) ? d) : e` |
+| `a ? b ? c : d : e` | `a ? (b ? (c : (d : e)))` | `(((a ? b) ? c) : d) : e` |
+
+Right associativity gives the shape "condition `?` (then `:` else)" and handles else-chains, but then-branch nesting would require `a ? ((b ? (c : d)) : e)`. That needs one `:` to group to its left over another `:` at the same level, which conflicts with right associativity. Left associativity also breaks else-chains, and non-associativity rejects even `a ? b : c`. No scalar priority/associativity assignment produces familiar unparenthesized then-branch nesting, because the middle operand is delimited on both sides like a bracketed subexpression. C, for example, parses it with a separate `? expression :` production. Keeping `?` on the `:` line would also place it at the same level as binding `:` and reserved `::`.
 
 ## Declarations and bindings
 
-**Decision DEC-011 — approved:** Adopt the name-first binding model from [LangLLVM's declaration design](/bigdata/KAI/projects/LangLLVM/src/Design:%20Declarations,%20Definitions.md):
+**Decision DEC-011 — approved, refined by DEC-052:** Adopt the name-first binding model from [LangLLVM's declaration design](/bigdata/KAI/projects/LangLLVM/src/Design:%20Declarations,%20Definitions.md). With the required `@name` left operand, the illustrative forms are:
 
 ```text
-NAME :    [TEMPLATEPARAMS] (TYPE | INITEXPR);  // constant
-NAME :=   [TEMPLATEPARAMS] (TYPE | INITEXPR);  // variable
-NAME ::=  [TEMPLATEPARAMS] (TYPE | INITEXPR);  // type
+@NAME :    [TEMPLATEPARAMS] (TYPE | INITEXPR)  // constant
+@NAME :=   [TEMPLATEPARAMS] (TYPE | INITEXPR)  // variable
+@NAME ::=  [TEMPLATEPARAMS] (TYPE | INITEXPR)  // type
 ```
 
-In that model, `TYPE` may itself include an initializer expression; the design note also sketches `=` as the initializer marker within a type form. Template parameters and arguments use square brackets (`NAME[ARGS]`). Function expressions use `{ BODY }`, and function types use `(INPARAMS) -> (OUTPARAMS)`.
+In that model, `TYPE` may itself include an initializer expression; the design note also sketches `=` as the initializer marker within a type form. These are sketches, not a complete grammar; the trailing statement terminators from the historical note are not requirements under DEC-051. Template parameters and arguments use square brackets (`NAME[ARGS]`). Function expressions use `{ BODY }`, and function types use `(INPARAMS) -> (OUTPARAMS)`.
 
 This selects the LangLLVM model over GenLang's type-first declaration syntax. It does not settle scope and visibility, initialization and inference details, or whether declarations without bodies are distinct from definitions (Q-009, Q-010).
 
 **Decision DEC-012 — approved:** The language has no keywords as a separate lexical category; keyword-like constructs are represented by predefined identifiers. While such an identifier has not been redefined, its semantic effect should closely emulate the corresponding construct as if it were a keyword. Redefining it means it no longer has that predefined semantic effect. Name lookup uses the namespace hierarchy in DEC-018; exact redefinition semantics remain open (Q-009).
+
+DEC-053 confirms that the parser does not recognize these meanings; semantic analysis obtains them through symbol-table lookup.
 
 Square brackets are the selected delimiters for template parameters and arguments (DEC-011); no angle-bracket template syntax is adopted.
 
@@ -321,20 +369,20 @@ This requirement constrains the implementation's control representation and call
 
 ## Questions to resolve before parser implementation
 
-The decisions above establish design direction, but not a complete grammar. DEC-037 selects the full language as the first parser's target; its applicable syntax and output contract still require the work below. No implementation has been authorized by this selection.
+The decisions above establish design direction, but not a complete grammar. DEC-037 selects the full language as the first parser's target; its applicable syntax and output contract still require the work below. These questions block their affected components or a complete full-scope parser, not necessarily every independent implementation step. No implementation has been authorized by this selection.
 
 ### Scope and general parser blockers
 
-1. **Parser scope — selected:** Target the full selected language (DEC-037), including the declaration, function, type, block, object, package, and import forms. Their missing productions remain blockers; features that were never selected are not added by this choice.
-2. **What is the remaining lexical grammar?** DEC-024 through DEC-046 select basic token forms, global universal-character translation and source NFC, Unicode data and line-ending and whitespace behavior, several numeric and quoted-literal details, longest-match tokenization, diagnostics, and source positions. Specify the remaining rules, including raw-string content behavior (Q-016), remaining numeric boundaries, and which productions require `;` (Q-014).
-3. **What is the exact expression grammar?** For each expression operator in DEC-022, specify whether it can occur prefix, infix, postfix, or in another form; which operands/arity it takes; how delimiters and nesting work; and how equal-precedence operators associate. DEC-037 makes `->` non-associative; settle its mixed ties with `.` (LP-26), ternary `? :` parsing, and where implicit `APPLY`/`EMPTY` insertion applies, including expression boundaries (Q-007/008). `::` has a precedence placement but no selected syntactic use; define its role or clarify whether it is reserved without an expression form.
-4. **What is the detailed parse-tree contract?** DEC-037 selects a lossless original-source concrete syntax tree plus the operator/operand tree; DEC-038 selects recovery with a lossless CST for syntax errors. Define node contracts for operands, operators, grouping, declarations, and source locations, and how both trees map through Unicode translation and normalization to original UTF-8 bytes. Human-facing diagnostic column units/indexing (LP-29), recovery mechanics and limits, malformed encoding or lexical errors, and the operator/operand tree on errors remain open.
+1. **Parser scope and language — selected:** Target the full selected language (DEC-037) in TypeScript (DEC-054). Binding expressions and predefined identifiers use the generic operator/operand model (DEC-052/053); missing semantic forms do not automatically require separate parser productions. Features that were never selected are not added by this choice.
+2. **What is the remaining lexical grammar?** DEC-024 through DEC-056 select basic token forms, global universal-character translation and source NFC, Unicode data and line-ending and whitespace behavior, numeric suffix spelling/radix disambiguation, several numeric and quoted-literal details, longest-match tokenization, diagnostics, and source positions. Raw-string backslashes are literal (DEC-055). Specify further numeric boundaries (Q-014).
+3. **What structural expression rules remain?** Minimal `APPLY`/`EMPTY` insertion is confirmed by DEC-048; legality remains semantic under DEC-009/010. `.` binds tighter than `->` (DEC-049), and `::` is reserved (DEC-050). Specify remaining delimiter/grouping structure and any still-unspecified associativity needed to build trees. Then-branch conditional nesting requires parentheses (DEC-056).
+4. **What is the detailed parse-tree contract?** DEC-037 selects a lossless original-source concrete syntax tree plus the operator/operand tree; DEC-038 selects recovery with a lossless CST for syntax errors. Define node contracts for operands, operators, grouping, declarations, and source locations, and how both trees map through Unicode translation and normalization to original UTF-8 bytes, including locations for implicit elements. DEC-046 specifies human-facing diagnostic columns. Recovery mechanics and limits, the result on malformed encoding or lexical errors, and the operator/operand tree on errors remain open.
 
 ### Blocking for the corresponding language forms
 
-5. **What are the declaration and definition productions?** Specify how the selected `:`, `:=`, and `::=` bindings are distinguished from expression uses; the grammar of optional type and initializer parts; the role of `=`; and whether declarations can omit bodies or be prototypes (Q-009/010). For keyword-like constructs represented by predefined identifiers (DEC-012), decide how syntax recognition works when identifiers are not a separate keyword token category and may be redefined.
-6. **What are the type, function, and block productions?** Specify type-expression syntax, template parameter/argument syntax and nesting, parameter and multiple-result syntax, function expression/body boundaries, and statement/block structure. The selected markers and forms in DEC-011 are not yet a complete grammar.
-7. **What source forms express namespaces, packages, imports, and the selected object model?** Specify their productions and how class/interface/member declarations are delimited and nested (Q-009/012). Runtime class, type-compatibility, and dispatch semantics can be specified separately.
+5. **Bindings and keyword-like meanings — semantic phase selected:** Binding meanings of `:`, `:=`, and `::=` require a left `@name` operand (DEC-052). `;` sequences expressions rather than terminating parser-recognized statements (DEC-051). Semantic analysis, not the parser, recognizes predefined-identifier meanings (DEC-053). Remaining type/initializer, prototype, and overload meanings belong to Q-009/010 unless they require new structural syntax.
+6. **What delimiter and collection structure is needed?** Specify type/function/template expression grouping, bracket nesting, parameter and multiple-result collections, and brace-delimited bodies where existing generic expression rules do not yet determine the tree. These are structural questions; permitted semantic forms need not be a separate parser grammar.
+7. **What source expressions express namespaces, packages, imports, and the selected object model?** Their remaining source and semantic forms are Q-009/012 questions. Under DEC-053, keyword-like identifiers need no parser recognizer; only additional lexical or structural syntax blocks the corresponding parser component.
 
 ### Can be deferred beyond parsing
 
