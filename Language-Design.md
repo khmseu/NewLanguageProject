@@ -12,17 +12,94 @@ The original NFC choice followed the general guidance in [UAX #31, Unicode 18.0.
 
 **Decision DEC-007 — approved:** Use the proposed identifier syntax in [NewLang's syntax notes](/bigdata/KAI/NewLang/IDEAS/Syntax.txt): an identifier starts with a code point having the Unicode `XID_Start` property, followed by zero or more code points having `XID_Continue` (`XID_Start XID_Continue*`, UAX #31 R1). No extra start characters are added. In particular, underscore may continue an identifier but may not start one under this rule.
 
-The Unicode property data version is not yet fixed (Q-006); implementations must use one consistent version rather than mixing property data across versions.
+DEC-031 fixes the Unicode data version and requires implementations to use it consistently.
 
 ## Comments, identifiers, and constants
 
-**Decision DEC-024 — approved:** Identifier names are case-sensitive. Accept identifiers matching `XID_Start XID_Continue*`; derive the internal name used for lookup/equality by applying NFKC, and retain the NFC form for user interaction. This supersedes DEC-006's NFC equality key while preserving case sensitivity and the user-facing NFC representation. The Unicode property-data version remains open (Q-006).
+**Decision DEC-024 — approved:** Identifier names are case-sensitive. Accept identifiers matching `XID_Start XID_Continue*`; derive the internal name used for lookup/equality by applying NFKC, and retain the NFC form for user interaction. This supersedes DEC-006's NFC equality key while preserving case sensitivity and the user-facing NFC representation. DEC-031 fixes the Unicode data version; DEC-036 specifies whole-source NFC before tokenization.
 
 **Decision DEC-025 — approved:** Use `//` line comments and `/* ... */` block comments; block comments do not nest. Character literals use single quotes (`'...'`) and ordinary strings use double quotes (`"..."`). Integers may be written as unmarked decimal, with `0b`, `0o`, `0d`, or `0x` base markers, or using `base#number`. Apply C++-style universal-character names `\uXXXX` and `\UXXXXXXXX` to source characters generally, and support the Perl-style escapes described in NewLang's syntax notes in character and ordinary string literals. Floating-point literals include decimal and hexadecimal forms from ISO floating-point language standards.
 
-The precise lexical productions remain to be specified: escape translation order relative to tokenization and normalization; character-literal cardinality; exact accepted Perl escape spellings and validation; radix-marker case, digit separators and range rules; and the ISO standard/version and suffix/precision grammar for floating-point literals (Q-014).
+The precise lexical productions remaining include numeric token boundaries and suffixes, and the ISO standard/version and precision grammar for floating-point literals (Q-014). Ordinary literal escape forms and their phase interactions are specified in DEC-039–045. Non-universal raw-string backslash behavior remains open (LP-24), as do detailed source mappings through translation and normalization (LP-23).
 
-**Decision DEC-026 — approved:** Raw strings use NewLang's tagged-backtick delimiter structure: opening backtick, tag, and double quote; content; then double quote, the same tag, and closing backtick. For example, `` `END"raw content"END` ``. The tag's allowed spelling and the literal's content, newline, and escape behavior remain open (Q-016).
+**Decision DEC-026 — approved:** Raw strings use NewLang's tagged-backtick delimiter structure: opening backtick, tag, and double quote; content; then double quote, the same tag, and closing backtick. For example, `` `END"raw content"END` ``. DEC-027 specifies tag characters and newline handling; non-universal raw escape behavior remains open (Q-016).
+
+**Decision DEC-027 — approved:** Translate `\uXXXX` and `\UXXXXXXXX` universal-character names globally before tokenization, including in comments and raw strings. Consequently, translated characters can affect comment and literal delimiters. Raw-string tags consist of zero or more ASCII letters, digits, or underscores (`[A-Za-z0-9_]*`), with no fixed length limit. Raw strings may span lines; recognized line endings in their contents are normalized to LF.
+
+DEC-032 specifies recognized physical line endings, DEC-035 specifies Unicode-escape eligibility, validation, and generated line-break behavior, and DEC-036 specifies mixed-origin CRLF and whole-source NFC. DEC-029 requires original-source mapping; DEC-036 selects its span units, but detailed mapping remains open. For non-universal raw escapes, the user rejected both proposed alternatives—all other backslashes literal, or a delimiter-specific escape—and did not select a replacement; this is a blocker (LP-24).
+
+**Decision DEC-028 — approved:** For integer `base#number` literals, the decimal base is from 2 through 36, with digit values represented by `0`–`9` and case-insensitive `A`–`Z`/`a`–`z` as applicable. A single underscore may separate digits in an integer literal, but may not occur immediately after a radix prefix or `#` as a digit separator. Accept both lowercase and uppercase radix-marker letters (`0b`/`0B`, `0o`/`0O`, `0d`/`0D`, and `0x`/`0X`). Leading zeros in unmarked decimal integers do not change the base: `012` means decimal twelve. Support typed numeric suffixes; their exact syntax, allowed types, and application to particular numeric forms remain open.
+
+**Decision DEC-029 — approved:** Adopt the following lexer and source-location rules:
+
+- Accept UTF-8 source, diagnose malformed UTF-8, and ignore an optional initial UTF-8 BOM in the token stream. DEC-031 selects UTF-8 as the only source encoding.
+- Use longest-match tokenization for the selected token set; recognize comments and literals as such rather than interpreting their contents as operators. Comments separate tokens: `a/*x*/b` yields two identifiers, not `ab`.
+- Report malformed recognized tokens explicitly with source locations, including unterminated comments/literals, malformed escapes, and invalid numeric digits. The boundaries of malformed numeric-looking sequences and the error-recovery policy remain open.
+- Treat leading `+` and `-` as operators, not part of numeric tokens; an exponent sign belongs to the numeric literal.
+- Ordinary character and string literals cannot contain unescaped physical line breaks; DEC-035 extends this restriction to escape-generated line breaks. Escaped delimiters, backslashes, named escapes, fixed control escapes, braced hex escapes, and generated-backslash interactions are specified in DEC-029/030/035/039–045. Raw-string non-universal backslashes remain open (LP-24).
+- Support decimal floats such as `1.5` and `1e3`, and hexadecimal floats such as `0x1.8p+2` with a mandatory `p`/`P` binary exponent. Exact grammar, standard edition, suffixes, and token boundaries remain open.
+- Attach original-source spans to lexer tokens and operator/operand tree nodes, preserving mappings through universal-character translation and normalization. DEC-036 specifies byte-offset units; detailed mapping behavior remains open.
+
+**Decision DEC-030 — approved:** In ordinary character and string literals:
+
+- A character literal must produce exactly one Unicode scalar value after escape processing. For example, `'😀'` is one scalar; a sequence of two scalars is not a valid character literal, even if it is perceived as one character.
+- `\N{name}` supports Unicode 18 character names and official aliases, with ASCII case-insensitive matching and otherwise exact spacing/punctuation; it resolves to one scalar, not a named sequence (DEC-030/040).
+- In an ordinary string, a backslash immediately followed by a physical line ending continues the string: remove the backslash, the line ending, and any immediately following spaces and tabs. This continuation is not allowed in character literals. DEC-032 specifies recognized physical line endings; DEC-035 extends string continuation to escape-generated endings.
+- An unrecognized ordinary escape, such as `\q`, is an error. This rule does not decide the separate non-universal raw-string escape behavior (LP-24).
+
+DEC-039–045 specify the remaining ordinary escape forms, validation, name lookup, and interactions with global translation. Non-universal raw-string backslashes remain a separate unresolved question (LP-24).
+
+**Decision DEC-031 — approved:** Source files use UTF-8 only; DEC-029's malformed-input diagnostics and optional initial UTF-8 BOM apply. Use Unicode 18.0.0 consistently for identifier properties, identifier normalization, and Unicode character-name data. The language specification pins this exact data version; changing it requires a deliberate specification revision rather than silently following a compiler or host-runtime update.
+
+**Decision DEC-032 — approved:** Recognize the Unicode 18 [UAX #14 hard line breaks](https://www.unicode.org/reports/tr14/tr14-57.html#LB4) as physical source-line endings: LF (U+000A), CR (U+000D), CRLF (U+000D U+000A), NEL (U+0085), VT (U+000B), FF (U+000C), LS (U+2028), and PS (U+2029). Count CRLF as one ending. This is the complete hard-break set in the [Unicode 18 line-break property data](https://www.unicode.org/Public/18.0.0/ucd/LineBreak.txt) and matches NewLang's listed line endings.
+
+These recognized physical endings terminate line comments, are normalized to LF in raw-string values (including LS and PS), and are eligible for ordinary-string continuation under DEC-030. DEC-035 extends these lexical effects to escape-generated line breaks; DEC-036 groups adjacent CR and LF even when their origins differ.
+
+**Decision DEC-033 — approved:** Use the following decimal and hexadecimal floating-point shapes, before any typed suffix:
+
+```text
+decimal-digits = digit (["_"] digit)*
+hex-digits     = hex-digit (["_"] hex-digit)*
+decimal-exp    = ("e" | "E") ["+" | "-"] decimal-digits
+binary-exp     = ("p" | "P") ["+" | "-"] decimal-digits
+decimal-float  = decimal-digits "." [decimal-digits] [decimal-exp]
+               | "." decimal-digits [decimal-exp]
+               | decimal-digits decimal-exp
+hex-float      = ("0x" | "0X")
+                 (hex-digits ["." [hex-digits]] | "." hex-digits)
+                 binary-exp
+```
+
+`digit` is an ASCII decimal digit, and `hex-digit` is an ASCII decimal digit or `A`–`F`/`a`–`f`. Thus a significand has at least one digit, hexadecimal floats require a `p`/`P` exponent, and a single underscore used as a digit separator appears only between digits of the same component. For example, `.5`, `1.`, `1e3`, `0x1p0`, `0x1.p0`, and `0x.8p0` are supported. The syntax of any suffix and the exact ISO/IEEE reference edition remain open.
+
+Assuming `foo` is not a valid suffix, tokenize `1.foo` as the float `1.` followed by identifier `foo`, to which DEC-008's implicit `APPLY` rule applies. Report an invalid-digit error for `0b102`; also report an invalid-digit error for `123foo` when `foo` is not a valid suffix. These decisions do not by themselves determine every other number/identifier boundary or the suffix grammar (LP-14/25).
+
+**Decision DEC-034 — approved:** Apply these additional numeric-boundary rules:
+
+- After an operand, `.5` remains a floating-point token under context-independent longest matching. For example, `a.5`, `a .5`, and `a/*comment*/.5` contain identifier `a` followed by float `.5`, with implicit `APPLY`.
+- If a floating-point core ending in a digit is immediately followed by an identifier that is not a valid suffix, report an invalid-digit error. For example, `1.2foo` and `1e3foo` are errors when `foo` is not a suffix. The selected `1.foo` behavior is unchanged: its float core ends in a dot.
+- An exponent introducer recognized for a numeric literal must be followed by decimal exponent digits after any optional sign. Incomplete exponents such as `1e+` and `0x1p` are malformed numeric literals.
+
+For these malformed numeric patterns, issue the specified diagnostic rather than splitting back to an earlier valid token. Exact typed-suffix syntax and precedence against exponent-like suffixes remain open (LP-25).
+
+**Decision DEC-035 — approved:** Apply these rules to global universal-character translation:
+
+- Use Java-style backslash eligibility. An original source backslash is eligible to start an escape if the immediately preceding translated character was produced by a universal-character escape, or if the translated output ends in an even number of consecutive backslashes. Count generated backslashes in that trailing run; the empty run has length zero. For example, source `\\u0041` remains `\\u0041` at this phase, while `\u005C\u0041` produces the characters `\A`.
+- An eligible `\u` requires exactly four following ASCII hexadecimal digits; an eligible `\U` requires eight. Consume exactly that many digits, leaving additional source characters for subsequent processing. Diagnose missing or non-hexadecimal digits and values that are not Unicode scalars, including surrogates and values above U+10FFFF. Adjacent surrogate escapes such as `\uD83D\uDE00` do not form a valid pair; a supplementary scalar can instead be written as `\U0001F600`.
+- Translate in one pass. A backslash produced by an escape cannot itself start another universal-character escape. For example, `\u005Cu0041` produces the characters `\u0041`, without translating them again. A later original-source backslash can still be eligible under the rule above.
+- Escape-generated hard-break characters have the same lexical effects as the physical endings in DEC-032: they terminate line comments, are forbidden unescaped in ordinary character and string literals, and are normalized to LF in raw strings. They may also participate in ordinary-string continuation, extending DEC-030's physical-only rule. After translation, remove the backslash, line ending, and immediately following spaces and tabs; character literals still cannot use continuation. The backslash may itself be generated: `"\u005C\u000A"` produces an empty ordinary string.
+
+DEC-036 specifies mixed-origin CRLF grouping and the phase ordering relative to normalization. Detailed original-source mapping remains open (LP-23). The unrelated non-universal raw-string escape rule remains unresolved (LP-24).
+
+**Decision DEC-036 — approved:** Apply these source-processing and location rules:
+
+- After global universal-character translation and before tokenization, normalize the entire translated source to NFC using the Unicode version in DEC-031. This applies to comments, identifiers, ordinary literals, and raw strings. Token matching, including ASCII raw-tag syntax and identifier `XID_Start XID_Continue*`, applies to the resulting stream. Identifier lookup names are still derived with NFKC, and the NFC form is retained for user interaction (DEC-024).
+- Whole-source NFC can change literal content and even token spelling. For example, an `e` followed by U+0301 in translated source normalizes to U+00E9; a character literal containing that sequence can therefore contain one scalar. U+037E GREEK QUESTION MARK normalizes to the ASCII semicolon `;` before tokenization. Ordinary literal escape processing occurs later; DEC-039 specifies that decoded literal values are not normalized again.
+- Recognize adjacent CR and LF as one CRLF ending even if either or both characters came from Unicode escapes. This applies to comment termination, raw-string LF normalization, and ordinary-string continuation; the latter removes both characters in the pair.
+- Represent original-source spans on lexer tokens and operator/operand tree nodes as zero-based, half-open UTF-8 byte ranges `[start,end)`. Count an initial UTF-8 BOM in these offsets even though it produces no token: an `a` immediately after the BOM has span `[3,4)`. Preserve mappings back through Unicode translation and source and identifier normalization.
+- Display diagnostic locations using physical lines and columns in the original file. Escape-generated line breaks do not advance the physical line count; translated logical locations may be provided additionally. For example, in `// x\u000A y` on one physical line, `y` is on physical line 1 even though it is on translated logical line 2. Human-facing columns are one-based and count Unicode scalar values in the original physical source line; tabs count as one column (DEC-046). Editor protocol positions are converted separately from original UTF-8 byte spans to the negotiated encoding.
+
+The detailed mapping of normalized characters and nodes back to original bytes, including canonical composition and reordering, remains open (LP-23). Non-universal raw-string escapes and typed numeric-suffix syntax remain separate blockers (LP-24/25).
 
 Other raw-string syntaxes are retained below as comparisons; they are not selected.
 
@@ -63,7 +140,7 @@ NewLang scanner prototype:
 `END"Raw content: `, "quotes", and \slashes"END`
 ```
 
-The NewLang tagged-backtick form is selected by DEC-026. Other examples are comparisons, not selections. The examples do not decide the new language's escape, newline, or delimiter-collision rules.
+The NewLang tagged-backtick form is selected by DEC-026; DEC-027 specifies its tag characters and newline normalization. Other examples are comparisons, not selections. Non-universal raw escape and delimiter-collision behavior remain open.
 
 External references: [Go string literals](https://go.dev/ref/spec#String_literals), [Rust raw string literals](https://doc.rust-lang.org/reference/tokens.html#raw-string-literals), [C++ string literals](https://en.cppreference.com/w/cpp/language/string_literal), [C# raw string literals](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/raw-string), and [Python string and bytes literals](https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals). Experiment evidence is in [GenLang's lexical specification](/bigdata/KAI/projects/GenLang/docs/language.md), [its generated token definitions](/bigdata/KAI/projects/GenLang/packages/genlang/src/combined-definitions.json), [NewLang's syntax notes](/bigdata/KAI/NewLang/IDEAS/Syntax.txt), [NewLang's scanner](/bigdata/KAI/NewLang/parser/NLparser/Scanner.cc), and [LangLLVM's PEG](/bigdata/KAI/projects/LangLLVM/src/mylang.pegjs).
 
@@ -73,19 +150,25 @@ This table consolidates the currently agreed source forms; it is an inventory, n
 
 | Token/category | Agreed source syntax | Notes / unresolved details |
 |---|---|---|
-| Line comment | `//` through the line ending | Exact line-ending handling remains part of Q-014. |
-| Block comment | `/* ... */` | Non-nested; ends at the first `*/`. |
-| Identifier | `XID_Start XID_Continue*` | Case-sensitive; NFKC internal name, retain NFC form for user interaction. Unicode property version is open (Q-006). |
-| Universal-character name | `\uXXXX`, `\UXXXXXXXX` | Accepted for source characters generally, not just inside literals. Translation phase, invalid code-point handling, and source-location mapping remain open (Q-014). |
-| Character literal | `'...'` | NewLang Perl-style escapes are supported. Character cardinality and the exact escape subset/validation remain open. |
-| Ordinary string literal | `"..."` | NewLang Perl-style escapes are supported. Exact escape subset, newline rules, and validation remain open. |
-| Raw string literal | `` `TAG"..."TAG` `` | The closing tag must match the opening tag. Tag grammar, newline behavior, and whether/how content is transformed remain open (Q-016). |
-| Perl-style character/string escapes | Examples in NewLang's notes: `\a`, `\b`, `\c`, `\e`, `\f`, `\n`, `\N{...}`, `\o{...}`, `\r`, `\t`, `\v`, `\x{...}` | The notes mark some forms as undecided; this list illustrates the family and does not settle the accepted subset. |
-| Integer literal | Decimal digits; `0b...`, `0o...`, `0d...`, `0x...`; or `base#number` | Radix-marker case, allowed bases/digits, separators, and range rules remain open (Q-014). |
-| Floating-point literal | Decimal or hexadecimal form from ISO floating-point standards | Exact standard/edition, grammar, suffixes, and precision rules remain open (Q-014). |
+| Source encoding | UTF-8 only; optional initial UTF-8 BOM | The BOM is ignored in the token stream, but counts in original byte offsets; malformed UTF-8 is diagnosed (DEC-029/031/036). |
+| Source normalization | NFC of the entire source after global universal-character translation, before tokenization | Applies to literals and comments as well as identifiers; can change token spelling (DEC-036). Original-byte mapping must be preserved. |
+| Physical line ending | LF, CR, CRLF, NEL, VT, FF, LS, or PS | Unicode 18 UAX #14 hard-break set; adjacent CR and LF count as one even when their origins differ (DEC-032/036). |
+| Inter-token whitespace | Unicode 18 `White_Space` property | Characters in the selected hard-break set retain line-ending behavior; all other `White_Space` characters separate tokens (DEC-032/044). |
+| Escape-generated line ending | Universal-character escape producing a recognized hard-break character, e.g. `\u000A` | Has the lexical effects of the corresponding physical line ending, including ordinary-string continuation (DEC-035). Original-source mapping remains open. |
+| Line comment | `//` through a recognized physical or escape-generated line ending | Comments separate tokens (DEC-029/032/035). |
+| Block comment | `/* ... */` | Non-nested; ends at the first `*/`; separates tokens. |
+| Identifier | `XID_Start XID_Continue*` | Applied after whole-source NFC; case-sensitive, with NFKC internal name and NFC user-facing form. Unicode data version 18.0.0 is pinned (DEC-031/036). |
+| Universal-character escape | `\uXXXX`, `\UXXXXXXXX` | Globally translated before tokenization using Java-style eligibility and one pass; malformed escapes and non-scalar values are errors (DEC-027/035). A generated backslash may start a later ordinary literal escape, but never another global Unicode translation (DEC-045). Original-source mapping details remain open. |
+| Named character escape | `\N{name}` | Looks up Unicode 18.0.0 character names and name aliases, case-insensitively; names are single-scalar only, with no named sequences (DEC-030/040). Unknown names are errors. |
+| Character literal | `'...'` | Whole-source NFC precedes tokenization and ordinary escapes; the decoded result must be exactly one Unicode scalar, with no post-escape normalization (DEC-030/039). No unescaped line breaks or continuation. |
+| Ordinary string literal | `"..."` | Whole-source NFC precedes tokenization and ordinary escapes. No unescaped line breaks; backslash followed by a line ending continues the string, removing both and immediately following spaces/tabs (DEC-030/035). Decoded values are not normalized again after escapes (DEC-039). |
+| Raw string literal | `` `TAG"..."TAG` `` | Tags match `[A-Za-z0-9_]*` after whole-source NFC, including empty, without a fixed length limit. Physical and escape-generated line endings normalize to LF, including LS and PS (DEC-032/035/036). Non-universal raw escape behavior remains a blocker (Q-016, LP-24). |
+| Perl-style character/string escapes | `\a`, `\b`, `\cX`, `\e`, `\f`, `\n`, `\N{...}`, `\r`, `\t`, `\v`, `\x{...}` | DEC-030/040–045 select named single-scalar lookup, fixed control escapes, `\x{hex}`, and no `\N{U+...}`; `\o{...}` is not selected. A generated backslash may start any ordinary escape but cannot restart global Unicode translation. For `\cX`, `?` maps to DEL; ASCII `@`–`~` maps to `X & 0x1F`; other values are errors. |
+| Integer literal | Decimal digits; `0b`/`0B`, `0o`/`0O`, `0d`/`0D`, `0x`/`0X`; or `base#number` | Bases 2–36 for `base#number`; case-insensitive letter digits; single `_` only between digits. Unmarked leading zeros remain decimal (DEC-028). `0b102` is an invalid-digit error; `123foo` is also an invalid-digit error if `foo` is not a valid suffix (DEC-033). Other suffix and boundary/range rules remain open (Q-014). |
+| Floating-point literal | Decimal or hexadecimal form as specified in DEC-033 | Hexadecimal floats require a `p`/`P` binary exponent; single `_` digit separators occur only between digits of a component. DEC-034 specifies additional malformed-number boundaries. Leading signs are operators; exponent signs are part of the literal. Typed suffix spelling/application, remaining boundaries, exact ISO/IEEE edition, and precision rules remain open (Q-014). |
 | Grouping / collection delimiters | `(` `)`, `{` `}`, `[` `]` | Parentheses group; braces delimit function expressions/bodies; square brackets delimit template parameters/arguments. Full grammar remains open (Q-015). |
 | Member-access / dot operator | `.` | Left-associative; exact operator form/semantics remain open (Q-007). |
-| Function type arrow | `->` | Used in `(INPARAMS) -> (OUTPARAMS)`; also selected as a function-definition operator. Its associativity/form details remain open (Q-007). |
+| Function type arrow | `->` | Used in `(INPARAMS) -> (OUTPARAMS)` and as a function-definition operator; non-associative (DEC-037). Mixed ties with `.` and other form details remain open (LP-26/Q-007). |
 | Binding / declaration markers | `:` `:=` `::=` | Name-first forms: constant, variable, and type declarations respectively; each may be followed by `[TEMPLATEPARAMS]`. Detailed declaration grammar remains open (Q-009/010). |
 | Initializer / assignment | `=` | Also appears as the initializer marker within a type form; expression form and semantics are tracked in Q-007/009. |
 | Name-declaration operator | `@` | Exact syntactic form/semantics remain open (Q-007). |
@@ -95,12 +178,14 @@ This table consolidates the currently agreed source forms; it is an inventory, n
 | Other colon operator | `::` | Same relative level as `:`; no current use or meaning is selected (Q-007). |
 | Compound assignment operators | `+=` `-=` `*=` `/=` `%=` `&=` <code>&#124;=</code> `^=` `<<=` `>>=` | Present in the selected precedence inventory; detailed semantics/forms remain open (Q-007). |
 | Argument/element separator | `,` | Left-associative in the precedence table; exact grammar depends on the construct. |
-| Statement terminator | `;` | Selected as the loosest token in the precedence table; newline interaction remains open (Q-014). |
+| Statement terminator | `;` | Selected as the loosest token; newlines do not insert or replace semicolons. Which productions require a terminator remains open (DEC-037/Q-014). |
 | Implicit parser tokens (not source spellings) | `APPLY`, `EMPTY` | Insert `APPLY` between adjacent operands and `EMPTY` between adjacent operators; unary prefix/postfix operators use `EMPTY` on the missing side (DEC-008/010). Semantic legality remains open (Q-008). |
+
+Longest-match tokenization, explicit lexical diagnostics, and original-source spans are specified by DEC-029/036. Detailed numeric boundaries and source-mapping mechanics are still open.
 
 ## Expression token stream and implicit insertions
 
-**Decision DEC-008 — approved:** After comments are stripped, the source is treated as an operand/operator sequence. Whitespace separates tokens; apart from its role inside strings and comments, it does not itself express grouping or application. Syntactic elements are classified as operators, identifiers, or constants; identifiers and constants are operands.
+**Decision DEC-008 — approved:** After comments are stripped without joining the tokens they separate (DEC-029), the source is treated as an operand/operator sequence. Whitespace separates tokens; apart from its role inside strings and comments, it does not itself express grouping or application. Syntactic elements are classified as operators, identifiers, or constants; identifiers and constants are operands.
 
 To restore alternation in the token stream:
 
@@ -115,6 +200,30 @@ The transformed sequence alternates operands and operators.
 
 The adopted relative operator priorities are listed in DEC-022. Semantic legality rules for inserted elements remain open (Q-008); operator semantics and the remaining associativity choices are tracked in Q-007.
 
+**Decision DEC-037 — approved:** The first parser targets the full selected language, including declarations, functions, types, blocks, classes/interfaces, packages, and imports; this choice does not complete their grammars or authorize implementation. Newlines remain whitespace, and `;` is explicit wherever a production requires a statement terminator; there is no automatic semicolon insertion. The exact productions requiring `;` remain open.
+
+The `->` operator is non-associative: ungrouped chains such as `A -> B -> C` require explicit grouping or must be rejected. This does not decide the legality of grouped forms or mixed ties with the left-associative `.` at the same precedence. The offered mixed-tie rules were not selected; this remains a parser blocker (LP-26).
+
+The parser must produce both the selected operator/operand tree, including implicit `APPLY`/`EMPTY` representation, and a lossless concrete syntax tree for the original source. When produced, the concrete tree must preserve the original bytes, including an initial BOM, comments, whitespace, and escape spellings, so the input can be reconstructed even though parsing uses translated and NFC-normalized text. DEC-008's comment stripping applies to the operator/operand stream, not to this lossless representation. The mapping between the representations remains open (LP-23); DEC-038 specifies the CST policy for syntax errors.
+
+**Decision DEC-038 — approved:** On parser syntax errors, report errors explicitly and attempt to recover to find further diagnostics. Return a lossless original-source CST even for syntactically invalid input, representing invalid or skipped syntax with error nodes or an equivalent. The presence of a CST does not make an invalid parse successful. The recovery algorithm and limits, behavior for malformed encoding or lexical errors, and the operator/operand tree's behavior on erroneous input remain open.
+
+**Decision DEC-039 — approved:** Do not normalize ordinary character or string values after processing their literal escapes. Validate the one-scalar character-literal rule directly on the decoded value. Whole-source NFC remains before tokenization as specified in DEC-036; this decision adds no normalization pass after literal escape processing.
+
+**Decision DEC-040 — approved:** For `\N{name}`, look up Unicode 18.0.0 character names and official name aliases. Match ASCII letters case-insensitively; spaces and punctuation otherwise match exactly. Unknown names are errors. A lookup must resolve to one Unicode scalar; named sequences remain unsupported as specified in DEC-030.
+
+**Decision DEC-041 — approved:** Do not support Perl-style `\N{U+...}` numeric code-point notation. Reserve `\N{...}` for names and aliases; global `\uXXXX` and `\UXXXXXXXX` remain the numeric Unicode escapes.
+
+**Decision DEC-042 — approved:** Ordinary character and string literals recognize NewLang's simple escape set: `\a`, `\b`, `\e`, `\f`, `\n`, `\r`, `\t`, `\v`, and `\cX`, in addition to the selected quote and backslash escapes. `\e` denotes ESC (U+001B). For `\cX`, `?` (U+003F) maps to DEL (U+007F); ASCII `@` through `~` (U+0040–U+007E) map to `X & 0x1F`; all other following characters are invalid. This adopts the mapping recorded in NewLang's notes. DEC-043 subsequently selects `\x{hex}`; `\o{...}` is not selected.
+
+**Decision DEC-043 — approved:** Support `\x{hex}` in ordinary character and string literals as a Unicode scalar escape. The braces must contain one or more ASCII hexadecimal digits; leading zeros are allowed, with no separators. An empty body, missing closing brace, or non-hex digit is an error. Reject values above U+10FFFF and surrogate values. The escape contributes the one scalar it denotes; it does not encode bytes. Do not support `\o{...}`.
+
+**Decision DEC-044 — approved:** Treat every Unicode 18 `White_Space` character as a separator between tokens unless it belongs to the selected DEC-032 hard-break set, in which case it retains line-ending behavior. This includes non-ASCII spaces. Whitespace inside comments or literals is governed by those constructs' rules.
+
+**Decision DEC-045 — approved:** In ordinary character and string literals, perform literal-escape processing on the translated source stream, regardless of whether a backslash came from the original source or a global Unicode escape. Thus a generated backslash can start any recognized ordinary escape, including `\n`, `\x{...}`, `\N{...}`, or a line continuation. It cannot initiate another global `\u`/`\U` translation: global translation remains one-pass under DEC-035. An unrecognized ordinary escape remains an error under DEC-030.
+
+**Decision DEC-046 — approved:** Human-facing diagnostic columns are one-based and count Unicode scalar values in the original physical source line; each tab counts as one column. This convention does not change the zero-based, half-open original UTF-8 byte spans selected by DEC-036. Editor protocol positions are a separate representation and must be converted to the negotiated encoding.
+
 **Decision DEC-021 — approved:** Use GenLang's numeric priority scale as the starting point for the next language. Set `@` to priority 190; keep `.` left-associative; use `^` for XOR and `**` for exponentiation; use `->` for function definition; and set `?` to priority 45. DEC-022 resolves the remaining relative-order conflicts and assigns `**` a priority.
 
 **Decision DEC-022 — approved:** Adopt the following relative precedence for the next language, from tightest to loosest. Each line is a distinct priority level; operators on one line share a level. This uses GenLang's relative ordering to resolve the historical conflicts, with the explicit placements below, and makes `**` right-associative.
@@ -123,7 +232,7 @@ The adopted relative operator priorities are listed in DEC-022. Semantic legalit
 |---|---|---|
 | Tightest | `@` | No associativity specified; name-declaration operator. |
 |  | implicit `APPLY`, `(` `)` `{` `}` `[` `]` | APPLY is left-associative; delimiters group syntax. |
-|  | `.` `->` | `.` is left-associative; `->` means function definition, with associativity still open. |
+|  | `.` `->` | `.` is left-associative; `->` means function definition and is non-associative (DEC-037). Mixed ties remain open (LP-26). |
 |  | `++` `--` `!` `~` | No infix associativity specified in the GenLang table; prefix/postfix forms and semantics remain subject to Q-007. |
 |  | `**` | Right-associative exponentiation; one level tighter than `*`. |
 |  | `*` `/` `%` | Left-associative. |
@@ -212,21 +321,21 @@ This requirement constrains the implementation's control representation and call
 
 ## Questions to resolve before parser implementation
 
-The decisions above establish design direction, but not a complete grammar. A parser can be started for a deliberately limited first slice once that slice and its syntax are specified; implementing a parser for the full selected language requires resolving the applicable questions below. These are open questions, not additional design decisions.
+The decisions above establish design direction, but not a complete grammar. DEC-037 selects the full language as the first parser's target; its applicable syntax and output contract still require the work below. No implementation has been authorized by this selection.
 
-### Blocking for any parser slice
+### Scope and general parser blockers
 
-1. **What is the first parser's scope?** Choose whether it parses expressions only, or also declarations, functions, types, statements, classes, packages, and imports. Identify explicitly which forms are excluded from the first slice (Q-003).
-2. **What is the remaining lexical grammar?** Comment forms, identifier syntax/normalization, basic character/string forms, integer bases, universal-character names, decimal/hex float classes, and the raw-string delimiter family are selected in DEC-024/026. Specify raw-string tag syntax and content behavior (Q-016), the Unicode property-data version (Q-006), and precise escape, numeric, token-boundary/longest-match, whitespace/newline, and statement-termination rules (Q-014).
-3. **What is the exact expression grammar?** For each expression operator in DEC-022 that is included in the slice, specify whether it can occur prefix, infix, postfix, or in another form; which operands/arity it takes; how delimiters and nesting work; and how equal-precedence operators associate. In particular, settle `->` associativity, ternary `? :` parsing, and where implicit `APPLY`/`EMPTY` insertion applies, including expression boundaries (Q-007/008). `::` has a precedence placement but no selected syntactic use; either define its expression form or exclude it from the initial parser slice.
-4. **What parse structure does the parser produce?** Define the minimum AST/tree node contract for operands, operators, grouping, declarations, and source locations needed by the next compiler phase. The chosen representation may be refined during implementation, but parser and consumer must agree on this contract.
+1. **Parser scope — selected:** Target the full selected language (DEC-037), including the declaration, function, type, block, object, package, and import forms. Their missing productions remain blockers; features that were never selected are not added by this choice.
+2. **What is the remaining lexical grammar?** DEC-024 through DEC-046 select basic token forms, global universal-character translation and source NFC, Unicode data and line-ending and whitespace behavior, several numeric and quoted-literal details, longest-match tokenization, diagnostics, and source positions. Specify the remaining rules, including raw-string content behavior (Q-016), remaining numeric boundaries, and which productions require `;` (Q-014).
+3. **What is the exact expression grammar?** For each expression operator in DEC-022, specify whether it can occur prefix, infix, postfix, or in another form; which operands/arity it takes; how delimiters and nesting work; and how equal-precedence operators associate. DEC-037 makes `->` non-associative; settle its mixed ties with `.` (LP-26), ternary `? :` parsing, and where implicit `APPLY`/`EMPTY` insertion applies, including expression boundaries (Q-007/008). `::` has a precedence placement but no selected syntactic use; define its role or clarify whether it is reserved without an expression form.
+4. **What is the detailed parse-tree contract?** DEC-037 selects a lossless original-source concrete syntax tree plus the operator/operand tree; DEC-038 selects recovery with a lossless CST for syntax errors. Define node contracts for operands, operators, grouping, declarations, and source locations, and how both trees map through Unicode translation and normalization to original UTF-8 bytes. Human-facing diagnostic column units/indexing (LP-29), recovery mechanics and limits, malformed encoding or lexical errors, and the operator/operand tree on errors remain open.
 
 ### Blocking for the corresponding language forms
 
 5. **What are the declaration and definition productions?** Specify how the selected `:`, `:=`, and `::=` bindings are distinguished from expression uses; the grammar of optional type and initializer parts; the role of `=`; and whether declarations can omit bodies or be prototypes (Q-009/010). For keyword-like constructs represented by predefined identifiers (DEC-012), decide how syntax recognition works when identifiers are not a separate keyword token category and may be redefined.
 6. **What are the type, function, and block productions?** Specify type-expression syntax, template parameter/argument syntax and nesting, parameter and multiple-result syntax, function expression/body boundaries, and statement/block structure. The selected markers and forms in DEC-011 are not yet a complete grammar.
-7. **What source forms express namespaces, packages, imports, and the selected object model?** If included in the parser's scope, specify their productions and how class/interface/member declarations are delimited and nested (Q-009/012). Runtime class, type-compatibility, and dispatch semantics can be specified separately.
+7. **What source forms express namespaces, packages, imports, and the selected object model?** Specify their productions and how class/interface/member declarations are delimited and nested (Q-009/012). Runtime class, type-compatibility, and dispatch semantics can be specified separately.
 
 ### Can be deferred beyond parsing
 
-Precise type-inference and safety proofs, reference identity and lifetime optimization, overload resolution behavior beyond the syntax of overload declarations, object-model runtime semantics, and continuation implementation details need not block a syntax-only parser. They must be resolved before implementing the corresponding semantic/runtime phases; any syntax choices they affect must still be fixed before parsing those forms.
+Precise type-inference and safety proofs, reference identity and lifetime optimization, overload resolution behavior beyond the syntax of overload declarations, object-model runtime semantics, and continuation implementation details need not block a syntax-only parser. They must be resolved before implementing the corresponding semantic/runtime phases; any syntax choices they affect, including any dedicated continuation syntax, must still be fixed before parsing those forms.

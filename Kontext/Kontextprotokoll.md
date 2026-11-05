@@ -62,6 +62,49 @@ This log records the material context and evidence behind the current file class
 | SRC-046 | User follow-up in this conversation | 2026-11-01 (after SRC-044; exact time not provided) | Requests concrete examples of the raw-string options | Clarification request only; no syntax choice made. |
 | SRC-047 | User decision in this conversation | 2026-11-01 (after SRC-046; exact time not provided) | Selects the NewLang tagged-backtick raw-string option | Approves the delimiter family; exact tag grammar and raw-content semantics remain open. |
 | SRC-048 | User request in this conversation | 2026-11-01 21:46:33.577 (+01:00) | Requests a table of all agreed token syntaxes in Language-Design.md | Documentation consolidation request; it does not add or change a syntax decision. |
+| SRC-049 | User request in this conversation | 2026-11-01 22:33:59.561 (+01:00) | For open lexer/parser questions, propose common answers; present small sets of usual alternatives for preference; list cases without easy answers or whose alternatives are all rejected as remaining blockers | Requests a decision workflow, not blanket approval of proposed answers. |
+| SRC-050 | Official reference sample: [Go specification](https://go.dev/ref/spec), [Rust Reference](https://doc.rust-lang.org/reference/lexical-structure.html), [Python lexical analysis](https://docs.python.org/3/reference/lexical_analysis.html), [C++ lexical phases](https://eel.is/c++draft/lex.phases), [Java lexical structure](https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html), [Erlang numbers](https://www.erlang.org/doc/system/data_types.html#number) | Consulted 2026-11-01 | Representative lexer behavior, comments, Unicode/source handling, numeric forms, and statement boundaries | Examples are a sample, not proof of universal or majority practice; references do not decide this language's rules. |
+| SRC-051 | User selections in this conversation | 2026-11-01 (after SRC-049; exact time not provided) | Global universal-character translation; reject both offered non-universal raw escape options; normalize multiline raw-string newlines to LF; use ASCII tags with empty tag allowed | No replacement raw escape rule or reason for rejection was supplied. |
+| SRC-052 | User selections in this conversation | 2026-11-01 (after SRC-051; exact time not provided) | Select integer bases 2–36, single underscore between digits, both cases for radix markers, decimal interpretation of unmarked leading zeros, and typed numeric suffixes | Exact suffix syntax and type set were expressly left for later. |
+| SRC-053 | User selections in this conversation | 2026-11-01 (after SRC-052; exact time not provided) | Approves all seven common lexer proposals, LP-01 through LP-07 | The proposals explicitly leave several related choices open; approval does not settle them. |
+| SRC-054 | [Rust character type](https://doc.rust-lang.org/reference/types/char.html), [Java Character](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Character.html), [Swift Character](https://developer.apple.com/documentation/swift/character), [Go rune and string literals](https://go.dev/ref/spec#Rune_literals), and [NewLang syntax notes](/bigdata/KAI/NewLang/IDEAS/Syntax.txt) | Consulted 2026-11-01 | Character-value units, ordinary escapes, and NewLang's named-character/sequence and numeric escape proposals | Comparison evidence only; it does not select rules for the new language. Rust, Java, and Swift are value-model examples, not claims of identical literal syntax. |
+| SRC-055 | User selections in this conversation | 2026-11-01 (after SRC-053; exact time not provided) | Selects a Unicode scalar per character literal; individual character names rather than named sequences; string-only line continuation removing following spaces/tabs; and errors for unrecognized ordinary escapes | Supplies no reason for excluding named sequences; does not decide raw-string backslashes or remaining escape details. |
+| SRC-056 | [Unicode 18 announcement](https://blog.unicode.org/2026/09/announcing-unicode-standard-version-180.html), [18.0 UCD readme](https://www.unicode.org/Public/18.0.0/ucd/ReadMe.txt), [18.0 version overview](https://www.unicode.org/versions/Unicode18.0.0/), [Rust identifiers](https://doc.rust-lang.org/reference/identifiers.html), [Python physical lines](https://docs.python.org/3/reference/lexical_analysis.html#physical-lines), and [Java line terminators](https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.4) | Consulted 2026-11-01 | Unicode version status and representative source line-ending/version policies | Unicode's announcement and UCD call 18.0 available/final, but its overview still bears a preliminary-draft banner; no cause for the discrepancy was verified. |
+| SRC-057 | User selections in this conversation | 2026-11-01 (after SRC-055; exact time not provided) | Selects specification-pinned Unicode 18.0.0 and UTF-8-only source; asks to “follow unicode standard recommendations” for line endings | Does not identify a specific Unicode document or enumerate line-ending characters. |
+| SRC-058 | [Unicode 18 core §5.8.3](https://www.unicode.org/versions/Unicode18.0.0/core-spec/chapter-5/#G29990), [UAX #14 revision 57](https://www.unicode.org/reports/tr14/tr14-57.html#LB4), [Unicode 18 line-break data](https://www.unicode.org/Public/18.0.0/ucd/LineBreak.txt), and [UTS #55 source-code handling](https://www.unicode.org/reports/tr55/tr55-5.html#Atoms) | Consulted 2026-11-01 | Core newline and `readline` recommendations, UAX #14 hard breaks and CRLF, and source-editor display guidance | The documents address different contexts; none alone selects the new language's physical source-line grammar. |
+| SRC-059 | User selection in this conversation | 2026-11-01 (after SRC-057; exact time not provided) | Selects all Unicode UAX #14 hard breaks, including VT, as physical source-line endings | The presented option explained CRLF pairing and the previously selected raw-string LF normalization; Unicode-escape-generated line breaks remain separate. |
+| SRC-060 | [Go floating literals](https://go.dev/ref/spec#Floating-point_literals), [Rust floating literals](https://doc.rust-lang.org/reference/tokens.html#floating-point-literals), and a local Python 3.12 `tokenize` probe | Consulted 2026-11-01 | Go decimal/hex float shapes, Rust trailing-dot/member disambiguation, and Python tokenization of `.5`, `1.`, `1.foo`, `123name`, and `0b102` | Comparisons are not selected rules. Python and Rust do not define hexadecimal source float literals; the Python probe is limited to the named examples and local version. |
+| SRC-061 | User selections in this conversation | 2026-11-01 (after SRC-059; exact time not provided) | Selects Go-style float shapes, separators between digits, `1.foo` as float plus identifier, an invalid-digit error for `0b102`, and “report invalid digit” for non-suffix `123foo` | The questions expressly deferred exact typed-suffix syntax and other numeric boundary cases. |
+| SRC-062 | User selections in this conversation | 2026-11-01 (after SRC-061; exact time not provided) | Selects leading-dot float tokenization after an operand; invalid-digit errors for non-suffix names after digit-ending float cores; and malformed-literal errors for incomplete exponents | The previously selected `1.foo` behavior and deferred suffix spelling/type set were explicitly retained in the choices. |
+| SRC-063 | [Java lexical structure, section 3.3](https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.3) and [C++ universal-character names](https://eel.is/c++draft/lex.universal.char) | Consulted 2026-11-02 | Java's backslash eligibility and non-recursive Unicode-escape translation; C++'s Unicode-scalar validation for universal-character names | Java's escape syntax and UTF-16 code-unit model differ from the selected `\u`/`\U` forms and the proposed scalar-only validation; these are comparison evidence, not decisions. |
+| SRC-064 | User selections in this conversation | 2026-11-02 (after SRC-063; exact time not recorded) | Selects Java-style eligibility, one-pass translation, scalar-only Unicode escapes, and escape-generated line endings for ordinary-string continuation | The choice extends DEC-030's physical-only continuation. It does not settle mixed-origin CRLF, source mapping, or non-universal raw-string escapes; no additional rationale was supplied. |
+| SRC-065 | One-off local Python 3 probe in this conversation | Executed 2026-11-02 | Seven DEC-035 translation examples, four malformed/non-scalar inputs, and the generated-continuation example passed | An ephemeral model, not an implementation or full lexer test; it did not test mixed-origin CRLF or raw-string behavior. |
+| SRC-066 | [Go token positions](https://go.dev/src/go/token/position.go?m=text), [Go AST nodes](https://go.dev/src/go/ast/ast.go?m=text), [LSP 3.17 positions](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position), [Python identifiers](https://docs.python.org/3/reference/lexical_analysis.html#identifiers), and [Go source representation](https://go.dev/ref/spec#Source_code_representation) | Consulted 2026-11-02 | Byte offsets and end positions, LSP's default and negotiated position encodings, Python name normalization, and Go's unnormalized source | Comparisons concern different languages and tooling layers; they do not choose this language's coordinates, normalization phases, or source mapping. |
+| SRC-067 | User selections in this conversation | 2026-11-02 (after SRC-066; exact time not recorded) | Selects one mixed-origin CRLF ending, original UTF-8 byte spans, physical diagnostic locations, and whole-source NFC after Unicode-escape translation | Whole-source NFC was selected over the recommended identifier-only option. No additional reason was supplied; detailed mapping and column units remain open. |
+| SRC-068 | [Unicode 18 normalization conformance test data](https://www.unicode.org/Public/18.0.0/ucd/NormalizationTest.txt) and [UnicodeData.txt](https://www.unicode.org/Public/18.0.0/ucd/UnicodeData.txt) | Consulted 2026-11-02 | NFC examples U+0065 U+0301 to U+00E9, U+037E to U+003B, and U+212A to U+004B | Validates these examples for the selected Unicode version, not the complete source-mapping design. |
+| SRC-069 | One-off local Python 3 probe in this conversation | Executed 2026-11-02 | Selected NFC examples, a BOM-counted original byte span, and three mixed-origin CRLF cases | The local Python uses Unicode 15.0.0; the selected NFC examples were separately checked against Unicode 18 data (SRC-068). This is not a complete lexer or mapping test. |
+| SRC-070 | [Haskell 2010 function-type grammar](https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-650004.1.2), [Go semicolons](https://go.dev/ref/spec#Semicolons), and [rust-analyzer syntax trees](https://rust-analyzer.github.io/book/contributing/syntax.html) | Consulted 2026-11-02 | Right-recursive function types, automatic semicolon insertion, and a lossless syntax-tree approach | These are comparisons, not selections. Rust-analyzer's guide describes a historical 2020 snapshot; Haskell's type arrow is not the selected function-definition grammar. |
+| SRC-071 | User selections in this conversation | 2026-11-02 (after SRC-070; exact time not recorded) | Selects full selected-language scope, explicit semicolons, non-associative `->`, and a lossless original-source CST plus operator/operand tree | The selection does not specify complete productions or authorize parser implementation. Mixed `.`/`->` ties, tree mapping, and error recovery remain open; no additional rationale was supplied. |
+| SRC-072 | [Haskell 2010 operator fixity](https://www.haskell.org/onlinereport/haskell2010/haskellch3.html#dx8-22006) | Consulted 2026-11-02 | Same-precedence infix operators with incompatible associativity require grouping rather than implicit association | Haskell's function-type arrow has separate grammar; this is an analogy for mixed-operator fixity, not a rule already selected for this language. |
+| SRC-073 | User selection in this conversation | 2026-11-02 (after SRC-072; exact time not recorded) | Chooses none of the offered mixed `.`/`->` tie rules and keeps the question as a blocker | No replacement rule or rationale was supplied; the existing precedence and associativity decisions remain unchanged. |
+| SRC-074 | User selection in this conversation | 2026-11-02 (after SRC-073; exact time not recorded) | Selects syntax-error recovery with additional diagnostics and a lossless CST containing error nodes or equivalent | The choice does not specify the recovery algorithm, lexical/encoding error behavior, or operator/operand tree on errors; no rationale was supplied. |
+| SRC-075 | [Unicode 18 `UnicodeData.txt`](https://www.unicode.org/Public/18.0.0/ucd/UnicodeData.txt) and [Python Unicode lookup](https://docs.python.org/3/library/unicodedata.html#unicodedata.lookup) | Consulted 2026-11-02 | Names and canonical decomposition for U+0301 and U+00E9; Python's `\N` character lookup and alias support | Python also supports named sequences, which this language excludes. Python's documented UCD version is not a substitute for the selected Unicode 18 data. |
+| SRC-076 | One-off local Python 3 probe in this conversation | Executed 2026-11-02 | A literal containing `e` plus `\N{COMBINING ACUTE ACCENT}` has two scalars, while the precomposed form has one; NFC equates these examples. Python also resolved tested mixed-case names and the `LF` alias. | The host Python uses Unicode 15.0.0; the selected name and decomposition examples were separately checked in Unicode 18 data (SRC-075). The probe is illustrative, not the language implementation or a proof of all alias rules. |
+| SRC-077 | User selection in this conversation | 2026-11-05 (+01:00) | Selects no additional normalization of ordinary character/string values after literal escapes; character scalar count is checked on decoded value | Source translation and whole-source NFC remain earlier phases. No additional rationale was supplied. |
+| SRC-078 | [Python `unicodedata.lookup`](https://docs.python.org/3/library/unicodedata.html#unicodedata.lookup) and [Unicode Standard Annex #44, Unicode 18](https://www.unicode.org/reports/tr44/tr44-38.html) | Consulted 2026-11-05 | Python documents name aliases and named-sequence lookup; UAX #44 documents the versioned Unicode Character Database | Python lookup behavior is comparative prior art, not a required rule. Alias categories, matching details, and named-sequence support remain language choices. |
+| SRC-079 | User selection in this conversation | 2026-11-05 (+01:00) | Selects Unicode 18 character names and official aliases with case-insensitive matching for `\N{name}` | Named sequences remain excluded by DEC-030. The selection does not include `\N{U+...}` or other unresolved ordinary escapes; no rationale was supplied. |
+| SRC-080 | [NewLang escape notes](/bigdata/KAI/NewLang/IDEAS/Syntax.txt) and [Perl `perlrebackslash`](https://perldoc.perl.org/perlrebackslash#Named-or-numbered-characters-and-character-sequences) | Consulted 2026-11-05 | NewLang's notes list `\N{U+...}` as a question; Perl documents it as a numeric code-point form | Existing global `\uXXXX`/`\UXXXXXXXX` escapes already represent Unicode scalars; whether a variable-width synonym is useful is a language-design choice. |
+| SRC-081 | User selection in this conversation | 2026-11-05 (+01:00) | Rejects `\N{U+...}` and reserves `\N{...}` for names and aliases | Global `\uXXXX`/`\UXXXXXXXX` remain the selected numeric source escapes. No rationale beyond the selection was supplied. |
+| SRC-082 | [Go specification, rune literals](https://go.dev/ref/spec#Rune_literals), [Python lexical analysis, escape sequences](https://docs.python.org/3/reference/lexical_analysis.html#escape-sequences), and [Java Language Specification §3.10.7](https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.10.7) | Consulted 2026-11-05 | Go and Python share `\a`, `\b`, `\f`, `\n`, `\r`, `\t`, `\v`, plus quote/backslash escapes; Java documents a narrower set | These are comparisons only. Shared support does not imply universal practice or user approval. |
+| SRC-083 | User selection in this conversation | 2026-11-05 (+01:00) | Selects NewLang/Perl-style simple escapes, including `\e` and `\cX` | The documented NewLang mapping is adopted: `?` -> DEL, ASCII `@`–`~` -> low five bits, otherwise error. Numeric `\x{...}`/`\o{...}` were not part of this selection. |
+| SRC-084 | [Perl `perlrebackslash`](https://perldoc.perl.org/perlrebackslash#Octal-escapes) and [hexadecimal escapes](https://perldoc.perl.org/perlrebackslash#Hexadecimal-escapes), [Go specification, rune literals](https://go.dev/ref/spec#Rune_literals), [Python lexical analysis, escape sequences](https://docs.python.org/3/reference/lexical_analysis.html#escape-sequences), and NewLang's [escape notes](/bigdata/KAI/NewLang/IDEAS/Syntax.txt) | Consulted 2026-11-05 | Perl/NewLang document braced `\x{...}` and `\o{...}`; Go/Python use fixed-width numeric escape variants | These systems differ in exact width, byte/code-point meaning, and escape phase. The proposal treats any adopted braced forms as Unicode scalar values; this is not yet a decision. |
+| SRC-085 | User selection in this conversation | 2026-11-05 (+01:00) | Selects `\x{hex}` and rejects `\o{octal}` for ordinary literals | The chosen hex form denotes one Unicode scalar, not bytes; malformed and non-scalar values are errors. No rationale beyond the selection was supplied. |
+| SRC-086 | [Go token/whitespace specification](https://go.dev/ref/spec#Tokens) and [Python lexical analysis, whitespace between tokens](https://docs.python.org/3/reference/lexical_analysis.html#whitespace-between-tokens) | Consulted 2026-11-05 | Go ignores ASCII space, horizontal tab, CR, and LF between tokens; Python permits space, tab, and form feed as inter-token whitespace | DEC-032 already specifies a broader line-break set, including FF. These examples do not establish a universal rule for other Unicode `White_Space` characters. |
+| SRC-087 | User selection in this conversation | 2026-11-05 (+01:00) | Selects all Unicode 18 `White_Space` characters as token separators except those already selected as hard line breaks | DEC-032 line-ending behavior is preserved. No additional rationale was supplied. |
+| SRC-088 | [Java Language Specification §3.2, lexical translations](https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.2) and [§3.10.7, escape sequences](https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.10.7) | Consulted 2026-11-05 | Java specifies Unicode translation before input-element/literal escape interpretation | Phase ordering is comparative evidence, not proof that the user selected Java's exact interaction rule. |
+| SRC-089 | User selection in this conversation | 2026-11-05 (+01:00) | Selects later ordinary-escape processing for backslashes generated by global Unicode translation | The one-pass global translation rule remains unchanged; no rationale beyond the selection was supplied. |
+| SRC-090 | [LSP 3.17 position encoding](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position) and [Go `token.Position`](https://pkg.go.dev/go/token#Position) | Consulted 2026-11-05 | LSP positions are zero-based and default to UTF-16, with UTF-8/UTF-32 negotiation; Go positions use byte offsets and one-based byte columns | Editor protocol coordinates and user-facing diagnostic columns are different presentation layers; neither is selected here. |
+| SRC-091 | User selection in this conversation | 2026-11-05 (+01:00) | Selects one-based human-facing columns counting Unicode scalars in the original physical source line, with tabs counting as one column | Original UTF-8 byte spans remain unchanged; editor positions are converted separately to the negotiated protocol encoding. |
 
 ## Entries
 
@@ -673,3 +716,464 @@ Adopt the NewLang scanner's tagged-backtick delimiter structure: opening backtic
 - Sources: SRC-048; approved decisions DEC-008 through DEC-026
 - Related questions: Q-006 through Q-016
 - Status: Added the “Agreed token syntax summary” to Language-Design.md and linked it from the current knowledge view. It consolidates approved spellings and labels details that remain open; it does not create new language decisions.
+
+### KP-031 - Triage remaining lexer/parser questions
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 22:33:59.561 (+01:00)
+- Capture: contemporaneous; user requests common-language proposals, preference questions for customary alternatives, and a list for cases without easy answers or with all options rejected
+- Sources: SRC-049, SRC-050; prior decisions DEC-008/009/010/011/012 and DEC-024/025/026
+- Related questions: Q-003, Q-006 through Q-010, Q-012, Q-014 through Q-016
+- Status at this checkpoint: Proposed triage and initial blocker list recorded in Wissensstand as LP-01 through LP-23. The request itself approved no proposals; subsequent selections and a rejection are recorded in KP-032.
+
+The comparison distinguishes familiar lexer conventions from project-specific grammar issues. Source-wide universal-character names may alter raw strings, comments, or delimiter recognition, while DEC-008/009's generic implicit-token model and DEC-012's shadowable predefined identifiers need language-specific rules. Blockers are scoped to affected parser slices; type/runtime semantics can be deferred unless a syntax choice depends on them.
+
+### KP-032 - Universal-character and raw-string choices
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after SRC-049; exact time not provided)
+- Capture: contemporaneous; user responds to the first group of lexer choices
+- Sources: SRC-051; prior decisions DEC-025/026 and proposals LP-09/10
+- Related decisions/questions: DEC-027, Q-014, Q-016, LP-09, LP-10, LP-23, LP-24
+- Status: The approved choices are recorded in Language-Design.md and Wissensstand. Non-universal raw escape behavior remains a blocker.
+
+The user selected global `\uXXXX`/`\UXXXXXXXX` translation before tokenization, including comments and raw strings. The user also selected zero-or-more ASCII letters, digits, or underscores for tags, with no fixed length limit, and multiline raw strings whose recognized line endings normalize to LF. Exact escape eligibility, recognized line endings, and source-position mapping remain open.
+
+For other raw-string backslashes, the user rejected both offered alternatives: leaving all other backslashes literal, or permitting only a delimiter-specific escape. No replacement or reason was given, so LP-24 records the unresolved blocker rather than assuming either rule.
+
+### KP-033 - Integer literal and suffix choices
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after SRC-051; exact time not provided)
+- Capture: contemporaneous; user responds to the integer-literal choice group
+- Sources: SRC-050, SRC-052; prior DEC-025 and proposals LP-12/13
+- Related decisions/questions: DEC-028, Q-014, LP-12 through LP-14
+- Status: Choices are recorded in Language-Design.md and Wissensstand. Exact suffix grammar/types, float separator behavior, and token-boundary cases remain open.
+
+The user selected bases 2–36 with case-insensitive ASCII letter digits for `base#number`; a single underscore only between integer digits; both uppercase and lowercase marker letters for the selected `0b/0o/0d/0x` integer forms; decimal interpretation of unmarked leading zeros; and support for typed numeric suffixes. The suffix option expressly deferred the exact suffix set. No numeric-boundary or floating-point edge rule was selected by these answers.
+
+### KP-034 - Approve common lexer and location rules
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after SRC-052; exact time not provided)
+- Capture: contemporaneous; user selects all seven offered common-practice proposals for approval
+- Sources: SRC-050, SRC-053; proposals LP-01 through LP-07
+- Related decisions/questions: DEC-029, Q-014, Q-015, LP-01 through LP-07, LP-23
+- Status: The approved rules are recorded in Language-Design.md and Wissensstand; the individual proposals' qualifications and the remaining choices still apply.
+
+The user approved UTF-8 with malformed-input diagnostics and an optional initial BOM; longest-match tokenization with comments as token separators; explicit diagnostics for malformed recognized tokens; leading signs as operators and exponent signs within numeric tokens; no unescaped physical line breaks in ordinary quoted literals plus quote/backslash escapes; decimal and hexadecimal floats with required binary exponents on the latter; and original-source spans/mappings through translation and normalization.
+
+These choices do not decide additional encodings, the complete escape repertoire or line continuations, numeric-looking token boundaries, the precise float grammar or suffixes, span units, recovery, or the mechanics of Unicode-escape translation and mapping. No implementation or tests were requested or performed.
+
+### KP-035 - Quoted-literal alternatives for the next choice
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after SRC-053; exact time not provided)
+- Capture: contemporaneous; assistant presents the next group of options under the workflow requested in KP-031
+- Sources: SRC-039, SRC-050, SRC-054; approved DEC-025 and DEC-029
+- Related questions: Q-014, Q-016, LP-11, LP-24
+- Status at this checkpoint: Alternatives are proposals, not user-approved rules; the user's response has not yet been recorded.
+
+The options distinguish a character literal's value unit (Unicode scalar, UTF-16 code unit, or extended grapheme cluster); named-character sequences versus single-character names; ordinary-string line continuation with or without indentation removal versus rejection; and errors, warning with preservation, or backslash removal for unrecognized ordinary escapes. Raw-string backslash behavior remains the separate blocker LP-24. The exact escape inventory, Unicode version, and global Unicode-escape eligibility also remain separate.
+
+### KP-036 - Character and ordinary-string choices
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after KP-035; exact time not provided)
+- Capture: contemporaneous; user selects among the quoted-literal options
+- Sources: SRC-055; proposals in KP-035
+- Related decisions/questions: DEC-030, Q-014, Q-016, LP-11, LP-24
+- Status: The four selected rules are recorded in Language-Design.md and Wissensstand. Raw-string backslash behavior remains blocked.
+
+The user selected exactly one Unicode scalar after escape processing per character literal; single-character names for `\N{name}` rather than named character sequences; backslash-physical-line-ending continuation in ordinary strings only, removing the backslash, line ending, and immediately following spaces/tabs; and errors for unrecognized ordinary escapes. No reason for excluding named sequences was supplied.
+
+The precise recognized line endings, Unicode name/alias data, remaining escape inventory and validation, and interactions with globally translated universal-character names remain open. No implementation or tests were requested or performed.
+
+### KP-037 - Source input and Unicode alternatives
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after KP-036; exact time not provided)
+- Capture: contemporaneous; assistant presents the next group of options under the workflow requested in KP-031
+- Sources: SRC-039, SRC-050, SRC-056; approved DEC-027, DEC-029, and DEC-030
+- Related questions: Q-006, Q-014, Q-016, LP-01, LP-15, LP-23
+- Status at this checkpoint: Alternatives are proposals, not user-approved rules; the user's response has not yet been recorded.
+
+The options cover the Unicode data-version policy and initial version, whether source encodings besides UTF-8 are accepted, and the set of physical line endings. Python and Java recognize LF, CRLF, and CR; NewLang's notes additionally list VT, FF, NEL, LS, and PS. Unicode's 18.0 release announcement and UCD readme say it is available/final, while its version-overview page still carries a preliminary-draft banner. This records the source discrepancy without changing the prior choice of UAX #31 research reference or selecting a language Unicode version.
+
+### KP-038 - Pin source encoding and Unicode data
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after KP-037; exact time not provided)
+- Capture: contemporaneous; user selects among the source-input and Unicode options
+- Sources: SRC-057; proposals in KP-037
+- Related decisions/questions: DEC-031, Q-006, Q-014, Q-016, LP-01, LP-15, LP-23
+- Status: UTF-8-only input and Unicode 18.0.0 pinned by the language specification are recorded in Language-Design.md and Wissensstand. The user asks to “follow unicode standard recommendations” for physical line endings; the precise reference and resulting set need investigation.
+
+The user chose a specification-pinned Unicode data version, with changes made deliberately through a specification revision, and selected version 18.0.0 for identifier properties, normalization, and character-name data. The user also chose UTF-8 as the only source encoding. For line endings, the user's free-text direction was not one of the enumerated character sets; do not silently equate it with NewLang's list or another standard without checking the source.
+
+### KP-039 - Investigate Unicode newline recommendations
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after KP-038; exact time not provided)
+- Capture: contemporaneous source research in response to the user's line-ending direction
+- Sources: SRC-039, SRC-058
+- Related questions: Q-014, Q-016, LP-15, LP-23
+- Status at this checkpoint: The source comparison and alternatives are recorded in Wissensstand; no exact line-ending set has been selected.
+
+Unicode 18 core §5.8.3 recommends that `readline` stop at CR, LF, CRLF, NEL, LS, PS, and FF. UAX #14's hard-break classes additionally include VT, and its CRLF rule prevents a break between CR and LF. UTS #55 recommends that source-code editors display all those hard breaks, while acknowledging that a language can recognize fewer terminators. NewLang's notes list the full UAX #14 set. The assistant proposes that full set for source lines, with the core `readline` set as an alternative; the user has not yet selected between them.
+
+These are recommendations for different contexts, not evidence that Unicode mandates one source lexer rule. DEC-027's already-selected normalization of recognized raw-string line endings to LF would also normalize LS and PS if they are included; treatment of line breaks generated by universal-character translation remains open.
+
+### KP-040 - Select Unicode hard breaks for source lines
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after KP-039; exact time not provided)
+- Capture: contemporaneous; user selects the UAX #14 hard-break option
+- Sources: SRC-058, SRC-059; alternatives in KP-039
+- Related decisions/questions: DEC-032, Q-014, Q-016, LP-15, LP-23
+- Status: The exact physical line-ending set is recorded in Language-Design.md and Wissensstand. Handling of Unicode-escape-generated line breaks remains open.
+
+The user selected LF, CR, CRLF, NEL, VT, FF, LS, and PS as source-line endings, with CRLF counted as one. The choice was presented with the consequence that recognized LS and PS normalize to LF in raw-string values under DEC-027. The alternative based on the Unicode core `readline` recommendation omitted VT; no additional reason for the user's selection was given.
+
+### KP-041 - Numeric shape and boundary alternatives
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after KP-040; exact time not provided)
+- Capture: contemporaneous; assistant presents the next group of options under the workflow requested in KP-031
+- Sources: SRC-050, SRC-060; approved DEC-008, DEC-025, DEC-028, and DEC-029
+- Related questions: Q-014, LP-13, LP-14, LP-25
+- Status at this checkpoint: Alternatives are proposals, not user-approved rules; the user's response has not yet been recorded.
+
+The options compare decimal/hexadecimal float shapes, float digit separators, interpretation of `1.foo` when `foo` is not a valid suffix, invalid digits such as `0b102`, and a number immediately followed by a non-suffix identifier. The suffix spelling/type set is expressly deferred; a hypothetical attached suffix such as `i32` in `36#1i32` could also be read as base-36 digits. That project-specific ambiguity is added as LP-25 rather than silently selecting a suffix grammar.
+
+### KP-042 - Float shapes and selected numeric boundaries
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after KP-041; exact time not provided)
+- Capture: contemporaneous; user selects among the numeric options
+- Sources: SRC-061; proposals in KP-041
+- Related decisions/questions: DEC-033, Q-014, LP-13, LP-14, LP-25
+- Status: The selected shapes, separator rule, and specific boundary examples are recorded in Language-Design.md and Wissensstand. Typed suffixes and other boundaries remain open.
+
+The user selected Go/IEEE-style decimal and hexadecimal float shapes and single underscores used as digit separators only between digits in the same component. For `1.foo`, assuming `foo` is not a suffix, the user selected float `1.` followed by identifier `foo` and implicit `APPLY`. The user selected an invalid-digit error for `0b102` and supplied the free-text answer “report invalid digit” for `123foo` when `foo` is not a suffix.
+
+These are recorded as the specific examples asked, not as a blanket rule for all float/identifier adjacencies: such a generalization could contradict the selected `1.foo` tokenization. Suffix syntax, valid suffixes, `a.5`, incomplete exponents, and arbitrary-base suffix ambiguity remain open. No implementation or tests were requested or performed.
+
+### KP-043 - Further numeric-boundary alternatives
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after KP-042; exact time not provided)
+- Capture: contemporaneous; assistant presents follow-up alternatives under the workflow requested in KP-031
+- Sources: SRC-060, SRC-061; approved DEC-008, DEC-029, and DEC-033
+- Related questions: Q-014, LP-14, LP-25
+- Status at this checkpoint: Alternatives are proposals, not user-approved rules; the user's response has not yet been recorded.
+
+The options compare context-independent longest matching of `.5` after an operand with context-sensitive dot-plus-integer tokenization; splitting versus invalid-digit diagnostics for non-suffix identifiers after other float forms; and explicit errors versus token splitting for incomplete exponents. The exact suffix spelling/type set and arbitrary-base suffix ambiguity remain deferred.
+
+### KP-044 - Additional numeric-boundary choices
+
+- Documented: 2026-11-01 (+01:00)
+- Event date: 2026-11-01 (after KP-043; exact time not provided)
+- Capture: contemporaneous; user selects among the numeric-boundary alternatives
+- Sources: SRC-062; proposals in KP-043
+- Related decisions/questions: DEC-034, Q-014, LP-14, LP-25
+- Status: The three selected rules are recorded in Language-Design.md and Wissensstand. Suffix spelling, the valid suffix set, and suffix/exponent precedence remain open.
+
+The user selected a leading-dot float after an operand under context-independent longest matching, including with whitespace or comments before it; an invalid-digit error when a float core ending in a digit is immediately followed by a non-suffix identifier; and a malformed-literal error when a recognized exponent has no digits. The prior `1.foo` split is preserved because that float core ends with a dot. The exact typed-suffix set was not selected.
+
+### KP-045 - Global Unicode-escape alternatives
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-044; exact time not recorded)
+- Capture: contemporaneous; assistant prepares the next alternatives under the workflow requested in KP-031
+- Sources: SRC-049, SRC-063; approved DEC-027, DEC-029, DEC-030, and DEC-032
+- Related questions: Q-014, Q-016, LP-09, LP-23, LP-24
+- Status at this checkpoint: The alternatives are proposals, not user-approved rules; the user's response has not yet been recorded.
+
+The alternatives compare Java-style backslash eligibility with translating every occurrence; single-pass translation with repeated rescanning; scalar-only validation with an explicit paired-UTF-16-surrogate alternative; and several treatments of generated line endings. Java supplies prior art for the eligibility and single-pass rules but uses a different escape spelling and UTF-16 model; C++ universal-character names must designate Unicode scalar values. An option extending string continuation to generated endings would change the physical-only rule in DEC-030 and requires explicit approval.
+
+All proposals preserve global translation in comments and raw strings. They do not settle non-universal raw backslashes, mixed-origin CRLF handling, or original-source mapping details. LP-23 and LP-24 remain blockers until their applicable rules are selected.
+
+### KP-046 - Select Unicode-escape translation rules
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-045; exact time not recorded)
+- Capture: contemporaneous; user selects among the Unicode-escape alternatives
+- Sources: SRC-064, SRC-065; alternatives in KP-045
+- Related decisions/questions: DEC-027, DEC-030, DEC-032, DEC-035, Q-014, Q-016, LP-23, LP-24
+- Status: The selected rules are recorded in Language-Design.md and Wissensstand. Mixed-origin CRLF, original-source mapping, and non-universal raw escapes remain open.
+
+The user selected Java-style source-backslash eligibility, single-pass translation, and scalar-only values with malformed-escape diagnostics. Escape-generated hard breaks have the lexical effects of physical line endings, and the user explicitly selected allowing them in ordinary-string continuations. This extends the physical-only continuation rule in DEC-030; continuations remain disallowed in character literals. No reason for the selections was supplied.
+
+The alternatives included translating every occurrence, repeated rescanning, allowing adjacent UTF-16-surrogate escapes, retaining physical-only continuation, and treating generated line endings as non-terminating content. None of those alternatives was selected; this does not imply a separately stated rejection or rationale.
+
+A one-off Python 3 translation model checked the documented examples, malformed and non-scalar inputs, and the generated-continuation example (SRC-065). It was not a project implementation or a mixed-origin CRLF test. `git diff --check` reported no whitespace errors after the documentation update.
+
+### KP-047 - Source-location and translation alternatives
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-046; exact time not recorded)
+- Capture: contemporaneous; assistant prepares the next alternatives under the workflow requested in KP-031
+- Sources: SRC-049, SRC-063, SRC-066; approved DEC-024, DEC-029, DEC-032, and DEC-035
+- Related questions: Q-014, Q-015, Q-016, LP-17, LP-23
+- Status at this checkpoint: The alternatives are proposals, not user-approved rules; the user's response has not yet been recorded.
+
+The options compare recognizing mixed-origin CRLF as one ending with treating its two characters as separate endings; original-source UTF-8 byte spans with scalar or UTF-16 offsets; physical versus logical diagnostic locations; and identifier-only normalization with whole-source NFC normalization before or after Unicode-escape translation. The proposed byte spans are zero-based and half-open, and count an initial BOM in original offsets. Whole-source normalization would change the handling of decomposed literal contents and potentially character-literal validity.
+
+These choices do not resolve non-universal raw-string backslashes or typed numeric suffixes. The already required original-source mapping remains in force under every diagnostic-display alternative.
+
+### KP-048 - Select source normalization and location rules
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-047; exact time not recorded)
+- Capture: contemporaneous; user selects among the source-processing alternatives
+- Sources: SRC-067, SRC-068, SRC-069; alternatives in KP-047
+- Related decisions/questions: DEC-024, DEC-029, DEC-032, DEC-035, DEC-036, Q-014, Q-015, Q-016, LP-17, LP-23
+- Status: The selections are recorded in Language-Design.md and Wissensstand. Detailed original-source mapping, displayed column units, and post-escape literal-value normalization remain open.
+
+The user selected one CRLF ending regardless of the origins of CR and LF; zero-based, half-open original UTF-8 byte spans counting an initial BOM; and physical source locations for diagnostics. The user also selected NFC normalization of the entire translated source before tokenization, rather than the recommended identifier-only approach. No reason for the selections was supplied.
+
+Whole-source NFC affects comments and literals as well as identifiers and may change token spelling. Unicode 18 data confirms that U+037E becomes ASCII `;` and that an `e` followed by U+0301 becomes U+00E9. Ordinary literal escapes are interpreted later; no additional post-escape literal-value normalization was selected. Original-byte mapping through canonical composition and reordering still needs a precise design.
+
+A one-off Python 3 probe passed selected NFC, BOM-span, and mixed-origin CRLF examples (SRC-069). The host's Unicode data is version 15.0.0 rather than the selected version 18.0.0, so the relevant NFC examples were separately checked against the Unicode 18 conformance data (SRC-068). `git diff --check` reported no whitespace errors after the documentation update.
+
+### KP-049 - Parser-scope and output alternatives
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-048; exact time not recorded)
+- Capture: contemporaneous; assistant prepares the next alternatives under the workflow requested in KP-031
+- Sources: SRC-049, SRC-070; approved DEC-008, DEC-009, DEC-011, DEC-022, and DEC-036
+- Related questions: Q-003, Q-007, Q-014, Q-015, LP-08, LP-16, LP-17, LP-26
+- Status at this checkpoint: The alternatives are proposals, not user-approved rules; the user's response has not yet been recorded.
+
+The options compare expression-only and broader parser slices; explicit semicolons with newline-based alternatives; right, left, and non-association for `->`; and an operator/operand tree alone with retaining trivia or producing a lossless concrete syntax tree. Newline-based termination would change DEC-008. Haskell's function-type arrow provides right-associative prior art, while Go's semicolon insertion and rust-analyzer's lossless syntax tree illustrate other choices; none is adopted by comparison alone.
+
+An additional conditional blocker, LP-26, identifies equal-precedence mixed-associativity behavior: `.` is left-associative and shares a level with `->`, whose associativity is not selected. If `->` has different or unspecified association, mixed uses need a tie-breaking rule. No complete parser grammar or implementation is implied by these choices.
+
+### KP-050 - Select full parser scope and output
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-049; exact time not recorded)
+- Capture: contemporaneous; user selects among the parser alternatives
+- Sources: SRC-071; alternatives in KP-049
+- Related decisions/questions: DEC-008, DEC-009, DEC-022, DEC-036, DEC-037, Q-003, Q-007, Q-014, Q-015, LP-08, LP-16, LP-17, LP-26
+- Status: The selections are recorded in Language-Design.md and Wissensstand. Full-language productions, mixed `.`/`->` ties, representation mappings, and error recovery remain open.
+
+The user selected the full already-selected language as the first parser's target, not the offered smaller expression or intermediate slices. Newlines remain whitespace and semicolons are explicit wherever grammar requires them. The user selected non-associative `->`, so ungrouped arrow chains require grouping or rejection; mixed ties with left-associative `.` at the same precedence still need a separate rule.
+
+The user selected a lossless concrete syntax tree for the original source in addition to the previously selected operator/operand tree. Preserving original bytes, BOM, comments, whitespace, and escape spellings is necessary for the offered lossless-original-source contract; DEC-008's comment stripping continues to apply to the operator stream. Mapping between the original representation and globally translated/NFC-normalized syntax, and behavior on malformed input, remain open. No implementation was requested or authorized.
+
+### KP-051 - Mixed operator and recovery alternatives
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-050; exact time not recorded)
+- Capture: contemporaneous; assistant prepares the next alternatives under the workflow requested in KP-031
+- Sources: SRC-049, SRC-070, SRC-072; approved DEC-022 and DEC-037
+- Related questions: Q-007, Q-014, Q-015, LP-17, LP-26
+- Status at this checkpoint: The alternatives are proposals, not user-approved rules; the user's response has not yet been recorded.
+
+The options compare requiring explicit grouping for mixed `.`/`->` ties with left-to-right grouping or favoring `.`; the latter behaves like tighter dot binding in mixed cases despite the shared precedence level. The recovery alternatives compare continuing after syntax errors and preserving error regions in the lossless CST with stopping at the first syntax error. Haskell's incompatible-fixity rule and rust-analyzer's lossless recovery are comparison evidence, not adopted rules.
+
+The options do not settle the detailed synchronization algorithm, malformed UTF-8 recovery, raw-string backslashes, or mappings between original and normalized syntax.
+
+### KP-052 - Mixed-tie alternatives left open
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-051; exact time not recorded)
+- Capture: contemporaneous user selection
+- Source: SRC-073
+- Related questions: Q-007, Q-015, LP-26
+- Status: Blocker; no mixed-tie rule adopted.
+
+The user chose “None of these; keep this as a blocker” instead of the offered explicit-parentheses, left-to-right, and dot-favoring alternatives. No replacement or reason was provided. The existing shared precedence, left associativity of `.`, and non-associativity of `->` are unchanged; the grouping examples do not establish that the surrounding syntax is otherwise legal. The separately described syntax-error recovery alternatives remain unanswered.
+
+### KP-053 - Syntax-error recovery selected
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-052; exact time not recorded)
+- Capture: contemporaneous user selection
+- Sources: SRC-070, SRC-074
+- Related questions: Q-014, Q-015, LP-17
+- Status: Approved as DEC-038; detailed recovery mechanics remain open.
+
+The user selected recovery from parser syntax errors, attempting further diagnostics and retaining the entire original source in a lossless CST with error nodes or an equivalent representation. Syntax errors are explicitly reported and a CST does not imply a successful parse. The alternative of stopping at the first syntax error without requiring a CST was not selected. The proposal cited rust-analyzer as an example; the user supplied no additional rationale.
+
+The choice does not specify synchronization or recovery limits, malformed-encoding or lexical-error recovery, nor the operator/operand tree's behavior when errors occur. It does not authorize implementation.
+
+### KP-054 - Ordinary-literal normalization alternatives
+
+- Documented: 2026-11-02 (+01:00)
+- Event date: 2026-11-02 (after KP-053; exact time not recorded)
+- Capture: contemporaneous proposal and evidence
+- Sources: SRC-075, SRC-076; approved DEC-030, DEC-035, and DEC-036
+- Related questions: Q-014, Q-016, LP-11, LP-23
+- Status at this checkpoint: Proposed, not approved; the user's response has not yet been recorded.
+
+The assistant proposes no further normalization of ordinary character and string values after escape processing. The alternative is to NFC-normalize decoded ordinary literals before validating that a character literal produces one scalar. The difference is visible because source Unicode escapes are translated before whole-source NFC, while named literal escapes are processed after it: `"e\u0301"` becomes U+00E9 under the selected source phase, whereas `"e\N{COMBINING ACUTE ACCENT}"` produces U+0065 U+0301 without a later pass and U+00E9 with one. The analogous single-quoted form would be invalid under the first option but valid under the second.
+
+The Python example is comparative evidence, not an assertion that Python performs this language's earlier whole-source normalization. Raw-string escape behavior and named-character alias rules remain separate questions.
+
+### KP-055 - Post-escape literal normalization rejected
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous user selection
+- Source: SRC-077
+- Related questions: Q-014, Q-016, LP-11, LP-23
+- Status: Approved as DEC-039.
+
+The user selected no further normalization of ordinary character or string values after escape processing. Accordingly, a character literal is checked for exactly one scalar directly after its escapes are decoded. Whole-source NFC remains in its already selected earlier phase (DEC-036). No rationale beyond the selection was supplied.
+
+### KP-056 - Unicode character-name matching proposal
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous proposal, pending user choice
+- Sources: SRC-075, SRC-076, SRC-078
+- Related questions: Q-014, Q-016, LP-11
+- Status: Proposed, not approved.
+
+For `\N{name}`, the proposed behavior accepts canonical Unicode character names and Unicode 18 name aliases, with ASCII case-insensitive matching and otherwise exact spacing and punctuation. Unknown names are errors. Named sequences remain excluded by DEC-030. This follows Python's familiar case-insensitive name lookup and alias support as comparative prior art; Python's named-sequence behavior is not proposed. The separate `\N{U+...}` notation and the rest of the escape repertoire remain open.
+
+### KP-057 - Unicode character-name matching selected
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous user selection
+- Sources: SRC-078, SRC-079
+- Related questions: Q-014, Q-016, LP-11
+- Status: Approved as DEC-040.
+
+The user selected Unicode character names and official aliases for `\N{name}`, with case-insensitive matching. DEC-040 records this as ASCII case-insensitive, otherwise exact spacing and punctuation; unknown and multi-scalar names are errors, consistent with the earlier single-scalar-only choice. The case-sensitive and canonical-names-only alternatives were not selected. No rationale beyond the selection was supplied.
+
+### KP-058 - Numeric `\N{U+...}` proposal
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous proposal, pending user choice
+- Sources: SRC-080; approved DEC-027/035 and DEC-040
+- Related questions: Q-014, Q-016, LP-11
+- Status: Proposed, not approved.
+
+The assistant proposed reserving `\N{...}` for the selected Unicode name/alias lookup and omitting `\N{U+...}` because global fixed-width `\uXXXX` and `\UXXXXXXXX` already encode Unicode scalars everywhere in source. Perl documents `\N{U+...}` as a variable-width numeric code-point form; NewLang's notes explicitly ask whether it is wanted.
+
+### KP-059 - Numeric `\N{U+...}` rejected
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous user selection
+- Source: SRC-081
+- Related questions: Q-014, Q-016, LP-11
+- Status: Approved as DEC-041.
+
+The user selected names-only use of `\N{...}`, rejecting the additional numeric `U+` form. Global `\uXXXX` and `\UXXXXXXXX` remain available for numeric Unicode escapes. No rationale beyond the selection was supplied.
+
+### KP-060 - Simple control-escape set proposal
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous proposal, pending user choice
+- Sources: SRC-082; NewLang escape inventory in SRC-080
+- Related questions: Q-014, Q-016, LP-11
+- Status: Proposed, not approved.
+
+The assistant proposed the seven simple control escapes shared by the inspected Go and Python specifications: `\a`, `\b`, `\f`, `\n`, `\r`, `\t`, and `\v`, in addition to the already selected escaped quotes and backslash. It proposed omitting `\e` and Perl/NewLang `\cX`; Java's narrower list demonstrates that the broader set is not universal. The already selected global Unicode escapes can encode control scalars directly. The exact `\cX` mapping and support for `\e` were pending the user's choice.
+
+### KP-061 - NewLang simple control escapes selected
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous user selection
+- Sources: SRC-080, SRC-083
+- Related questions: Q-014, Q-016, LP-11
+- Status: Approved as DEC-042.
+
+The user selected the NewLang/Perl-style alternative, adding `\e` and `\cX` to the shared simple escape set. DEC-042 records `\e` as ESC (U+001B) and adopts NewLang's mapping: `\c?` yields DEL, `\cX` for ASCII `@` through `~` yields the low five bits of `X`, and other following characters are errors. The choice does not select numeric `\x{...}` or `\o{...}` forms.
+
+### KP-062 - Braced numeric literal escapes proposal
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous proposal, pending user choice
+- Sources: SRC-084; approved DEC-027/035/041
+- Related questions: Q-014, Q-016, LP-11
+- Status: Proposed, not approved.
+
+The assistant proposed omitting braced `\x{hex}` and `\o{octal}` literal escapes because global `\uXXXX` and `\UXXXXXXXX` already encode Unicode scalars throughout source. The historical NewLang notes and Perl provide the braced forms, while Go and Python use different fixed-width numeric escape forms. If adopted, the proposal treats the braced results as Unicode scalar values (not bytes), with malformed digits and non-scalar values diagnosed. The offered choice was neither, hex only, octal only, or both.
+
+### KP-063 - Braced hexadecimal escape selected
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous user selection
+- Sources: SRC-084, SRC-085
+- Related questions: Q-014, Q-016, LP-11
+- Status: Approved as DEC-043.
+
+The user selected `\x{hex}` only and rejected `\o{octal}`. DEC-043 specifies one or more ASCII hex digits, allows leading zeros, disallows separators, and treats malformed and non-scalar values as errors. The result is a Unicode scalar, not encoded bytes. No rationale beyond the selection was supplied.
+
+### KP-064 - Inter-token whitespace proposal
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous proposal, pending user choice
+- Sources: SRC-086; approved DEC-032
+- Related questions: Q-014, LP-27
+- Status: Proposed, not approved.
+
+The assistant proposed ASCII space and horizontal tab as token-separating horizontal whitespace, while retaining DEC-032's full Unicode hard-break set as line endings and rejecting other Unicode 18 `White_Space` characters as separators. Go uses a narrow ASCII separator set; Python also accepts form feed between tokens, but DEC-032 already makes form feed a line ending here. The alternative was to accept all remaining Unicode 18 `White_Space` characters as separators without changing selected hard-break behavior.
+
+### KP-065 - Unicode whitespace separators selected
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous user selection
+- Sources: SRC-086, SRC-087
+- Related questions: Q-014, LP-27
+- Status: Approved as DEC-044.
+
+The user selected all Unicode 18 `White_Space` characters as inter-token separators, except characters in DEC-032's hard-break set, which retain line-ending behavior. This includes non-ASCII spaces; comments and literals continue to apply their own content rules. The narrower ASCII-only proposal was not selected. No rationale beyond the selection was supplied.
+
+### KP-066 - Generated-backslash literal-escape proposal
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous proposal, pending user choice
+- Sources: SRC-088; approved DEC-035/036/039/042/043
+- Related questions: Q-014, Q-016, LP-28
+- Status: Proposed, not approved.
+
+The assistant proposes that a backslash generated by global Unicode translation may initiate an ordinary literal escape in the later literal-processing phase, while never initiating a second global `\u`/`\U` pass. For example, `"\u005Cn"` would decode like `"\n"` and `"\u005Cx{41}"` would decode to `A`. The alternative treats generated backslashes as literal data for ordinary escapes, retaining only the already-selected special case for generated-backslash line continuation. Java's phase ordering is precedent, not a rule already selected here.
+
+### KP-067 - Generated backslashes enter ordinary escape processing
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous user selection
+- Sources: SRC-088, SRC-089
+- Related questions: Q-014, Q-016, LP-28
+- Status: Approved as DEC-045.
+
+The user selected processing generated backslashes as ordinary literal escapes in the later literal phase. Thus `"\u005Cn"` behaves like `"\n"` and `"\u005Cx{41}"` decodes to `A`. Global Unicode translation remains one-pass; generated backslashes cannot initiate another `\u`/`\U` scan. The alternative of treating generated backslashes as literal data (apart from the previously selected generated-backslash line continuation) was not selected. No rationale beyond the choice was supplied.
+
+### KP-068 - Diagnostic column proposal
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous proposal, pending user choice
+- Sources: SRC-090; approved DEC-036
+- Related questions: Q-014, Q-015, LP-17/23/29
+- Status: Proposed, not approved.
+
+The assistant proposed one-based human-facing columns counted in Unicode scalar values from the original physical source line; tabs count as one source scalar rather than visual tab-expanded cells. Original UTF-8 byte spans remain the internal source locations. An editor adapter separately converts to the negotiated protocol encoding. LSP defaults to zero-based UTF-16 units but supports UTF-8/UTF-32 negotiation; Go's token positions use byte offsets and one-based byte columns. At that point this was not yet selected; the user later approved the proposal in KP-069.
+
+### KP-069 - Diagnostic columns selected
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 (+01:00)
+- Capture: contemporaneous user selection
+- Sources: SRC-090, SRC-091
+- Related questions: Q-014, Q-015, LP-17/23/29
+- Status: Approved as DEC-046.
+
+The user selected one-based human-facing diagnostic columns counting Unicode scalar values in the original physical source line; each tab counts as one column. This does not change the zero-based, half-open original UTF-8 byte spans already selected in DEC-036. Editor-protocol positions remain a separate representation and must be converted to the negotiated encoding. The alternative column conventions were not selected; no rationale beyond the choice was supplied.
