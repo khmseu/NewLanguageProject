@@ -112,6 +112,9 @@ This log records the material context and evidence behind the current file class
 | SRC-096 | Inline Python 3 specification probes run in this project | 2026-11-05 (+01:00) | Six binary-precedence trees, eleven integer suffix/radix cases, and 254 operand/operator kind sequences checked with assertions | No project implementation or files created; binary conditional trees do not establish any unselected semantic pairing/reinterpretation rule. Integer probes are not a full float/Unicode lexer. |
 | SRC-097 | `/bigdata/KAI/NewLang/parser/NLparser/Scanner.cc` raw-string branch (around lines 599–632) and inline Python 3 precedence probe | 2026-11-05 (+01:00) | NewLang raw-content backslash handling; conditional trees for `?`/`:` at the same priority | Prototype code, not normative; probe is not project parser code. |
 | SRC-098 | User decisions in this conversation | 2026-11-05 22:57 (+01:00) | Selects literal non-universal raw backslashes; retains `?`/`:` priorities and requires parentheses for then-branch nesting | No other lexical or structural decisions. |
+| SRC-099 | [Language Design](../Language-Design.md) numeric productions and [Wissensstand](./Wissensstand.md) LP-13/14 | Reviewed 2026-11-05 (+01:00) | Existing integer, float, separator, suffix, and malformed-number decisions compared to open numeric-boundary notes | The resulting examples identify gaps to specify; they are not language decisions or lexer-test results. |
+| SRC-100 | User decisions in this conversation | 2026-11-05 23:24 (+01:00) | Incomplete integers and malformed separators are errors; no leading zeros in bases; float suffixes allowed; longest match decides dot runs; asks for floating-point standard options | Does not select the ISO/IEEE edition. |
+| SRC-101 | User decision in this conversation | 2026-11-05 23:46 (+01:00) | Selects option A, IEEE 754-2019 / ISO/IEC 60559:2020, as the floating-point reference | No separate rounding policy, suffix type inventory, or lexical length limit is selected here. |
 
 ## Entries
 
@@ -1264,3 +1267,44 @@ Assertions also verify the revised dot/arrow shapes `(a . b) -> c` and `a -> (b 
 **Belegt:** After reviewing the NewLang scanner evidence (KP-074), the user switches non-universal backslashes in raw strings to always literal (DEC-055). This reverses the user's earlier rejection of this alternative (KP-032); global universal-character translation remains unchanged. **Ableitung:** With no raw escapes, raw content cannot contain its own closing sequence; authors choose a different tag.
 
 **Belegt:** Because then-branch nesting cannot be obtained through priorities, the user decides that it requires parentheses and keeps the current `?`/`:` priorities (DEC-056). The same-priority alternative is not adopted.
+
+### KP-076 - Numeric-syntax edge cases enumerated
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 23:10 (+01:00)
+- Capture: contemporaneous compilation in response to the user's question
+- Sources: SRC-099; DEC-033/034/047; LP-13/14/25
+- Related questions: Q-014, LP-25
+- Status: Open-question inventory only; no syntax choice.
+
+**Belegt:** Existing decisions already settle basic integer and float shapes, `1.foo`, leading-dot floats after operands, invalid `0b102`/`123foo` and digit-ending-float-plus-name cases, incomplete recognized exponents, the separator constraint, suffix spelling, and radix/suffix overlap.
+
+**Offen:** The design now calls out incomplete radix prefixes/cores and base-field spelling; suffix applicability to decimal and hexadecimal floats; malformed separators at component boundaries; number/dot-run tokenization where multi-dot operators may be selected; and the exact ISO/IEEE edition and any lexical significand/exponent limits. Numeric value range, overflow/underflow, and rounding are noted as likely numeric-semantics matters, not as decisions. The examples are prompts for specification, not asserted tokenizations or validated lexer behavior.
+
+### KP-077 - Numeric boundary decisions
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 23:24 (+01:00)
+- Capture: contemporaneous
+- Sources: SRC-100
+- Related questions: Q-014, LP-25
+- Status: Decided (DEC-057–061); floating-point edition open.
+
+**Nutzerangabe/beschlossen:** Incomplete integers are errors (DEC-057); bases cannot have leading zeros (DEC-058); floats can have suffixes (DEC-059); malformed separators are errors (DEC-060); longest-match tokenization gives a definite parse for `1..2` and `1...x` (DEC-061).
+
+**Ableitung:** With no `..`/`...` operator, longest match gives `1.` `.2` and `1.` `.` `.` `x`. `02#10` is recorded as an error, not as decimal `02` with suffix `#10`, following the wording "cannot have"; confirm if the suffix reading was intended.
+
+**Offen:** The user asks for the floating-point standard options; IEEE 754-2019 / ISO/IEC 60559:2020 is current, with an IEEE P754 revision project (PAR approved 2024-06-06) in progress.
+
+### KP-078 - IEEE 754 / ISO 60559 edition selected
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 23:46 (+01:00)
+- Capture: contemporaneous
+- Sources: SRC-101
+- Related questions: Q-014, LP-25
+- Status: Decided (DEC-062).
+
+**Nutzerangabe/beschlossen:** The user selects option A: IEEE 754-2019, identical to ISO/IEC 60559:2020, as the floating-point standard reference.
+
+**Scope:** This pins the cited standard edition for the selected decimal and hexadecimal floating forms. The decision does not select suffix names/types, a separate rounding policy, numeric range/overflow behavior, or lexical significand/exponent length limits.

@@ -39,7 +39,7 @@ The raw-string question concerns spellings such as `` `END"\n"END` ``: whether `
 - Report malformed recognized tokens explicitly with source locations, including unterminated comments/literals, malformed escapes, and invalid numeric digits. The boundaries of malformed numeric-looking sequences and the error-recovery policy remain open.
 - Treat leading `+` and `-` as operators, not part of numeric tokens; an exponent sign belongs to the numeric literal.
 - Ordinary character and string literals cannot contain unescaped physical line breaks; DEC-035 extends this restriction to escape-generated line breaks. Escaped delimiters, backslashes, named escapes, fixed control escapes, braced hex escapes, and generated-backslash interactions are specified in DEC-029/030/035/039–045. Raw-string non-universal backslashes are literal (DEC-055).
-- Support decimal floats such as `1.5` and `1e3`, and hexadecimal floats such as `0x1.8p+2` with a mandatory `p`/`P` binary exponent. DEC-033 specifies their shapes and DEC-047 specifies suffix spelling; the exact standard edition and further numeric boundaries remain open.
+- Support decimal floats such as `1.5` and `1e3`, and hexadecimal floats such as `0x1.8p+2` with a mandatory `p`/`P` binary exponent. DEC-033 specifies their shapes, DEC-047/059 specify suffix spelling and applicability, and DEC-062 selects IEEE 754-2019 / ISO/IEC 60559:2020 as the floating-point standard reference.
 - Attach original-source spans to lexer tokens and operator/operand tree nodes, preserving mappings through universal-character translation and normalization. DEC-036 specifies byte-offset units; detailed mapping behavior remains open.
 
 **Decision DEC-030 — approved:** In ordinary character and string literals:
@@ -72,7 +72,7 @@ hex-float      = ("0x" | "0X")
                  binary-exp
 ```
 
-`digit` is an ASCII decimal digit, and `hex-digit` is an ASCII decimal digit or `A`–`F`/`a`–`f`. Thus a significand has at least one digit, hexadecimal floats require a `p`/`P` exponent, and a single underscore used as a digit separator appears only between digits of the same component. For example, `.5`, `1.`, `1e3`, `0x1p0`, `0x1.p0`, and `0x.8p0` are supported. DEC-047 specifies suffix spelling; the exact ISO/IEEE reference edition remains open.
+`digit` is an ASCII decimal digit, and `hex-digit` is an ASCII decimal digit or `A`–`F`/`a`–`f`. Thus a significand has at least one digit, hexadecimal floats require a `p`/`P` exponent, and a single underscore used as a digit separator appears only between digits of the same component. For example, `.5`, `1.`, `1e3`, `0x1p0`, `0x1.p0`, and `0x.8p0` are supported. DEC-047 specifies suffix spelling; DEC-062 selects the standard reference.
 
 Tokenize `1.foo` as the float `1.` followed by identifier `foo`, to which DEC-008's implicit `APPLY` rule applies. Report an invalid-digit error for `0b102` and `123foo`. Under DEC-047, a suffix must start with `#`, so an attached bare `foo` cannot be a suffix. These decisions do not by themselves determine every other number/identifier boundary (LP-14/25).
 
@@ -83,6 +83,20 @@ Tokenize `1.foo` as the float `1.` followed by identifier `foo`, to which DEC-00
 - An exponent introducer recognized for a numeric literal must be followed by decimal exponent digits after any optional sign. Incomplete exponents such as `1e+` and `0x1p` are malformed numeric literals.
 
 For these malformed numeric patterns, issue the specified diagnostic rather than splitting back to an earlier valid token. DEC-047 separates suffixes from exponent markers with `#`; further numeric boundary cases remain open (LP-25).
+
+**Decision DEC-057 — approved:** Incomplete integer forms are errors: a radix marker without digits (`0x`, `0b`, `0o`, `0d`) and a `base#` without digits (`16#`, `2#`). The diagnostic covers the whole incomplete form rather than splitting back to a shorter valid token.
+
+**Decision DEC-058 — approved:** The base field of `base#number` has no leading zeros. For example, `02#10` and `036#z` are errors rather than radix literals or decimal-plus-suffix forms.
+
+**Decision DEC-059 — approved:** Every floating-point form may carry a numeric suffix (DEC-047), for example `1.5#F64`, `1.#F64`, `.5#F64`, `1e3#F64`, and `0x1p0#F64`. Suffix names and type meanings remain semantic questions.
+
+**Decision DEC-060 — approved:** Malformed digit separators are errors. Any `_` not placed singly between two digits of the same component is diagnosed, for example `1__2`, `1_`, `0x_1`, `1._2`, `1e_2`, and `16#_f`.
+
+**Decision DEC-061 — approved:** Numbers adjacent to dot runs use ordinary longest-match tokenization (LP-02); no special rule applies. With the current operator set, which has no `..` or `...` operator, `1..2` is float `1.` followed by float `.2` (implicit `APPLY`), and `1...x` is float `1.`, operator `.`, operator `.`, and identifier `x` (implicit `EMPTY` between the two operators). Adding multi-dot operators later would change these results through the same longest-match rule.
+
+Any lexical significand/exponent length limits remain open (Q-014). Numeric range, overflow/underflow, and rounding may instead be specified with numeric types and semantics.
+
+**Decision DEC-062 — approved:** Use IEEE 754-2019, identical to ISO/IEC 60559:2020, as the floating-point standard reference for this language.
 
 **Decision DEC-035 — approved:** Apply these rules to global universal-character translation:
 
@@ -166,8 +180,8 @@ This table consolidates the currently agreed source forms; it is an inventory, n
 | Ordinary string literal | `"..."` | Whole-source NFC precedes tokenization and ordinary escapes. No unescaped line breaks; backslash followed by a line ending continues the string, removing both and immediately following spaces/tabs (DEC-030/035). Decoded values are not normalized again after escapes (DEC-039). |
 | Raw string literal | `` `TAG"..."TAG` `` | Tags match `[A-Za-z0-9_]*` after whole-source NFC, including empty, without a fixed length limit. Physical and escape-generated line endings normalize to LF, including LS and PS (DEC-032/035/036). Non-universal backslashes are literal: `` `END"\n"END` `` contains backslash and `n` (DEC-055). Global `\u`/`\U` translation still applies first (DEC-027). |
 | Perl-style character/string escapes | `\a`, `\b`, `\cX`, `\e`, `\f`, `\n`, `\N{...}`, `\r`, `\t`, `\v`, `\x{...}` | DEC-030/040–045 select named single-scalar lookup, fixed control escapes, `\x{hex}`, and no `\N{U+...}`; `\o{...}` is not selected. A generated backslash may start any ordinary escape but cannot restart global Unicode translation. For `\cX`, `?` maps to DEL; ASCII `@`–`~` maps to `X & 0x1F`; other values are errors. |
-| Integer literal | Decimal digits; `0b`/`0B`, `0o`/`0O`, `0d`/`0D`, `0x`/`0X`; or `base#number` | Bases 2–36 for `base#number`; case-insensitive letter digits; single `_` only between digits. Unmarked leading zeros remain decimal (DEC-028). `0b102` and `123foo` are invalid-digit errors (DEC-033/047). Further boundary/range rules remain open (Q-014). |
-| Floating-point literal | Decimal or hexadecimal form as specified in DEC-033 | Hexadecimal floats require a `p`/`P` binary exponent; single `_` digit separators occur only between digits of a component. DEC-034 specifies additional malformed-number boundaries. Leading signs are operators; exponent signs are part of the literal. DEC-047 specifies suffix spelling; remaining boundaries, exact ISO/IEEE edition, and precision rules remain open (Q-014). |
+| Integer literal | Decimal digits; `0b`/`0B`, `0o`/`0O`, `0d`/`0D`, `0x`/`0X`; or `base#number` | Bases 2–36 for `base#number`; case-insensitive letter digits; single `_` only between digits. Unmarked leading zeros remain decimal (DEC-028). `0b102` and `123foo` are invalid-digit errors (DEC-033/047). Incomplete forms, bases with leading zeros, and malformed separators are errors (DEC-057/058/060). |
+| Floating-point literal | Decimal or hexadecimal form as specified in DEC-033 | Hexadecimal floats require a `p`/`P` binary exponent; single `_` digit separators occur only between digits of a component. DEC-034 specifies additional malformed-number boundaries. Leading signs are operators; exponent signs are part of the literal. All float forms may carry suffixes (DEC-047/059); dot runs follow longest match (DEC-061). IEEE 754-2019 / ISO/IEC 60559:2020 is the selected reference (DEC-062); lexical significand/exponent limits remain open (Q-014). |
 | Numeric suffix | `#` followed by `[A-Za-z0-9]+` | ASCII case-insensitive; no empty body or underscore. After an unmarked integer from 2 through 36, the first `#` selects radix notation and a second `#` selects a suffix. Use `0d` to force decimal interpretation (DEC-047). |
 | Grouping / collection delimiters | `(` `)`, `{` `}`, `[` `]` | Parentheses group; braces delimit function expressions/bodies; square brackets delimit template parameters/arguments. Full grammar remains open (Q-015). |
 | Member-access / dot operator | `.` | Left-associative; exact operator form/semantics remain open (Q-007). |
@@ -374,7 +388,7 @@ The decisions above establish design direction, but not a complete grammar. DEC-
 ### Scope and general parser blockers
 
 1. **Parser scope and language — selected:** Target the full selected language (DEC-037) in TypeScript (DEC-054). Binding expressions and predefined identifiers use the generic operator/operand model (DEC-052/053); missing semantic forms do not automatically require separate parser productions. Features that were never selected are not added by this choice.
-2. **What is the remaining lexical grammar?** DEC-024 through DEC-056 select basic token forms, global universal-character translation and source NFC, Unicode data and line-ending and whitespace behavior, numeric suffix spelling/radix disambiguation, several numeric and quoted-literal details, longest-match tokenization, diagnostics, and source positions. Raw-string backslashes are literal (DEC-055). Specify further numeric boundaries (Q-014).
+2. **What is the remaining lexical grammar?** DEC-024 through DEC-061 select basic token forms, global universal-character translation and source NFC, Unicode data and line-ending and whitespace behavior, numeric suffix spelling/radix disambiguation, several numeric and quoted-literal details, longest-match tokenization, diagnostics, and source positions. Raw-string backslashes are literal (DEC-055). Numeric boundaries are specified by DEC-033/034/047/057–061; the ISO/IEEE reference edition remains open (Q-014).
 3. **What structural expression rules remain?** Minimal `APPLY`/`EMPTY` insertion is confirmed by DEC-048; legality remains semantic under DEC-009/010. `.` binds tighter than `->` (DEC-049), and `::` is reserved (DEC-050). Specify remaining delimiter/grouping structure and any still-unspecified associativity needed to build trees. Then-branch conditional nesting requires parentheses (DEC-056).
 4. **What is the detailed parse-tree contract?** DEC-037 selects a lossless original-source concrete syntax tree plus the operator/operand tree; DEC-038 selects recovery with a lossless CST for syntax errors. Define node contracts for operands, operators, grouping, declarations, and source locations, and how both trees map through Unicode translation and normalization to original UTF-8 bytes, including locations for implicit elements. DEC-046 specifies human-facing diagnostic columns. Recovery mechanics and limits, the result on malformed encoding or lexical errors, and the operator/operand tree on errors remain open.
 
