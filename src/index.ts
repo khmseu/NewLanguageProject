@@ -1,3 +1,9 @@
+/**
+ * Public frontend entry point: byte-preserving input, source translation,
+ * pinned Unicode services, diagnostic contracts, and the partial core lexer.
+ * Declaration contracts live in the re-exported modules.
+ * @module
+ */
 export { SourceInput } from "./source/source-input.js";
 export type { ByteRange } from "./source/source-input.js";
 export {

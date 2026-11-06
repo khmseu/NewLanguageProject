@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-06 (timezone +01:00); user authorized the Phase 3 commit only (KP-096), following its verified 110-test checkpoint (KP-095). Phase 4 is not authorized or started. Earlier experiment sources were not re-reviewed.
+- Last substantive update: 2026-11-06 (timezone +01:00); user authorized committing JSDoc guidance and source documentation (KP-098), verified in KP-097. This checkpoint accompanies that commit; its hash is in Git history. Phase 3 is committed as `7823575`; Phase 4 remains paused.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -308,6 +308,7 @@ The cheapest useful starting slice was assessed as source positions/diagnostics,
 | DEC-015 | Distinguish value and reference types; a reference type consists of an implicit pointer-like value identifying a variable, and variables may hold either category. | User-stated model; identity, aliasing, lifetime, and memory-management semantics remain open. | KP-014 |
 | REQ-002 | Support collections of fields identified by names or indices. | User-stated requirement; concrete collection forms and their value/reference behavior remain open. | KP-014 |
 | REQ-003 | Plan the compiler with a generic base followed by lexer/parser implementation according to Language Design; always use TDD and create the necessary agent support files. | User-approved plan/toolchain; planning commit and starting Phase 1 authorized. Subsequent phase checkpoints retained. | KP-091, KP-092 |
+| REQ-004 | Add agent instructions requiring complete JSDoc and apply that documentation to existing sources. | User-requested and implemented as documentation-only maintenance; no compiler phase advancement or commit requested. | KP-097 |
 | DEC-016 | Model multiple parameters and multiple return values logically as one temporary collection each. | User-approved semantic model; concrete collection/type/syntax and observability remain open. | KP-015 |
 | DEC-017 | Reference values behave as if garbage-collected; implementations may optimize cases with sufficiently predictable lifetimes. | User-approved lifetime model; optimization must preserve the GC-model behavior. Specific techniques and proof criteria remain open. | KP-016 |
 | DEC-018 | Resolve names through predefined, imported, and block-related namespace hierarchy, preferring the closest namespace; create overload groups only through explicit declarations; resolve by type compatibility, preferring identical types, with exactly one candidate required. | User-approved lookup and overload policy; namespace/import details, overload declaration syntax, and ranking among mixed exact/compatible arguments remain open. | KP-017 |
@@ -792,8 +793,7 @@ hooks were added.
 
 - **Implemented/verified:** Phase 3
   [completion evidence](../plans/compiler-frontend-phase-3-complete.md), KP-095.
-  Phase 3 commit authorized 2026-11-06 at 18:56 (+01:00), KP-096.
-  This checkpoint is included in that commit; identify its hash in Git history.
+  Phase 3 committed as `7823575` following authorization at 18:56 (+01:00), KP-096.
   Phase 4 remains paused pending explicit continuation.
 - [Core scanner](../src/lexer/core-lexer.ts) provides `scanCoreAt` and `lexCore`:
   translated unnormalized XID recognition, NFC display/NFKC lookup names,
@@ -837,7 +837,7 @@ hooks were added.
 
 ## Next steps
 
-1. Commit [Phase 3 core lexer](../plans/compiler-frontend-phase-3-complete.md) as authorized in KP-096, then stop. Planning/support is committed as `08c381a`, Phase 1 as `5fa5ce9`, Phase 2 as `aa36992`; find the Phase 3 hash in Git history. Await explicit continuation before Phase 4 ordinary/character/raw literals, which must use behavioral-red TDD and existing Unicode18 normalization.
+1. JSDoc maintenance (KP-097) is complete; its commit is authorized in KP-098 and includes this checkpoint (hash in Git history). Phase 3 is committed as `7823575`. Await explicit continuation before Phase 4 ordinary/character/raw literals, which must use behavioral-red TDD and existing Unicode18 normalization. Maintain [JSDoc instructions](../.github/instructions/jsdoc.instructions.md) on source changes, including generated documentation through its generator.
 2. Before Phase 5, specify the exact unified numeric candidate grammar and numeric length limits (Q-014); the unified integer/float matching approach is approved in DEC-089. Everything else on the parser-readiness checklist is selected or postponed to implementation. DEC-083–088 settle adjacency, EOF extents, fallback runs, error binding/collapse, and span postponement. DEC-077–082 settle incomplete candidates, Unicode errors, collapse, comment-only files, unexpected closers, and token-level normalization. DEC-072–076 settle group behavior, EOF closer insertion, ordinary prefix/postfix parsing, semantic `::` rejection, comments as lexical whitespace, and universal operator/operand syntax. Retain the earlier selected literal, precedence, insertion, and semantic-identifier decisions. Use the [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
 3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
 
@@ -845,4 +845,4 @@ hooks were added.
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 
-> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-3-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. KP-096 authorizes committing Phase 3 only; check Git history for its hash. Phase 3 has 110 passing tests/type-check/build/export smoke. Phase 4 is not authorized or started; await explicit continuation. Preserve behavioral-red TDD; Phase 2's missing evidence remains recorded. Literals and numbers are deferred core-scanner surfaces. Resolve Q-014 before numeric matching.
+> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-3-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. Phase 3 is committed as `7823575`; KP-098 authorizes the JSDoc documentation commit (hash in Git history), verified with 110 tests/type-check/build/export smoke in KP-097. Follow `.github/instructions/jsdoc.instructions.md`. Phase 4 is not authorized or started. Preserve behavioral-red TDD; Phase 2's missing evidence remains recorded. Literals/numbers are deferred core-scanner surfaces; resolve Q-014 before numeric matching.

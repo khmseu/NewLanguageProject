@@ -5,6 +5,14 @@
  * © 2026 Unicode®, Inc. Unicode and the Unicode Logo are registered trademarks
  * of Unicode, Inc. in the U.S. and other countries.
  * For terms of use and license, see https://www.unicode.org/terms_of_use.html.
+ * @module
+ */
+/**
+ * Direct decomposition rows [code point, compatibility-only flag, mapping code
+ * points], in UCD order. Canonical mappings have a false flag; consumers recursively
+ * expand mappings and handle Hangul algorithmically. Numeric entries are code
+ * points, not bytes or UTF-16 offsets. Readonly is compile-time only: these arrays
+ * are not frozen and consumers must not mutate this shared generated data.
  */
 export const DECOMPOSITIONS: readonly (readonly [number, boolean, readonly number[]])[] = [
   [0xa0, true, [0x20]],
@@ -5991,6 +5999,11 @@ export const DECOMPOSITIONS: readonly (readonly [number, boolean, readonly numbe
   [0x2fa1d, false, [0x2a600]],
 ];
 
+/**
+ * Rows [code point, canonical combining class] for nonzero classes, in UCD order.
+ * Missing code points have class zero. Readonly is compile-time only; no runtime
+ * freezing or defensive copying is performed.
+ */
 export const COMBINING_CLASSES: readonly (readonly [number, number])[] = [
   [0x300, 230],
   [0x301, 230],
@@ -6996,6 +7009,12 @@ export const COMBINING_CLASSES: readonly (readonly [number, number])[] = [
   [0x1e94a, 7],
 ];
 
+/**
+ * Eligible canonical composition rows [starter, next, composite] in decomposition
+ * order, omitting compatibility mappings and Full_Composition_Exclusion members.
+ * Hangul pairs are handled algorithmically, not listed here. Entries are code
+ * points; readonly is compile-time only and the shared arrays are not frozen.
+ */
 export const COMPOSITIONS: readonly (readonly [number, number, number])[] = [
   [0x41, 0x300, 0xc0],
   [0x41, 0x301, 0xc1],

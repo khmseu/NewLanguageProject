@@ -1794,3 +1794,50 @@ confirmations, this request does not ask to continue, so Phase 4 remains paused.
 This record accompanies the Phase 3 commit; its hash is retrievable in Git
 history. Verification remains the 110-test/type-check/build/export-smoke
 checkpoint in KP-095; no code behavior changed in this commit-only turn.
+
+### KP-097 - Complete source JSDoc and persistent agent guidance
+
+- Documentation/event date: 2026-11-06 (+01:00); user request at 18:59.
+- Source: current conversation, request to add an agent instruction requiring
+  complete JSDoc and document the existing sources.
+- Related: REQ-004, KP-096. Status: requested and implemented, uncommitted.
+
+**Nutzerangabe:** Add complete JSDoc documentation to sources, supported by an
+agent instruction. No compiler phase advancement or commit was requested.
+
+**Belegt:** Phase 3 is committed as `7823575`. Added
+[JSDoc instructions](../.github/instructions/jsdoc.instructions.md) scoped to
+`src/**/*.ts,scripts/**/*.mjs` and linked them from [AGENTS.md](../AGENTS.md).
+Documented all eight source modules and the Unicode normalization generator:
+module responsibilities, declarations/properties, generic contracts, parameters,
+returns/errors, byte/scalar/UTF-16 units, normalization, mutation/copying,
+provenance, diagnostic recovery and deferred work.
+
+**Maintenance choice:** Documented table declarations, not each generated row;
+the generator emits the same JSDoc as the checked-in generated output, retaining
+Unicode attribution. No duplicate re-export documentation, dependency additions,
+runtime behavior changes, data-row changes, or third-party fixture edits.
+Documentation-only work uses no artificial TDD red stage.
+
+**Verification:** Implementer reports an AST/tag audit of nine modules,
+175 declarations with 77 parameters and seven generic parameters, no missing
+audited tags; comment-insensitive AST comparison and exact regenerated-output
+comparison passed. These audit counts establish coverage, not an automatic
+proof of comment accuracy. Conductor inspected representative contracts against
+implementations and reran type-check, build, all 110 tests, and public export
+smoke successfully. Whitespace checks passed. No new documentation tooling
+was installed. Restored existing semicolon style during final review.
+
+**Next step:** Documentation changes await the user's next request.
+Phase 4 remains paused; no commit performed in this turn.
+
+### KP-098 - JSDoc documentation commit authorized
+
+- Documentation/event date: 2026-11-06 19:21 (+01:00).
+- Source: current conversation, user request "commit that".
+- Status: Nutzerangabe/beschlossen; commit the documentation changes in KP-097.
+
+The user authorized committing source JSDoc, generator-preserved documentation,
+and project agent guidance. This record accompanies that commit; its hash is
+retrievable in Git history. Verification remains the checks recorded in KP-097;
+no source behavior changed in this commit-only turn. Phase 4 remains paused.

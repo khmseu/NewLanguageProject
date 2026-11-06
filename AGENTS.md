@@ -39,6 +39,8 @@
   do not rely on an unverified host Unicode version.
 - Follow [frontend instructions](.github/instructions/compiler-frontend.instructions.md)
   when changing source or tests.
+- Keep source contracts documented following the
+  [JSDoc instructions](.github/instructions/jsdoc.instructions.md).
 
 ## Planning and continuity
 
