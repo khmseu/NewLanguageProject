@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-06 (timezone +01:00); user approved the compiler plan/toolchain and requested the planning commit followed by implementation (KP-092). Earlier experiment sources were not re-reviewed.
+- Last substantive update: 2026-11-06 (timezone +01:00); planning committed as `08c381a`; Phase 1 foundation implemented, reviewed with fixes, and verified (KP-093). Phase 1 changes await commit/continue confirmation. Earlier experiment sources were not re-reviewed.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -574,7 +574,7 @@ The user clarified the compilation in KP-071/072, settled further numeric and fl
 - Representation choices remain: node/root/trivia layouts and spans of implicit nodes, inserted closers, and diagnostics inside normalized literals (LP-23/Q-015). These can be implementation choices if they preserve agreed contracts.
 - No additional language-form parser productions are required (DEC-076, resolving LP-21/22's structural-syntax concern); remaining language-form meanings belong to semantic analysis.
 
-TypeScript is confirmed (DEC-054). Type inference, safety proofs, reference lifetimes, dispatch, numeric rounding/representation, suffix type meanings, and continuation runtime semantics can be deferred unless a selected syntax depends on them. Representation and recovery algorithms may be chosen during implementation if they preserve the approved observable contracts; independent components can start without resolving every full-parser question. Compiler planning is now requested (REQ-003); implementation approval remains pending.
+TypeScript is confirmed (DEC-054). Type inference, safety proofs, reference lifetimes, dispatch, numeric rounding/representation, suffix type meanings, and continuation runtime semantics can be deferred unless a selected syntax depends on them. Representation and recovery algorithms may be chosen during implementation if they preserve the approved observable contracts; independent components can start without resolving every full-parser question. The compiler plan is approved (KP-092); Phase 1 foundation is implemented and verified (KP-093). Lexer/parser behavior is not yet implemented.
 
 ### Proposed compiler implementation plan
 
@@ -737,10 +737,34 @@ hooks were added.
 
 ## Work status and verification
 
+### Compiler foundation checkpoint
+
+- **Approved/implemented:** Phase 1 of the
+  [compiler plan](../plans/compiler-frontend-plan.md), with
+  [completion evidence](../plans/compiler-frontend-phase-1-complete.md) in KP-093.
+  Planning/support commit: `08c381a`. Phase 1 remains uncommitted pending the
+  user's commit/continue confirmation.
+- **API:** [SourceInput](../src/source/source-input.ts) retains exact original
+  bytes, defensively copies exposed data, validates immutable half-open ranges,
+  and explicitly rejects unsupported runtime inputs/malformed ranges.
+  [Diagnostic/result contracts](../src/diagnostics/diagnostic.ts) enforce
+  error-free success and nonempty failure errors at the TypeScript level.
+- **Verified:** 49 tests in two files; type-check, build, and built-package
+  export smoke all passed. Review's two runtime-validation findings were
+  addressed with failing regression tests first and rechecked.
+- **Toolchain:** Node v26.13.0 (`process.release.lts`: `Lithium`), npm 12.2.2,
+  TypeScript 7.0.2, Vitest 5.1.0, `@types/node` 26.6.6. Node 24 support is
+  declared but not tested locally. Host Unicode is 17.0, not the required 18;
+  no decoding/Unicode/lexer/parser behavior is claimed.
+- **Commands:** See [README](../README.md). Package dependencies are pinned
+  and locked; generated outputs and dependencies are ignored.
+
+### Earlier research and planning evidence
+
 - Identified: the four `langlist` roots, dominant experiment roots, clear upstream/reference trees, and generated/dependency groupings.
 - Evidence checked: root directory entries; project manifests/READMEs; NewLang grammar headers and Makefiles; selected source files; `GenLang` language specification; `LangLLVM` package and grammar; `OPPrs` package metadata and parser/sample grammars.
 - Experiment-feature evidence: selected NewLang architecture, syntax and grammar files; GenLang specification and parser/generator/interpreter sources; LangLLVM grammar/design/test sources; miniopp, Rust Pratt, TypeScript Pratt and Bison utility sources.
-- Consolidation: candidate feature matrix, conflict analysis, and relative TypeScript effort estimates are recorded here. The NewLang language-level object model is selected by DEC-019, proper tail calls/continuations are required by DEC-020, and DEC-037 selects the full already-selected language as the first parser's target. Other feature selection and implementation staging remain open (Q-003). No implementation has been approved or verified.
+- Consolidation: candidate feature matrix, conflict analysis, and relative TypeScript effort estimates are recorded here. The NewLang language-level object model is selected by DEC-019, proper tail calls/continuations are required by DEC-020, and DEC-037 selects the full already-selected language as the first parser's target. Compiler staging is now approved in KP-092; broader candidate feature selection remains open (Q-003). Earlier research was not implementation verification; see the separate foundation checkpoint above.
 - The agreed lexical and operator source forms are consolidated in the [token syntax summary](../docs/design-research/Language-Design.md#agreed-token-syntax-summary); this is an index, not a complete lexical grammar.
 - Not verified: complete file-by-file provenance, all nested archive contents, all source histories, or licenses beyond inspected headers/metadata.
 - Implementation claims are limited to mechanisms directly visible in the selected code; no project build or test suite was run for this research task. One-off Python 3 probes checked DEC-035 translation examples, malformed/non-scalar cases, and selected DEC-036 NFC, BOM-span, and mixed-origin CRLF examples. The host uses Unicode 15.0.0, so the selected NFC examples were also checked against Unicode 18 conformance data; these probes are not a language implementation (KP-046/048).
@@ -757,7 +781,7 @@ hooks were added.
 
 ## Next steps
 
-1. Commit the approved planning/support changes, then implement Phase 1 of the [approved plan](../plans/compiler-frontend-plan.md) using TDD. Review the green foundation and stop for commit/continue confirmation.
+1. Await commit/continue confirmation for the reviewed, green [Phase 1 foundation](../plans/compiler-frontend-phase-1-complete.md). Planning/support is committed as `08c381a`; Phase 1 code is not yet committed. After confirmation, start Phase 2 source decoding/Unicode/provenance with TDD and verify Unicode 18 data availability.
 2. Before Phase 5, specify the exact unified numeric candidate grammar and numeric length limits (Q-014); the unified integer/float matching approach is approved in DEC-089. Everything else on the parser-readiness checklist is selected or postponed to implementation. DEC-083–088 settle adjacency, EOF extents, fallback runs, error binding/collapse, and span postponement. DEC-077–082 settle incomplete candidates, Unicode errors, collapse, comment-only files, unexpected closers, and token-level normalization. DEC-072–076 settle group behavior, EOF closer insertion, ordinary prefix/postfix parsing, semantic `::` rejection, comments as lexical whitespace, and universal operator/operand syntax. Retain the earlier selected literal, precedence, insertion, and semantic-identifier decisions. Use the [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
 3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
 
@@ -765,4 +789,4 @@ hooks were added.
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 
-> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant entries in `Kontext/Kontextprotokoll.md`. KP-092 records plan/toolchain approval and authorization to commit planning changes and start Phase 1 using TDD; check the latest progress before continuing. Retain the generic expression parser and semantic identifier-recognition boundary. Resolve Q-014 before numeric matcher implementation; check Q-001 before cleanup of experiment sources.
+> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-1-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. KP-093 records the green, reviewed Phase 1 foundation (49 tests, type-check/build/export smoke pass), awaiting commit/continue confirmation. Planning is committed as `08c381a`; Phase 2 has not started. Preserve TDD and the generic expression parser/semantic boundary; the host Unicode 17 data does not satisfy pinned Unicode 18. Resolve Q-014 before numeric matcher implementation.

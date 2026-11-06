@@ -140,6 +140,7 @@ This log records the material context and evidence behind the current file class
 | SRC-124 | User request in this conversation | 2026-11-06 16:47 (+01:00) | Requests a compiler plan: generic base, then lexer/parser according to Language Design; always TDD; necessary agent support files | Planning/guidance request, not approval of implementation phases, new tooling, or commits. |
 | SRC-125 | Current Language Design, relevant current knowledge and KP-088–090, repository inventory | Reviewed 2026-11-06 (+01:00), baseline commit `7da7c1f` | Compiler frontend constraints, remaining numeric grammar question, confirmed TypeScript, and absence of compiler source/manifests/tests or agent guidance | Earlier experiment trees and historical source coverage were not re-examined. |
 | SRC-126 | User approval in this conversation | 2026-11-06 17:05 (+01:00) | "approved. commit changes, then start implementing the plan." | Approves roadmap/toolchain and requests planning commit before implementation; existing per-phase confirmation checkpoints remain. |
+| SRC-127 | Phase 1 implementation/review reports and local verification commands | 2026-11-06 (+01:00) | Test-first foundation implementation, runtime-validation review findings/fixes, 49-test pass, type-check/build/export smoke, Node LTS/Unicode metadata | Foundation only; no Unicode 18 conformance, decoding, lexing, or parsing verified. Node 24 not tested. |
 
 ## Entries
 
@@ -1635,3 +1636,45 @@ and compatible package versions must be verified during foundation setup.
 **Next step:** Commit the planning/support documents, implement Phase 1 with
 recorded red/green evidence, review, and stop at the phase checkpoint. Numeric
 grammar approval remains a gate before Phase 5, not a foundation blocker.
+
+### KP-093 - Planning committed; foundation green after runtime-boundary fixes
+
+- Documentation/event date: 2026-11-06 (+01:00).
+- Source: SRC-127; related REQ-003, KP-092.
+- Status: implemented/verified Phase 1; awaiting commit/continue confirmation.
+
+**Belegt:** Planning/support changes were committed as `08c381a` before any
+compiler implementation. Phase 1 now provides a strict TypeScript ESM package,
+pinned npm lockfile, Vitest, declaration build, public export smoke,
+original-byte `SourceInput`, validated ranges, and diagnostic/result types.
+See the [completion record](../plans/compiler-frontend-phase-1-complete.md)
+and [README](../README.md) for API and commands.
+
+**Documented implementation choices:** Source construction and access copy
+bytes without decoding; unsupported runtime inputs throw `TypeError`; malformed
+or out-of-bounds ranges throw `RangeError`. Returned ranges are frozen.
+Diagnostic locations remain original-byte ranges, with physical-line display
+deferred. Result types statically exclude errors from success and require
+failure's first diagnostic to be an error; no runtime result factory or parser
+is provided. These are small foundation contracts, not new language rules.
+
+**TDD/review evidence:** The implementer reported initial source tests red
+(10/10) on missing copying/range validation, then green. Static review returned
+NEEDS_REVISION for constructor coercion of invalid JS input and inconsistent
+null-range errors. The implementer added regressions first (15 failures,
+32 passes), fixed both, and reached 47 passing source tests. Conductor inspected
+the final fixes and reran all 49 tests, type-check, build, and public export
+smoke successfully; `git diff --check` passed. Final review status is approved
+after revisions. The review agent did not execute commands; test results come
+from the implementer and conductor, not an invented reviewer run.
+
+**Environment/limits:** Node v26.13.0 reports LTS `Lithium`, npm is 12.2.2.
+Pinned TypeScript 7.0.2, Vitest 5.1.0, and `@types/node` 26.6.6 were installed.
+Node 24 is in the declared engine range but not tested locally. Host Unicode
+reports 17.0: it must not be used as evidence for Unicode 18 behavior.
+No source decoding, Unicode translation/tables, lexer/parser, AST, or backend
+was implemented. Numeric grammar remains Q-014.
+
+**Next step:** Phase 1 implementation remains uncommitted at the phase
+checkpoint. Present its completion and Conventional Commit message; await
+commit/continue confirmation before Phase 2.

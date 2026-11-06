@@ -1,1 +1,4 @@
 Sessions/
+node_modules/
+dist/
+coverage/
