@@ -14,7 +14,7 @@ This log records the material context and evidence behind the current file class
 
 | ID | Source | Stand/date | Inspected coverage | Limits |
 | --- | --- | --- | --- | --- |
-| SRC-001 | `/bigdata/KAI/projects/NewLanguageProject/langlist` | Read during this task | Four listed directory roots | The list itself does not explain ownership or intent for individual files. |
+| SRC-001 | [langlist](../docs/design-research/langlist) (originally `/bigdata/KAI/projects/NewLanguageProject/langlist`) | Read during this task | Four listed directory roots | The list itself does not explain ownership or intent for individual files. |
 | SRC-002 | Project trees named by `langlist` | Read during this task | Top-level structure, selected manifests/READMEs, selected source and grammar files | Not a complete file-by-file content review; dependencies, archives, and generated outputs were not exhaustively examined. |
 | SRC-003 | User request in this conversation | 2026-11-01 | User says the directories contain years of language experiments as well as sources from related internet projects; asks to identify which files belong to each class | No earlier rationale, cleanup authorization, or file-moving request was provided. |
 | SRC-004 | [Unicode Standard Annex #31, Unicode 18.0.0, Revision 45](https://www.unicode.org/reports/tr31/tr31-45.html) | Approved 2026-09-01; checked 2026-11-01 | §5 normalization/case guidance and requirements R4–R7; §5.1 NFKC modifications | Current-version guidance only; not a future-version draft. |
@@ -106,36 +106,37 @@ This log records the material context and evidence behind the current file class
 | SRC-090 | [LSP 3.17 position encoding](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position) and [Go `token.Position`](https://pkg.go.dev/go/token#Position) | Consulted 2026-11-05 | LSP positions are zero-based and default to UTF-16, with UTF-8/UTF-32 negotiation; Go positions use byte offsets and one-based byte columns | Editor protocol coordinates and user-facing diagnostic columns are different presentation layers; neither is selected here. |
 | SRC-091 | User selection in this conversation | 2026-11-05 (+01:00) | Selects one-based human-facing columns counting Unicode scalars in the original physical source line, with tabs counting as one column | Original UTF-8 byte spans remain unchanged; editor positions are converted separately to the negotiated protocol encoding. |
 | SRC-092 | User request in this conversation | 2026-11-05 (+01:00) | Requests an updated compilation of questions remaining before parser development | Does not select new syntax or authorize implementation. |
-| SRC-093 | [Language Design](../Language-Design.md) and relevant lexer/parser sections of [Wissensstand](./Wissensstand.md) | Reviewed at commit `5e32bcb`, 2026-11-05 (+01:00) | Approved DEC-008–046 where relevant, questions Q-007–016 and blockers LP-18–29 | Assessment uses the current project records; earlier experiment sources were not re-examined for this request. |
+| SRC-093 | [Language Design](../docs/design-research/Language-Design.md) and relevant lexer/parser sections of [Wissensstand](./Wissensstand.md) | Reviewed at commit `5e32bcb`, 2026-11-05 (+01:00) | Approved DEC-008–046 where relevant, questions Q-007–016 and blockers LP-18–29 | Assessment uses the current project records; earlier experiment sources were not re-examined for this request. |
 | SRC-094 | User decisions in this conversation | 2026-11-05 (+01:00) | Specifies `#` suffixes, minimal insertion, tighter `.`, reserved `::`, sequencing `;`, left `@name` binding targets, semantic identifier recognition, and confirms TypeScript; requests raw-string clarification and conditional counterexamples | Does not select raw-backslash behavior, change `?`/`:` priorities, or authorize parser implementation. |
 | SRC-095 | User response to numeric-suffix clarification | 2026-11-05 (+01:00) | Selects a nonempty ASCII alphanumeric suffix sequence and radix-first interpretation for the first `#` after an unmarked integer from 2 through 36 | Selected proposal uses `0d` to force decimal suffix interpretation and retains errors for invalid digits in a recognized radix form. |
 | SRC-096 | Inline Python 3 specification probes run in this project | 2026-11-05 (+01:00) | Six binary-precedence trees, eleven integer suffix/radix cases, and 254 operand/operator kind sequences checked with assertions | No project implementation or files created; binary conditional trees do not establish any unselected semantic pairing/reinterpretation rule. Integer probes are not a full float/Unicode lexer. |
 | SRC-097 | `/bigdata/KAI/NewLang/parser/NLparser/Scanner.cc` raw-string branch (around lines 599–632) and inline Python 3 precedence probe | 2026-11-05 (+01:00) | NewLang raw-content backslash handling; conditional trees for `?`/`:` at the same priority | Prototype code, not normative; probe is not project parser code. |
 | SRC-098 | User decisions in this conversation | 2026-11-05 22:57 (+01:00) | Selects literal non-universal raw backslashes; retains `?`/`:` priorities and requires parentheses for then-branch nesting | No other lexical or structural decisions. |
-| SRC-099 | [Language Design](../Language-Design.md) numeric productions and [Wissensstand](./Wissensstand.md) LP-13/14 | Reviewed 2026-11-05 (+01:00) | Existing integer, float, separator, suffix, and malformed-number decisions compared to open numeric-boundary notes | The resulting examples identify gaps to specify; they are not language decisions or lexer-test results. |
+| SRC-099 | [Language Design](../docs/design-research/Language-Design.md) numeric productions and [Wissensstand](./Wissensstand.md) LP-13/14 | Reviewed 2026-11-05 (+01:00) | Existing integer, float, separator, suffix, and malformed-number decisions compared to open numeric-boundary notes | The resulting examples identify gaps to specify; they are not language decisions or lexer-test results. |
 | SRC-100 | User decisions in this conversation | 2026-11-05 23:24 (+01:00) | Incomplete integers and malformed separators are errors; no leading zeros in bases; float suffixes allowed; longest match decides dot runs; asks for floating-point standard options | Does not select the ISO/IEEE edition. |
 | SRC-101 | User decision in this conversation | 2026-11-05 23:46 (+01:00) | Selects option A, IEEE 754-2019 / ISO/IEC 60559:2020, as the floating-point reference | No separate rounding policy, suffix type inventory, or lexical length limit is selected here. |
 | SRC-102 | User request in this conversation | 2026-11-05 23:52 (+01:00) | Requests an updated compilation of questions before creating a parser | Does not select new rules or request implementation. |
-| SRC-103 | [Language Design](../Language-Design.md) and parser-readiness sections of [Wissensstand](./Wissensstand.md) | Reviewed at commit `4b4767b`, 2026-11-05 (+01:00) | Current lexer, operator, tree, error, and semantic-phase decisions | Earlier experiment sources were not re-examined for this request. |
+| SRC-103 | [Language Design](../docs/design-research/Language-Design.md) and parser-readiness sections of [Wissensstand](./Wissensstand.md) | Reviewed at commit `4b4767b`, 2026-11-05 (+01:00) | Current lexer, operator, tree, error, and semantic-phase decisions | Earlier experiment sources were not re-examined for this request. |
 | SRC-104 | Inline Python 3 binary-precedence probe in this conversation | Executed 2026-11-05 (+01:00) | Checks `a * EMPTY - b` and equal-priority left/right groupings for `EMPTY ! a ++ EMPTY` | Illustrates ordinary binary grouping only; not a project parser or a decision about prefix/postfix binding. |
 | SRC-105 | User clarification in this conversation | 2026-11-06 00:33 (+01:00) | Selects delimiter roles, sequence and list meanings, possible parallel evaluation, and no special treatment of `a * -b` for now | Does not define tree shapes, general prefix/postfix rules, or semantic validity of `EMPTY`. |
 | SRC-106 | User decision in this conversation | 2026-11-06 00:40 (+01:00) | Makes `;` left-associative, gives same-level operators the same associativity, and assigns none where unspecified | Does not change precedence, make reserved `::` an expression, or settle semantic legality. |
 | SRC-107 | Inline Python 3 documentation check in this conversation | Executed 2026-11-06 (+01:00) | Checks 22 precedence rows have one stated associativity and verifies the changed levels | Checks the table only; it is not a parser test. |
 | SRC-108 | User decisions in this conversation | 2026-11-06 01:36 (+01:00) | Selects uniform longest tokens, minimal invalid runs, contextual error-token classification, binary CST plus comments without a first-parser AST, and single-character Unicode errors | Does not define all candidate productions, error-node layouts, or malformed-Unicode character units. |
 | SRC-109 | User clarification through the question form in this conversation | 2026-11-06 (+01:00), after SRC-108 | Combines uniform longest matching with digit/base checks only after tokenization; asks which conflicts remain | Does not broaden the grammar for incomplete numbers/separators or select an exception to longest matching. |
-| SRC-110 | [Language Design](../Language-Design.md) DEC-029/033/034/047/057–061 and current parser-output requirements | Reviewed against commit `b51e1b3`, 2026-11-06 (+01:00) | Existing complete-token shapes and diagnostic requirements compared with SRC-108/109 | Conflict examples are specification analysis, not lexer/parser test results or new selected productions. |
+| SRC-110 | [Language Design](../docs/design-research/Language-Design.md) DEC-029/033/034/047/057–061 and current parser-output requirements | Reviewed against commit `b51e1b3`, 2026-11-06 (+01:00) | Existing complete-token shapes and diagnostic requirements compared with SRC-108/109 | Conflict examples are specification analysis, not lexer/parser test results or new selected productions. |
 | SRC-111 | User decision in this conversation | 2026-11-06 01:56 (+01:00) | Approves permissive candidate matching for malformed numeric and other constrained lexical forms, followed by validation | Selects this approach, not the exact candidate productions or token-kind tie-breaks. |
 | SRC-112 | User request in this conversation | 2026-11-06 02:10 (+01:00) | Requests an updated compilation of questions before creating a parser | Does not choose new language rules or request implementation. |
-| SRC-113 | [Language Design](../Language-Design.md) and [Wissensstand](./Wissensstand.md), current working-tree versions | Reviewed 2026-11-06 (+01:00) | DEC-067–071, existing lexer/parser requirements, and remaining questions | Includes uncommitted changes after `b51e1b3`; earlier experiment sources were not re-examined. |
+| SRC-113 | [Language Design](../docs/design-research/Language-Design.md) and [Wissensstand](./Wissensstand.md), current working-tree versions | Reviewed 2026-11-06 (+01:00) | DEC-067–071, existing lexer/parser requirements, and remaining questions | Includes uncommitted changes after `b51e1b3`; earlier experiment sources were not re-examined. |
 | SRC-114 | User decisions in this conversation | 2026-11-06 (+01:00), following the parser-readiness compilation | Specifies delimiter-tree behavior, matching errors and missing-closer insertion at EOF, empty groups, ordinary prefix/postfix parsing, semantic rejection of `::`, comments as lexical whitespace, and universal operator/operand syntax | Does not select concrete CST layouts, source mappings, or all remaining recovery and candidate-boundary details. No parser implementation requested. |
 | SRC-115 | User request in this conversation | 2026-11-06 02:46 (+01:00) | Requests a fresh compilation of questions before creating a parser | No new language decision or implementation request. |
-| SRC-116 | [Language Design](../Language-Design.md) and [Wissensstand](./Wissensstand.md), as committed in `0ade6eb` | Reviewed 2026-11-06 (+01:00) | Current lexer, operator/operand, grouping, CST, source-mapping, and recovery decisions and open questions | Earlier experiment sources were not re-examined. |
+| SRC-116 | [Language Design](../docs/design-research/Language-Design.md) and [Wissensstand](./Wissensstand.md), as committed in `0ade6eb` | Reviewed 2026-11-06 (+01:00) | Current lexer, operator/operand, grouping, CST, source-mapping, and recovery decisions and open questions | Earlier experiment sources were not re-examined. |
 | SRC-117 | [Unicode 18 UnicodeData](https://www.unicode.org/Public/18.0.0/ucd/UnicodeData.txt), [composition exclusions](https://www.unicode.org/Public/18.0.0/ucd/CompositionExclusions.txt), and a one-off Python 3 NFC probe | Reviewed 2026-11-06 (+01:00) | Illustrates non-contiguous source contributors after canonical reordering and composition | The Python host uses Unicode 15.0.0; the Unicode 18 property checks are not a full Unicode 18 normalization conformance test. |
 | SRC-118 | User decisions in this conversation (six numbered answers) and the follow-up `ask_user` form answers | Datum unbekannt (session before compaction) / 2026-11-06 (+01:00) | Incomplete-number and line-ended literal errors, Unicode error characters, error collapse/binding, comment-only file, unexpected closers, token-level normalization; form: keep number-tail errors, NFC for all string forms on source text before escapes, Unicode errors inside comments/literals diagnostic-only | Durable record is this summary; exact event time of the six answers is not available. |
 | SRC-119 | [The Unicode Standard 18.0.0, Chapter 3](https://www.unicode.org/versions/Unicode18.0.0/core-spec/chapter-3/), §3.9.6 "U+FFFD Substitution of Maximal Subparts" | Reviewed 2026-11-06 (+01:00) | Recommended replacement unit for ill-formed UTF-8: each maximal subpart becomes one U+FFFD and conversion proceeds after it | Fetched and grepped; the section's full text was not otherwise reviewed. |
 | SRC-120 | One-off Node v26.13.0 probes (`TextDecoder`, `String.prototype.normalize`, Unicode 17) | 2026-11-06 (+01:00) | `61 E2 82 62` gives one U+FFFD; `F0 80 80`, `C0 AF`, and `ED A0 80` give 3, 2, and 3. NFC maps `\n`+U+0303 to `\ñ`, `e`+U+0301 to U+00E9, U+037E to `;`, and `=`/`<`+U+0338 to U+2260/U+226E. | Host runtime uses Unicode 17, not the pinned 18.0.0; not a project lexer test. |
 | SRC-121 | User decisions in this conversation (nine numbered answers) | 2026-11-06 16:18 (+01:00) | Adds an identifier/number adjacency rule; answers the KP-087 open points on EOF extents, ties, fallback runs, error binding, collapse, closers, empty files, and spans | Answer 3 is a question ("Can there be ties?"), not a decision. |
 | SRC-122 | User decision in this conversation | 2026-11-06 16:30 (+01:00) | Accepts the proposal to use one numeric candidate for integers and floats, then classify the match | Exact candidate grammar remains open. |
+| SRC-123 | User request in this conversation | 2026-11-06 16:35 (+01:00) | Requests a documentation directory with a design/research subdirectory, and relocation of `langlist` and `Language-Design.md` into it | The user did not prescribe directory names or request changes to the experiment trees. |
 
 ## Entries
 
@@ -294,7 +295,7 @@ The user selected: “Case-sensitive; normalize to NFC for equality and preserve
 
 #### Consequences and next step
 
-DEC-006 records the approved decision in the Wissensstand and the initial [Language Design](../Language-Design.md). This policy avoids NFKC compatibility folding. The next step was to choose identifier characters and a Unicode data version; KP-006 records the user's selection of the proposed XID syntax. The property version remains open; revisit standards guidance when a next-version draft becomes available.
+DEC-006 records the approved decision in the Wissensstand and the initial [Language Design](../docs/design-research/Language-Design.md). This policy avoids NFKC compatibility folding. The next step was to choose identifier characters and a Unicode data version; KP-006 records the user's selection of the proposed XID syntax. The property version remains open; revisit standards guidance when a next-version draft becomes available.
 
 ### KP-006 - XID identifier syntax decision
 
@@ -311,7 +312,7 @@ The user said: “for the identifier character set let's use the proposed syntax
 
 #### Consequences and next step
 
-DEC-007 updates the [Language Design](../Language-Design.md) and resolves the character-set policy. The Unicode property-data version remains open as Q-006. The recorded proposal contains no version choice, so none is inferred.
+DEC-007 updates the [Language Design](../docs/design-research/Language-Design.md) and resolves the character-set policy. The Unicode property-data version remains open as Q-006. The recorded proposal contains no version choice, so none is inferred.
 
 ### KP-007 - Implicit expression-token insertion and semantic validation
 
@@ -332,7 +333,7 @@ The resulting sequence is converted into a tree according to operand-priority ru
 
 #### Consequences and next step
 
-DEC-008 and DEC-009 record these rules in [Language Design](../Language-Design.md). This resolves whether implicit application is part of the syntax model and when inserted elements are validated. The complete operand-priority table and rules for semantic legality remain open as Q-007 and Q-008.
+DEC-008 and DEC-009 record these rules in [Language Design](../docs/design-research/Language-Design.md). This resolves whether implicit application is part of the syntax model and when inserted elements are validated. The complete operand-priority table and rules for semantic legality remain open as Q-007 and Q-008.
 
 ### KP-008 - Unary operators represented by empty operands
 
@@ -349,7 +350,7 @@ The user stated that unary prefix and postfix operators are implemented by empty
 
 #### Consequences and next step
 
-DEC-010 adds this rule to [Language Design](../Language-Design.md). Unary operators therefore do not require a separate tree-forming mechanism, but their precedence and semantic validity remain part of Q-007 and Q-008.
+DEC-010 adds this rule to [Language Design](../docs/design-research/Language-Design.md). Unary operators therefore do not require a separate tree-forming mechanism, but their precedence and semantic validity remain part of Q-007 and Q-008.
 
 ### KP-009 - Declaration concepts across experiments
 
@@ -389,7 +390,7 @@ This selects the LangLLVM proposal over GenLang's C-style type-first declaration
 
 #### Consequences and next step
 
-DEC-011 updates [Language Design](../Language-Design.md) and resolves the syntactic-model choice. Q-009 now tracks remaining binding semantics; Q-010 tracks declaration-versus-definition behavior.
+DEC-011 updates [Language Design](../docs/design-research/Language-Design.md) and resolves the syntactic-model choice. Q-009 now tracks remaining binding semantics; Q-010 tracks declaration-versus-definition behavior.
 
 ### KP-011 - Predefined identifiers instead of keywords
 
@@ -408,7 +409,7 @@ No exact rules were supplied for what counts as redefinition, how local bindings
 
 #### Consequences and next step
 
-DEC-012 records the no-keywords rule in [Language Design](../Language-Design.md); DEC-011 already records square brackets as the template delimiter. The reserved-keyword conflict is resolved, while the exact lookup and redefinition mechanics remain open.
+DEC-012 records the no-keywords rule in [Language Design](../docs/design-research/Language-Design.md); DEC-011 already records square brackets as the template delimiter. The reserved-keyword conflict is resolved, while the exact lookup and redefinition mechanics remain open.
 
 ### KP-012 - Static typing with explicit or inferred types
 
@@ -425,7 +426,7 @@ The user stated that the language should be statically typed and that types may 
 
 #### Consequences and next step
 
-DEC-013 records the typing requirement in [Language Design](../Language-Design.md). Q-009 remains open for type-inference rules, cases requiring annotations, type compatibility, and the timing/scope of type checking.
+DEC-013 records the typing requirement in [Language Design](../docs/design-research/Language-Design.md). Q-009 remains open for type-inference rules, cases requiring annotations, type compatibility, and the timing/scope of type checking.
 
 ### KP-013 - Safety-first type compatibility
 
@@ -444,7 +445,7 @@ The user did not define what safety means for each operation, which facts the ty
 
 #### Consequences and next step
 
-DEC-014 records the principle in [Language Design](../Language-Design.md). Q-009 remains open for the safety properties and proof criteria, alongside inference, annotation, and checking details.
+DEC-014 records the principle in [Language Design](../docs/design-research/Language-Design.md). Q-009 remains open for the safety properties and proof criteria, alongside inference, annotation, and checking details.
 
 ### KP-014 - Value/reference types and field collections
 
@@ -463,7 +464,7 @@ This records the user's conceptual description without assuming that a reference
 
 #### Open details and consequences
 
-DEC-015 and REQ-002 record the model and collection requirement in [Language Design](../Language-Design.md). Q-011 tracks the unresolved operational meaning of variable identity, aliasing, reference lifetime/validity, and the representation and value/reference classification of named/indexed field collections. No garbage collector, deterministic destruction, ownership discipline, or other lifetime mechanism is selected by this statement.
+DEC-015 and REQ-002 record the model and collection requirement in [Language Design](../docs/design-research/Language-Design.md). Q-011 tracks the unresolved operational meaning of variable identity, aliasing, reference lifetime/validity, and the representation and value/reference classification of named/indexed field collections. No garbage collector, deterministic destruction, ownership discipline, or other lifetime mechanism is selected by this statement.
 
 ### KP-015 - Multiple parameters and returns as temporary collections
 
@@ -480,7 +481,7 @@ The user stated that, logically, multiple-result parameters and returns work lik
 
 #### Open details and consequences
 
-DEC-016 adds the logical model to [Language Design](../Language-Design.md), related to the named/indexed field collections in REQ-002. The concrete type and syntax of these collections, field naming/indexing, construction/unpacking behavior, lifetime, and whether they are observable as ordinary values remain open under Q-011.
+DEC-016 adds the logical model to [Language Design](../docs/design-research/Language-Design.md), related to the named/indexed field collections in REQ-002. The concrete type and syntax of these collections, field naming/indexing, construction/unpacking behavior, lifetime, and whether they are observable as ordinary values remain open under Q-011.
 
 ### KP-016 - GC-like reference behavior with lifetime optimizations
 
@@ -499,7 +500,7 @@ This does not require a particular tracing/reference-counting collector or any o
 
 #### Consequences and next step
 
-DEC-017 records the lifetime model in [Language Design](../Language-Design.md). Q-011 now includes the proof criteria and behavior-preservation conditions for lifetime optimizations, in addition to the still-open identity and collection semantics.
+DEC-017 records the lifetime model in [Language Design](../docs/design-research/Language-Design.md). Q-011 now includes the proof criteria and behavior-preservation conditions for lifetime optimizations, in addition to the still-open identity and collection semantics.
 
 ### KP-017 - Closest-namespace lookup and explicit overload groups
 
@@ -520,7 +521,7 @@ The unique-candidate requirement means an unresolved tie cannot be selected arbi
 
 #### Consequences and next step
 
-DEC-018 records these rules in [Language Design](../Language-Design.md). Q-009 now tracks the remaining namespace, declaration, ranking, and type-checking details.
+DEC-018 records these rules in [Language Design](../docs/design-research/Language-Design.md). Q-009 now tracks the remaining namespace, declaration, ranking, and type-checking details.
 
 ### KP-018 - Object models across prior experiments
 
@@ -1539,3 +1540,14 @@ These consequences are mechanical, but they reverse decisions the user explicitl
 **Offen:** The exact permissive numeric candidate shape, classification and validation details, and any numeric length limits remain Q-014 work. No implementation was requested.
 
 **Verification/scope:** Documentation-only update of the design and both context views; no parser implementation or tests. Changes since `0ade6eb` remain uncommitted.
+
+### KP-090 - Design and research documentation relocated
+
+- Documentation date: 2026-11-06 (+01:00). Source: SRC-123.
+- Status: implemented as documentation cleanup; no language-design decisions changed.
+
+**Nutzerangabe:** The user requested a documentation directory with a design and research subdirectory, moving the root `langlist` and `Language-Design.md` into it.
+
+**Belegt:** Both files now reside in [docs/design-research](../docs/design-research/): [langlist](../docs/design-research/langlist) and [Language Design](../docs/design-research/Language-Design.md). The directory name is an implementation choice. The list continues to name the same external experiment roots by absolute path. Links and the handover were updated; the experiment trees were not moved. The preceding design changes were committed as `2963acd` before this cleanup.
+
+**Verification/scope:** The list matches its pre-move bytes; the design differs only in its relative knowledge-view link. All 43 relative Markdown links in the three affected documents resolved. No parser code was changed or tested.

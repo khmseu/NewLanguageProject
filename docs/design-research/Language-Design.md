@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This is the evolving design record for the next language experiment. Approved choices and explicitly labeled open alternatives are recorded here; unresolved feature conflicts remain in [the project knowledge view](./Kontext/Wissensstand.md). TypeScript is confirmed as the implementation language (DEC-054).
+This is the evolving design record for the next language experiment. Approved choices and explicitly labeled open alternatives are recorded here; unresolved feature conflicts remain in [the project knowledge view](../../Kontext/Wissensstand.md). TypeScript is confirmed as the implementation language (DEC-054).
 
 ## Identifier normalization
 
