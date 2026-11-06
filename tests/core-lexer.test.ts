@@ -208,7 +208,7 @@ describe("core lexer", () => {
       : item.kind === "trivia" ? item.triviaKind : item.kind)).toContain("line-comment");
   });
 
-  it("reports numeric and literal starts as deferred, never successful core tokens", () => {
+  it("defers numeric suffixes but supports direct literal scans within them", () => {
     const result = lex("name 12 + \"text\"");
     expect(result.status).toBe("deferred");
     expect(result.items.map((item) => item.kind)).toContain("deferred");
@@ -228,9 +228,10 @@ describe("core lexer", () => {
       coverage: "unscanned-suffix",
     });
     expect(scanCoreAt(result.source, 10)).toMatchObject({
-      kind: "deferred",
-      surfaceKind: "literal",
-      range: { unitStart: 10, unitEnd: 11 },
+      kind: "token",
+      tokenKind: "string",
+      literal: { value: "text", valid: true },
+      range: { unitStart: 10, unitEnd: 16 },
     });
   });
 

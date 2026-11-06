@@ -24,3 +24,17 @@ assert.deepEqual(
   [["identifier", "e\u0301"], "whitespace", ["operator", "+"]],
 );
 assert.equal(scanCoreAt(lexical.source, 5).kind, "deferred");
+const literals = lexCore(new SourceInput(new TextEncoder().encode(
+  String.raw`'e\u0301' "e\x{301}" ` + '`T"raw\\n"T` "\\q"',
+)));
+assert.equal(literals.status, "complete");
+assert.deepEqual(
+  literals.items.filter((item) => item.kind === "token").map((item) =>
+    [item.tokenKind, item.literal.value, item.errorRole],
+  ),
+  [
+    ["character", "é", undefined], ["string", "e\u0301", undefined],
+    ["raw-string", "raw\\n", undefined], ["error", "\ufffd", "operand"],
+  ],
+);
+assert.equal(literals.diagnostics[0].code, "invalid-literal-escape");

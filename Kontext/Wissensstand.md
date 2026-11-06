@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-06 (timezone +01:00); user authorized committing JSDoc guidance and source documentation (KP-098), verified in KP-097. This checkpoint accompanies that commit; its hash is in Git history. Phase 3 is committed as `7823575`; Phase 4 remains paused.
+- Last substantive update: 2026-11-06 (timezone +01:00); JSDoc committed as `185b5a4`; user authorized continuation and Phase 4 literals are implemented/reviewed with 360 passing tests (KP-099). Phase 4 awaits commit/continue; Phase 5 numeric grammar approval remains open.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -815,6 +815,30 @@ hooks were added.
   approved; minor operator-inventory and source-URL recommendations addressed.
   This does not erase the earlier Phase 2 TDD evidence exception.
 
+### Literal lexer checkpoint
+
+- **Implemented/verified:** Phase 4
+  [completion evidence](../plans/compiler-frontend-phase-4-complete.md), KP-099.
+  Continuation authorized 2026-11-06 at 19:23 (+01:00); changes are uncommitted.
+- [Literal scanner](../src/lexer/literal-scanner.ts) covers characters, ordinary
+  strings and tagged raw strings, Unicode18 NFC-before-escapes, scalar checks,
+  names/aliases, continuations, newline/EOF recovery and intact Unicode errors.
+  Malformed candidates become operand-classified error tokens; decoded values
+  are best-effort on errors, not evidence of valid syntax.
+- [Normalization contributors](../src/source/unicode-normalization.ts) track
+  exact input offsets; internal literal diagnostics use their smallest original
+  byte hull under DEC-088. Shared hard-ending helpers remove duplicated rules.
+- **Review:** Fixed lost Unicode source-error replacements within ordinary
+  escape candidates, with five failing regressions first. Independent malformed
+  escape errors remain errors; each consumed source error retains its own
+  U+FFFD in the best-effort value.
+- **Verified:** 360 tests in six files, type-check/build/public export smoke
+  and whitespace check pass, including existing full normalization conformance.
+  Behavioral assertion failures preceded literal implementation; complete
+  JSDoc maintained. No dependencies or generated-data changes.
+- **Deferred:** Numeric scanning only; no parser. Q-014 numeric candidate shape
+  and length policy must be agreed before Phase 5 code.
+
 ### Earlier research and planning evidence
 
 - Identified: the four `langlist` roots, dominant experiment roots, clear upstream/reference trees, and generated/dependency groupings.
@@ -837,7 +861,7 @@ hooks were added.
 
 ## Next steps
 
-1. JSDoc maintenance (KP-097) is complete; its commit is authorized in KP-098 and includes this checkpoint (hash in Git history). Phase 3 is committed as `7823575`. Await explicit continuation before Phase 4 ordinary/character/raw literals, which must use behavioral-red TDD and existing Unicode18 normalization. Maintain [JSDoc instructions](../.github/instructions/jsdoc.instructions.md) on source changes, including generated documentation through its generator.
+1. Await commit/continue confirmation for [Phase 4 literals](../plans/compiler-frontend-phase-4-complete.md). JSDoc maintenance is committed as `185b5a4`; Phase 4 is uncommitted. Maintain [JSDoc instructions](../.github/instructions/jsdoc.instructions.md), including generated documentation through its generator. Before Phase 5 implementation, propose and obtain approval of Q-014's exact numeric candidate grammar and length policy.
 2. Before Phase 5, specify the exact unified numeric candidate grammar and numeric length limits (Q-014); the unified integer/float matching approach is approved in DEC-089. Everything else on the parser-readiness checklist is selected or postponed to implementation. DEC-083–088 settle adjacency, EOF extents, fallback runs, error binding/collapse, and span postponement. DEC-077–082 settle incomplete candidates, Unicode errors, collapse, comment-only files, unexpected closers, and token-level normalization. DEC-072–076 settle group behavior, EOF closer insertion, ordinary prefix/postfix parsing, semantic `::` rejection, comments as lexical whitespace, and universal operator/operand syntax. Retain the earlier selected literal, precedence, insertion, and semantic-identifier decisions. Use the [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
 3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
 
@@ -845,4 +869,4 @@ hooks were added.
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 
-> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-3-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. Phase 3 is committed as `7823575`; KP-098 authorizes the JSDoc documentation commit (hash in Git history), verified with 110 tests/type-check/build/export smoke in KP-097. Follow `.github/instructions/jsdoc.instructions.md`. Phase 4 is not authorized or started. Preserve behavioral-red TDD; Phase 2's missing evidence remains recorded. Literals/numbers are deferred core-scanner surfaces; resolve Q-014 before numeric matching.
+> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-4-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. KP-099 records Phase 4 literals implemented/reviewed with 360 passing tests/type-check/build/export smoke, uncommitted pending confirmation. JSDoc guidance is committed as `185b5a4`; maintain it and behavioral-red TDD. Only numeric scanning remains deferred; obtain Q-014 grammar/length approval before Phase 5 implementation. No parser has been added.

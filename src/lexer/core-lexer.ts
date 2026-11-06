@@ -1,6 +1,6 @@
 /**
- * Partial lossless lexer over translated scalar units. Numeric and literal
- * surfaces remain deferred; this module neither validates them nor parses syntax.
+ * Partial lossless lexer over translated scalar units, including literal values.
+ * Numeric surfaces remain deferred; this module does not parse syntax.
  * @module
  */
 import type { ByteRange } from "../source/source-input.js";
@@ -14,13 +14,16 @@ import { processSource } from "../source/source-processing.js";
 import { isXidContinue, isXidStart } from "../source/unicode-data.js";
 import type { ErrorDiagnostic } from "../diagnostics/diagnostic.js";
 import whiteSpace from "@unicode/unicode-18.0.0/Binary_Property/White_Space/regex.mjs";
+import { scanLiteralAt, type CoreLiteral, type LiteralDiagnostic } from "./literal-scanner.js";
+import { isHardLineBreak } from "../source/line-endings.js";
 
 /** Recognized core token families; there are no keyword token kinds. */
-export type CoreTokenKind = "identifier" | "operator" | "delimiter";
+export type CoreTokenKind = "identifier" | "operator" | "delimiter"
+  | "character" | "string" | "raw-string" | "error";
 /** Preserved non-token input, including a byte-only initial BOM. */
 export type CoreTriviaKind = "bom" | "whitespace" | "line-comment" | "block-comment";
-/** Unimplemented surface identified by its initial numeric or quote character. */
-export type DeferredSurfaceKind = "numeric" | "literal";
+/** Unimplemented numeric surface; literal scanning no longer defers. */
+export type DeferredSurfaceKind = "numeric";
 
 /** Corresponding half-open translated-scalar and original-byte extents. */
 export interface CoreSourceRange {
@@ -42,11 +45,11 @@ export interface CoreIdentifier {
   readonly lookupName: string;
 }
 
-/** Frozen recognized token; identifier metadata is separately frozen when present. */
+/** Frozen token; identifier/literal metadata is separately frozen when present. */
 export interface CoreToken {
   /** Discriminates recognized tokens from trivia and incomplete work. */
   readonly kind: "token";
-  /** Identifier, longest matching operator, or single delimiter. */
+  /** Core syntax family; invalid literal candidates use error with operand role. */
   readonly tokenKind: CoreTokenKind;
   /** Translated text, not the original byte spelling of Unicode escapes. */
   readonly spelling: string;
@@ -56,6 +59,10 @@ export interface CoreToken {
   readonly nextUnitOffset: number;
   /** Present only on identifier tokens, holding display and lookup forms. */
   readonly identifier?: CoreIdentifier;
+  /** Present on character, string, raw-string, and malformed literal tokens. */
+  readonly literal?: CoreLiteral;
+  /** Malformed literals are operands for later parser insertion, not operators. */
+  readonly errorRole?: "operand";
 }
 
 /** Frozen preserved trivia; comments are recognized after global escape translation. */
@@ -75,13 +82,13 @@ export interface CoreTrivia {
 }
 
 /**
- * Unvalidated numeric/literal start. A direct scan covers one unit, whereas
+ * Unvalidated numeric start. A direct scan covers one unit, whereas
  * lexCore replaces its coverage with the entire unscanned suffix and stops.
  */
 export interface DeferredCoreRegion {
   /** Signals work deliberately left to a later scanner, not a valid token. */
   readonly kind: "deferred";
-  /** Whether a numeric or quoted-literal introducer caused deferral. */
+  /** Numeric introducer causing deferral pending the numeric candidate grammar. */
   readonly surfaceKind: DeferredSurfaceKind;
   /** Translated introducer or, for lexCore, entire remaining translated text. */
   readonly spelling: string;
@@ -95,7 +102,7 @@ export interface DeferredCoreRegion {
 
 /** Frozen single-unit fallback for a character outside the implemented core. */
 export interface UnsupportedCoreRegion {
-  /** Signals an unsupported character, not a deferred numeric/literal surface. */
+  /** Signals an unsupported character, not a deferred numeric surface. */
   readonly kind: "unsupported";
   /** Unsupported translated scalar value. */
   readonly codePoint: number;
@@ -110,6 +117,7 @@ export interface UnsupportedCoreRegion {
 /** Source-recovery errors plus aggregate lexing errors; all locations are bytes. */
 export type CoreLexerDiagnostic =
   | SourceProcessingDiagnostic
+  | LiteralDiagnostic
   | ErrorDiagnostic<"unterminated-block-comment" | "unrecognized-character">;
 
 /** One direct scan outcome; EOF consumes no units and does not add diagnostics. */
@@ -135,7 +143,7 @@ export interface CoreLexResult {
   readonly diagnostics: readonly CoreLexerDiagnostic[];
   /**
    * Scanning coverage/unsupported-character status, not diagnostic success:
-   * complete can still contain source or unterminated-comment errors; deferred
+   * complete can still contain source, comment, or literal errors; deferred
    * means an unscanned suffix, unsupported means encountered fallback characters,
    * and deferred-and-unsupported combines those two conditions.
    */
@@ -156,13 +164,10 @@ const operators = [
 
 /** Single-character grouping delimiters; matching pairs are not checked here. */
 const delimiters = new Set(["(", ")", "{", "}", "[", "]"]);
-/** Scalar values that terminate line comments, without consuming the break. */
-const hardBreaks = new Set([0x0a, 0x0d, 0x85, 0x0b, 0x0c, 0x2028, 0x2029]);
-
 /**
- * Scan one core item without accumulating diagnostics or normalizing source text.
- * Comments are non-nesting; identifiers use pinned XID properties; numeric and
- * quote starts defer after one unit rather than guessing a candidate boundary.
+ * Scan one core item without accumulating source diagnostics or normalizing source
+ * text. Literal metadata includes validation diagnostics and NFC-before-escapes
+ * values. Comments are non-nesting; numeric starts still defer after one unit.
  * @param source - Already processed source, assumed to satisfy its unit contracts.
  * @param unitOffset - Inclusive translated scalar-unit index; EOF is allowed.
  * @returns One token/trivia/deferred/unsupported item, or EOF. No source mutation occurs.
@@ -204,7 +209,7 @@ export function scanCoreAt(
     let end = unitOffset + 2;
     while (
       end < source.units.length &&
-      !hardBreaks.has(source.units[end]!.codePoint)
+      !isHardLineBreak(source.units[end]!.codePoint)
     ) {
       end += 1;
     }
@@ -265,7 +270,19 @@ export function scanCoreAt(
     return makeDeferred(source, unitOffset, "numeric");
   }
   if (character === "'" || character === '"' || character === "`") {
-    return makeDeferred(source, unitOffset, "literal");
+    const candidate = scanLiteralAt(source, unitOffset);
+    if (candidate !== undefined) {
+      const literal = candidate.literal;
+      return Object.freeze({
+        kind: "token",
+        tokenKind: literal.valid ? literal.kind : "error",
+        spelling: translatedText(source, unitOffset, candidate.end),
+        range: sourceRange(source, unitOffset, candidate.end),
+        nextUnitOffset: candidate.end,
+        literal,
+        ...(literal.valid ? {} : { errorRole: "operand" as const }),
+      });
+    }
   }
 
   const spelling = operators.find((operator) =>
@@ -292,8 +309,8 @@ export function scanCoreAt(
 /**
  * Process bytes and scan the implemented core, preserving a leading BOM as trivia.
  * Stop at the first deferred surface and retain its entire suffix without scanning
- * it. Unsupported characters recover one unit at a time; block-comment and source
- * errors are reported independently of coverage status.
+ * it. Unsupported characters recover one unit at a time; comment, literal and
+ * source errors are reported independently of coverage status.
  * @param input - Original bytes, left unchanged.
  * @returns Frozen result and item/diagnostic arrays, with diagnostics sorted by byte start.
  */
@@ -342,6 +359,9 @@ export function lexCore(input: SourceInput): CoreLexResult {
       break;
     }
     items.push(step);
+    if (step.kind === "token" && step.literal !== undefined) {
+      diagnostics.push(...step.literal.diagnostics);
+    }
     if (step.kind === "unsupported") {
       encounteredUnsupported = true;
       diagnostics.push({
@@ -477,7 +497,7 @@ function makeToken(
  * Mark only an introducer unit as deferred; do not infer a candidate's end.
  * @param source - Processed source.
  * @param offset - In-bounds scalar-unit index, assumed valid.
- * @param surfaceKind - Numeric or literal surface classification.
+ * @param surfaceKind - Deferred numeric surface classification.
  * @returns Frozen one-unit marker without the aggregate coverage flag.
  * @throws {RangeError} If original-range mapping rejects the interval.
  */

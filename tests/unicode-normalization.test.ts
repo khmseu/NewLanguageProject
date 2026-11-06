@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { normalizeUnicode18 } from "../src/index.js";
+import { normalizeUnicode18WithOrigins } from "../src/source/unicode-normalization.js";
 
 const normalizationFixture = readFileSync(
   new URL("./fixtures/NormalizationTest-18.0.0.txt", import.meta.url),
@@ -17,6 +18,29 @@ function decodeCodePoints(value: string): string {
 }
 
 describe("Unicode 18 NormalizationTest.txt", () => {
+  it("retains exact contributors through decomposition, reordering and composition", () => {
+    expect(normalizeUnicode18WithOrigins("\u0344", "NFC")).toEqual([
+      { character: "\u0308", inputOffsets: [0] },
+      { character: "\u0301", inputOffsets: [0] },
+    ]);
+
+    expect(normalizeUnicode18WithOrigins("x\u0315\u0300", "NFC")).toEqual([
+      { character: "x", inputOffsets: [0] },
+      { character: "\u0300", inputOffsets: [2] },
+      { character: "\u0315", inputOffsets: [1] },
+    ]);
+    expect(normalizeUnicode18WithOrigins("a\u0315\u0300", "NFC")).toEqual([
+      { character: "à", inputOffsets: [0, 2] },
+      { character: "\u0315", inputOffsets: [1] },
+    ]);
+    expect(normalizeUnicode18WithOrigins("A\u030a", "NFC")).toEqual([
+      { character: "Å", inputOffsets: [0, 1] },
+    ]);
+    expect(normalizeUnicode18WithOrigins("각", "NFC")).toEqual([
+      { character: "각", inputOffsets: [0] },
+    ]);
+  });
+
   it("passes every official NFC and NFKC column assertion", () => {
     expect(normalizationFixture.startsWith("# NormalizationTest-18.0.0.txt"))
       .toBe(true);

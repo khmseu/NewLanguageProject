@@ -1841,3 +1841,51 @@ The user authorized committing source JSDoc, generator-preserved documentation,
 and project agent guidance. This record accompanies that commit; its hash is
 retrievable in Git history. Verification remains the checks recorded in KP-097;
 no source behavior changed in this commit-only turn. Phase 4 remains paused.
+
+### KP-099 - Phase 4 literals implemented after continuation
+
+- Documentation/event date: 2026-11-06 (+01:00); user request at 19:23.
+- Sources: current conversation, "continue with the plan"; Phase 4 implementation
+  and static-review reports; inspected source and local verification commands.
+- Related: REQ-003/004, DEC-025–027/030/039–045/055/078/082/088.
+- Status: continuation approved; Phase 4 implemented/reviewed, uncommitted.
+
+**Nutzerangabe:** Continue with the approved plan. **Belegt:** JSDoc maintenance
+is committed as `185b5a4`; Phase 4 started from that clean baseline.
+
+**Implementation:** Added ordinary/character/tagged raw literal candidates and
+validation to the core scanner, leaving only numeric starts deferred. Selected
+escapes, Unicode names/aliases, scalar-length checks, Unicode18 NFC before
+ordinary escapes, raw LF normalization, string-only continuation, global
+generated characters, newline/EOF extents and exact original-byte coverage
+are covered. Invalid literal candidates are operand-classified error tokens;
+diagnostics remain explicit alongside best-effort values. Source JSDoc and
+README updated; dependencies/tables/generator/third-party fixtures unchanged.
+
+**Representation choice under DEC-088:** Normalization carries exact input
+contributors through decomposition, reordering and composition. Internal
+diagnostic ranges are the smallest original-byte hull of those contributors;
+reordering can include intervening bytes, not unrelated prefix/suffix bytes.
+Shared hard-ending helpers keep decoding/comment/literal behavior aligned.
+
+**TDD/review evidence:** Implementer reported 234 assertion failures against
+importable incomplete literal behavior before implementation. Static review
+requested revision because malformed ordinary escapes could swallow multiple
+source-error replacements. Five regressions failed before fixing that issue:
+each source error now contributes its own U+FFFD even inside a consumed escape.
+A malformed enclosing escape remains independently invalid and contributes
+its own replacement in the best-effort value; this does not suppress errors or
+make the literal successful. Contributor arrays have direct decomposition,
+reorder, composition/Hangul/noncontiguous tests. Some continuation test inputs
+were corrected for already-selected global backslash eligibility.
+
+**Verification:** Conductor inspected the revised path and ran all 360 tests
+in six files, type-check, build/public export smoke and whitespace checks
+successfully. Full official NFC/NFKC fixture comparisons still pass. Initial
+review NEEDS_REVISION findings are resolved; final conductor assessment approved
+after revisions. The reviewer itself ran no commands.
+
+**Next step:** Present [Phase 4 completion](../plans/compiler-frontend-phase-4-complete.md)
+and pause for commit/continue confirmation. Phase 5 has not started: Q-014 exact
+numeric candidate grammar/classification boundaries and length policy require
+agreement before matcher implementation. No language rule or parser added.

@@ -5,6 +5,7 @@
  */
 import type { ErrorDiagnostic } from "../diagnostics/diagnostic.js";
 import { SourceInput, type ByteRange } from "./source-input.js";
+import { isHardLineBreak } from "./line-endings.js";
 
 /** One-based position in decoded physical input, before escape translation. */
 export interface PhysicalPosition {
@@ -307,7 +308,7 @@ function decodeUtf8(input: SourceInput): DecodedScalar[] {
       line += 1;
       column = 1;
       previousWasCarriageReturn = false;
-    } else if (isHardBreak(current.codePoint)) {
+    } else if (isHardLineBreak(current.codePoint)) {
       line += 1;
       column = 1;
       previousWasCarriageReturn = false;
@@ -399,21 +400,6 @@ function hasInitialBom(bytes: Uint8Array): boolean {
     bytes[0] === utf8Bom[0] &&
     bytes[1] === utf8Bom[1] &&
     bytes[2] === utf8Bom[2]
-  );
-}
-
-/**
- * Identify physical line breaks handled separately from CR and LF.
- * @param codePoint - Decoded scalar value.
- * @returns True for VT, FF, NEL, LS or PS.
- */
-function isHardBreak(codePoint: number): boolean {
-  return (
-    codePoint === 0x000b ||
-    codePoint === 0x000c ||
-    codePoint === 0x0085 ||
-    codePoint === 0x2028 ||
-    codePoint === 0x2029
   );
 }
 

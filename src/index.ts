@@ -43,6 +43,11 @@ export {
   type UnsupportedCoreRegion,
 } from "./lexer/core-lexer.js";
 export type {
+  CoreLiteral,
+  LiteralDiagnostic,
+  LiteralKind,
+} from "./lexer/literal-scanner.js";
+export type {
   CompilerResult,
   Diagnostic,
   DiagnosticCode,

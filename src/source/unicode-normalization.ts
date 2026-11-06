@@ -14,6 +14,22 @@ import {
  */
 export type UnicodeNormalizationForm = "NFC" | "NFKC";
 
+/** One normalized code point and the input code points that contributed to it. */
+export interface NormalizedScalar {
+  /** One code-point string; lone surrogate code units pass through as in the text API. */
+  readonly character: string;
+  /** Sorted unique code-point indices in the input; compiler input contains only scalars. */
+  readonly inputOffsets: readonly number[];
+}
+
+/** Mutable algorithm record; decomposition copies and composition unions origins. */
+interface NormalizationUnit {
+  /** Current decomposed or composed code point. */
+  codePoint: number;
+  /** Contributing input scalar offsets, carried through canonical reordering. */
+  inputOffsets: number[];
+}
+
 /** Code-point mappings with compatibility flags; nested table arrays are shared. */
 const decompositionByCodePoint = new Map(
   DECOMPOSITIONS.map(([codePoint, compatibility, mapping]) => [
@@ -63,19 +79,43 @@ export function normalizeUnicode18(
   input: string,
   form: UnicodeNormalizationForm,
 ): string {
+  return normalizeUnicode18WithOrigins(input, form)
+    .map((unit) => unit.character).join("");
+}
+
+/**
+ * Normalize with exact scalar contributors, not UTF-16 offsets or byte hulls.
+ * Decomposition duplicates origins, reordering moves them, and composition unions
+ * them. Callers choose original-byte diagnostic ranges using those contributors.
+ * @param input - Text whose scalar indices identify original contributors.
+ * @param form - NFC or NFKC, using the same tables and algorithm as the text API.
+ * @returns Frozen records and origin arrays, with no fabricated input positions.
+ * @throws {RangeError} If form is neither NFC nor NFKC.
+ */
+export function normalizeUnicode18WithOrigins(
+  input: string,
+  form: UnicodeNormalizationForm,
+): readonly NormalizedScalar[] {
   if (form !== "NFC" && form !== "NFKC") {
     throw new RangeError(`Unsupported Unicode normalization form: ${form}`);
   }
 
   const compatibility = form === "NFKC";
-  const decomposed: number[] = [];
+  const decomposed: NormalizationUnit[] = [];
+  let inputOffset = 0;
   for (const character of input) {
-    decompose(character.codePointAt(0)!, compatibility, decomposed);
+    const expanded: number[] = [];
+    decompose(character.codePointAt(0)!, compatibility, expanded);
+    for (const codePoint of expanded) {
+      decomposed.push({ codePoint, inputOffsets: [inputOffset] });
+    }
+    inputOffset += 1;
   }
   canonicalOrder(decomposed);
-  return canonicalCompose(decomposed)
-    .map((codePoint) => String.fromCodePoint(codePoint))
-    .join("");
+  return Object.freeze(canonicalCompose(decomposed).map((unit) => Object.freeze({
+    character: String.fromCodePoint(unit.codePoint),
+    inputOffsets: Object.freeze(unit.inputOffsets),
+  })));
 }
 
 /**
@@ -114,18 +154,18 @@ function decompose(
 
 /**
  * Stably reorder combining marks by class without moving them across class-zero starters.
- * @param codePoints - Decomposed code points, reordered in place.
- * @returns Nothing; equal-class order is preserved in the mutated array.
+ * @param codePoints - Decomposed records, reordered together with their origins.
+ * @returns Nothing; equal-class order and each record's contributors are preserved.
  */
-function canonicalOrder(codePoints: number[]): void {
+function canonicalOrder(codePoints: NormalizationUnit[]): void {
   for (let index = 1; index < codePoints.length; index += 1) {
-    const currentClass = combiningClassByCodePoint.get(codePoints[index]!) ?? 0;
+    const currentClass = combiningClassByCodePoint.get(codePoints[index]!.codePoint) ?? 0;
     if (currentClass === 0) continue;
 
     let position = index;
     while (position > 0) {
       const previousClass =
-        combiningClassByCodePoint.get(codePoints[position - 1]!) ?? 0;
+        combiningClassByCodePoint.get(codePoints[position - 1]!.codePoint) ?? 0;
       if (previousClass === 0 || previousClass <= currentClass) break;
       [codePoints[position - 1], codePoints[position]] = [
         codePoints[position]!,
@@ -137,20 +177,22 @@ function canonicalOrder(codePoints: number[]): void {
 }
 
 /**
- * Compose canonically ordered code points subject to combining-class blocking.
- * @param codePoints - Ordered decomposition, read without mutation.
+ * Compose canonically ordered code points subject to combining-class blocking,
+ * unioning the exact contributing input indices at each composition.
+ * @param codePoints - Ordered decomposition records, read without mutation.
  * @returns A new mutable array using eligible table and Hangul compositions.
  */
-function canonicalCompose(codePoints: readonly number[]): number[] {
+function canonicalCompose(codePoints: readonly NormalizationUnit[]): NormalizationUnit[] {
   if (codePoints.length < 2) return [...codePoints];
 
-  const output = [codePoints[0]!];
+  const output = [{ ...codePoints[0]!, inputOffsets: [...codePoints[0]!.inputOffsets] }];
   let starterPosition = 0;
-  let starter = codePoints[0]!;
+  let starter = codePoints[0]!.codePoint;
   let previousClass = 0;
 
   for (let index = 1; index < codePoints.length; index += 1) {
-    const codePoint = codePoints[index]!;
+    const unit = codePoints[index]!;
+    const codePoint = unit.codePoint;
     const currentClass = combiningClassByCodePoint.get(codePoint) ?? 0;
     const composite = composePair(starter, codePoint);
 
@@ -158,7 +200,11 @@ function canonicalCompose(codePoints: readonly number[]): number[] {
       composite !== undefined &&
       (previousClass === 0 || previousClass < currentClass)
     ) {
-      output[starterPosition] = composite;
+      output[starterPosition] = {
+        codePoint: composite,
+        inputOffsets: [...new Set([...output[starterPosition]!.inputOffsets, ...unit.inputOffsets])]
+          .sort((left, right) => left - right),
+      };
       starter = composite;
       continue;
     }
@@ -167,7 +213,7 @@ function canonicalCompose(codePoints: readonly number[]): number[] {
       starterPosition = output.length;
       starter = codePoint;
     }
-    output.push(codePoint);
+    output.push({ codePoint, inputOffsets: [...unit.inputOffsets] });
     previousClass = currentClass;
   }
   return output;

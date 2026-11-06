@@ -3,8 +3,9 @@
 This is a strict TypeScript ESM package for the compiler frontend foundation.
 It provides original-byte source input, source decoding and Unicode
 translation, a Unicode-18-pinned core scanner and lossless token/trivia stream,
-diagnostic types, and a generic result contract. Parser construction and
-language-specific numeric/literal recognition remain deferred.
+diagnostic types, selected character/ordinary-string/tagged-raw literal values,
+and a generic result contract. Parser construction and numeric recognition
+remain deferred.
 
 ## Runtime and tools
 
@@ -58,7 +59,7 @@ operation.
 
 `lexCore(sourceInput)` returns a `CoreLexResult` with ordered `items`, source
 processing output, diagnostics, and a coverage `status`. Core tokens cover
-identifiers, the approved source-operator inventory (longest match), and
+identifiers, character/string/raw-string literals, the approved source-operator inventory (longest match), and
 `()`, `{}`, and `[]` delimiters. Whitespace, line comments, block comments,
 and an initial BOM are explicit trivia items. Comments separate surrounding
 tokens; block comments are non-nested and an unterminated one extends to EOF
@@ -74,15 +75,55 @@ Identifier `spelling`/`translatedText` is translated but unnormalized;
 never normalized.
 
 `scanCoreAt(processedSource, unitOffset)` supports composition with later
-scanners. Numeric and literal starts return one-unit `deferred` boundaries,
+scanners. Numeric starts return one-unit `deferred` boundaries,
 not approximated tokens or language errors. `lexCore` stops core scanning at
 such a start, returns the remaining bytes as a deferred item with
 `coverage: "unscanned-suffix"`, and reports `status: "deferred"` (or
 `"deferred-and-unsupported"` if earlier unknown characters occurred). Unknown
 characters are explicit unsupported items with `unrecognized-character`
 diagnostics. `status` reports scanner coverage, not compiler success; inspect
-diagnostics independently. Numeric syntax, literal syntax, parser errors,
+diagnostics independently. Numeric syntax, parser errors,
 and error collapse are not implemented.
+
+### Literal values and diagnostics (Phase 4)
+
+Literal tokens expose frozen `literal: CoreLiteral` metadata: syntax `kind`
+(`character`, `string`, `raw-string`), decoded `value`, `terminated`, `valid`,
+and literal-only `diagnostics`. Their `spelling` remains translated but
+unnormalized; ranges always cover original bytes, not normalized value offsets.
+Malformed candidates use `tokenKind: "error"` and `errorRole: "operand"` for
+the future parser. Embedded Unicode source errors alone do not invalidate or
+split the literal: each contributes U+FFFD even when consumed while checking an
+ordinary escape candidate. A malformed enclosing escape remains a separate
+literal error and contributes its own replacement. Aggregate diagnostics retain
+source errors, distinct from a valid literal U+FFFD.
+
+All literal content uses pinned Unicode 18 NFC after global translation and
+before ordinary escapes, never afterward. Ordinary escapes support quotes,
+backslash, `a b e f n r t v`, selected ASCII `cX`, scalar `x{hex}`, and Unicode
+18 names/official aliases in `N{name}` (ASCII case-insensitive, otherwise exact).
+Unknown escapes, octal, `o{...}`, and numeric `N{U+...}` are errors. Character
+values must contain exactly one scalar, not merely one grapheme.
+
+Ordinary strings remove backslash + hard ending + following spaces/tabs;
+characters cannot continue. Physical/generated endings, including mixed-origin
+CRLF, behave identically. Interrupted ordinary candidates stop before the whole
+ending, leaving it for subsequent scanning; unterminated raw candidates consume
+through EOF. Raw openers require backtick + `[A-Za-z0-9_]*` + quote (unlimited
+tag length); only quote + the identical tag + backtick closes them. A backtick
+without that complete opener is unsupported, not an approximated raw candidate.
+Raw non-universal backslashes are literal; hard endings normalize to LF.
+
+**Internal diagnostic mapping (DEC-088):** The shared Unicode normalizer carries
+exact input-scalar contributors through decomposition, canonical reordering,
+and composition. Literal-escape diagnostics use the smallest original-byte
+contiguous hull of those contributors. A reordered escape may therefore include
+intervening bytes, but never an unrelated prefix/suffix or guessed normalized
+index. Decomposition can give two output scalars the same original range.
+Whole-literal errors use the candidate extent, excluding an interrupting ending.
+These are diagnostic spans, not a public character-by-character value map.
+Direct `scanCoreAt` exposes literal diagnostics in metadata; `lexCore` also
+collects them into its byte-ordered diagnostics alongside source errors.
 
 ## Source processing and Unicode
 
