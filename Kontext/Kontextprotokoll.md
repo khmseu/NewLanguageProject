@@ -128,6 +128,14 @@ This log records the material context and evidence behind the current file class
 | SRC-112 | User request in this conversation | 2026-11-06 02:10 (+01:00) | Requests an updated compilation of questions before creating a parser | Does not choose new language rules or request implementation. |
 | SRC-113 | [Language Design](../Language-Design.md) and [Wissensstand](./Wissensstand.md), current working-tree versions | Reviewed 2026-11-06 (+01:00) | DEC-067–071, existing lexer/parser requirements, and remaining questions | Includes uncommitted changes after `b51e1b3`; earlier experiment sources were not re-examined. |
 | SRC-114 | User decisions in this conversation | 2026-11-06 (+01:00), following the parser-readiness compilation | Specifies delimiter-tree behavior, matching errors and missing-closer insertion at EOF, empty groups, ordinary prefix/postfix parsing, semantic rejection of `::`, comments as lexical whitespace, and universal operator/operand syntax | Does not select concrete CST layouts, source mappings, or all remaining recovery and candidate-boundary details. No parser implementation requested. |
+| SRC-115 | User request in this conversation | 2026-11-06 02:46 (+01:00) | Requests a fresh compilation of questions before creating a parser | No new language decision or implementation request. |
+| SRC-116 | [Language Design](../Language-Design.md) and [Wissensstand](./Wissensstand.md), as committed in `0ade6eb` | Reviewed 2026-11-06 (+01:00) | Current lexer, operator/operand, grouping, CST, source-mapping, and recovery decisions and open questions | Earlier experiment sources were not re-examined. |
+| SRC-117 | [Unicode 18 UnicodeData](https://www.unicode.org/Public/18.0.0/ucd/UnicodeData.txt), [composition exclusions](https://www.unicode.org/Public/18.0.0/ucd/CompositionExclusions.txt), and a one-off Python 3 NFC probe | Reviewed 2026-11-06 (+01:00) | Illustrates non-contiguous source contributors after canonical reordering and composition | The Python host uses Unicode 15.0.0; the Unicode 18 property checks are not a full Unicode 18 normalization conformance test. |
+| SRC-118 | User decisions in this conversation (six numbered answers) and the follow-up `ask_user` form answers | Datum unbekannt (session before compaction) / 2026-11-06 (+01:00) | Incomplete-number and line-ended literal errors, Unicode error characters, error collapse/binding, comment-only file, unexpected closers, token-level normalization; form: keep number-tail errors, NFC for all string forms on source text before escapes, Unicode errors inside comments/literals diagnostic-only | Durable record is this summary; exact event time of the six answers is not available. |
+| SRC-119 | [The Unicode Standard 18.0.0, Chapter 3](https://www.unicode.org/versions/Unicode18.0.0/core-spec/chapter-3/), §3.9.6 "U+FFFD Substitution of Maximal Subparts" | Reviewed 2026-11-06 (+01:00) | Recommended replacement unit for ill-formed UTF-8: each maximal subpart becomes one U+FFFD and conversion proceeds after it | Fetched and grepped; the section's full text was not otherwise reviewed. |
+| SRC-120 | One-off Node v26.13.0 probes (`TextDecoder`, `String.prototype.normalize`, Unicode 17) | 2026-11-06 (+01:00) | `61 E2 82 62` gives one U+FFFD; `F0 80 80`, `C0 AF`, and `ED A0 80` give 3, 2, and 3. NFC maps `\n`+U+0303 to `\ñ`, `e`+U+0301 to U+00E9, U+037E to `;`, and `=`/`<`+U+0338 to U+2260/U+226E. | Host runtime uses Unicode 17, not the pinned 18.0.0; not a project lexer test. |
+| SRC-121 | User decisions in this conversation (nine numbered answers) | 2026-11-06 16:18 (+01:00) | Adds an identifier/number adjacency rule; answers the KP-087 open points on EOF extents, ties, fallback runs, error binding, collapse, closers, empty files, and spans | Answer 3 is a question ("Can there be ties?"), not a decision. |
+| SRC-122 | User decision in this conversation | 2026-11-06 16:30 (+01:00) | Accepts the proposal to use one numeric candidate for integers and floats, then classify the match | Exact candidate grammar remains open. |
 
 ## Entries
 
@@ -1442,3 +1450,92 @@ Assertions also verify the revised dot/arrow shapes `(a . b) -> c` and `a -> (b 
 **Offen:** Exact lexical candidate extents/ties and fallback error-run boundaries at separators; concrete CST/root/trivia layouts and empty whole-file output; original-source mappings including inserted closers; Unicode-error units/spans and phase interactions; consecutive/boundary error classification and error-operator precedence; other structural recovery and lexical/encoding-error result contracts.
 
 **Verification/scope:** Documentation-only update to the design and both context views; no lexer/parser implementation, project build, or parser test. Existing accumulated changes remain uncommitted.
+
+### KP-086 - Remaining parser questions made concrete
+
+- Documented: 2026-11-06 (+01:00)
+- Event date: 2026-11-06 02:46 (+01:00)
+- Capture: contemporaneous compilation and specification review
+- Sources: SRC-115, SRC-116, SRC-117
+- Related questions: Q-014/015, LP-23/25
+- Status: Analysis and question inventory; no new language decisions.
+
+**Belegt:** DEC-072–076 settle group behavior, ordinary prefix/postfix parsing, semantic rejection of `::`, comments as lexical whitespace, and coverage by the operator/operand model. Empty groups contain one `EMPTY`; the syntax and root for an empty or comment-only *file* are not specified.
+
+**Ableitung:** Exact permissive candidate boundaries remain observable choices: `0d1#` could be one invalid candidate or a numeric token followed by an error token; `123é` could be one invalid candidate or a numeric token followed by an identifier. These are questions, not selections. Known requirements such as the `123foo` error and `1.foo` split still constrain the candidate grammar.
+
+**Ableitung:** In `a <error1> <error2> b`, where each placeholder denotes one error token, treating both as operators inserts one `EMPTY` between them; treating the first as operator and the second as operand inserts one `APPLY` before `b`; treating the first as operand and the second as operator inserts one `APPLY` after `a`. The alternation/minimum-insertion criterion alone therefore does not select an error-role assignment. How DEC-068 applies to consecutive errors remains open, not superseded.
+
+**Belegt/Ableitung:** A Python 3 probe using the host's Unicode 15.0.0 database normalizes source `a` U+0315 U+0300 to U+00E0 U+0315. Unicode 18 data confirms the relevant combining classes, canonical decomposition of U+00E0, and absence from the composition-exclusion list. The original source characters contributing to U+00E0 are nonadjacent, illustrating why exact contributor mappings and contiguous enclosing byte spans may differ. This is not a full Unicode 18 normalizer conformance test.
+
+**Offen:** Candidate boundaries and tie-breaking; the empty-file contract; Unicode-error units and handling within comments/literals; consecutive-error classification and error-operator precedence; lexical/encoding-error output and delimiter recovery; concrete CST, trivia, and source-map representations. Representation and recovery mechanisms can be implementation choices when they preserve the agreed observable behavior. These questions block affected components or a complete conforming parser, not every independent implementation step.
+
+**Verification/scope:** Reviewed the committed design and current knowledge; updated the question inventory and both context views. A one-off enumeration of all four error-role assignments confirmed insertion counts of 3, 1, 1, and 1; it does not select an assignment under DEC-068. No new parser was implemented, built, or tested.
+
+### KP-087 - Lexical error, empty-file, closer, and normalization decisions
+
+- Documented: 2026-11-06 08:52 (+01:00)
+- Event date: 2026-11-06 (time of the six answers unknown; form answers immediately before documentation)
+- Capture: contemporaneous decisions with one clarification form
+- Sources: SRC-118, SRC-119, SRC-120
+- Related: DEC-077–082; supersedes DEC-036's whole-source NFC; refines DEC-029/068/070/072; Q-014/015, LP-23
+- Status: beschlossen (DEC-077–082); some interpretations offen as listed
+
+**Nutzerangabe/beschlossen (DEC-077):** If a number prefix (integer or float) is incomplete and the next character is not legal in a number, return that prefix as one error operand; the same applies to non-raw strings or characters at line ends. Asked whether complete numbers followed by letters now split, the user chose to keep the earlier rule: `123foo`, `1.2foo`, `1e3foo` stay single error operands; `1.foo` still splits. Alternative "split into `123` APPLY `foo`" was **verworfen**.
+
+**Nutzerangabe/beschlossen (DEC-078):** Invalid UTF-8 and `\u`/`\U` sequences that cannot produce legal Unicode generate error characters, which cause error tokens. Spans for bad UTF-8 may be approximate, since tools differ; a Unicode recommendation should be followed if one exists. **Belegt:** Unicode 18 §3.9.6 recommends maximal-subpart substitution (SRC-119), as `TextDecoder` implements (SRC-120). Form answer: inside comments/literals the error is diagnosed while the construct stays intact, and literal values contain U+FFFD; the alternative of making the whole comment/literal an error token was **verworfen**.
+
+**Nutzerangabe/beschlossen (DEC-079):** "error operands bind as tightly as possible"; consecutive error tokens collapse into one before operand/operator classification. **Offen:** the exact meaning for an operator-classified error's priority/associativity, and whether whitespace/comments block collapse.
+
+**Nutzerangabe/beschlossen (DEC-080):** A comment-only file converts to a single `EMPTY`. **Ableitung (offen):** the same for empty or whitespace/BOM-only files.
+
+**Nutzerangabe/beschlossen (DEC-081):** With mismatched delimiters at least one closer is unexpected and is converted into an error token. **Ableitung (offen):** the unexpected closer is the one not matching the innermost opener, so `([a)]` yields error `)` plus an inserted `)` at EOF.
+
+**Nutzerangabe/beschlossen (DEC-082):** The user was convinced the whole-source normalization rules were problematic and changed them: no normalization before tokenization; identifiers as already decided; strings as NFC; the user believes normalization would not change other tokens, answering the mapping problem. Form answers: NFC applies to ordinary strings, character literals, and raw strings, on literal source text after `\u` translation and before ordinary escapes, keeping DEC-039. Alternatives **verworfen:** ordinary strings only, strings plus characters only, and NFC on decoded values. **Ableitung/Belegt (SRC-120):** former normalization cases become error tokens rather than different tokens (U+037E, `=`+U+0338), and `"\n\u0303"` becomes the invalid escape `\ñ`.
+
+**Offen:** `123é` tail; EOF extents of unterminated block comments/raw strings; equal-length ties; fallback-run boundaries; error-operator binding; collapse across whitespace/comments; innermost-closer confirmation; empty/whitespace-only files; implicit-node and in-literal diagnostic spans.
+
+**Verification/scope:** Documentation-only update of the design and both context views; no lexer/parser implementation or test. Changes since `0ade6eb` (KP-086 and KP-087) remain uncommitted.
+
+### KP-088 - Adjacency rule and remaining error/lexical answers
+
+- Documentation date: 2026-11-06 (+01:00). Source: SRC-121.
+
+**Nutzerangabe/beschlossen (DEC-083):** "both Identifiers and numbers, if any two appear next to each other, must be separated by white space and/or comments, they may not touch. Otherwise, this is an error operand." **Ableitung (documented consequences):**
+- A maximal touching run forms one error operand.
+- The rule supersedes the earlier `1.foo` split (DEC-033/077), `a.5` as identifier plus float (DEC-034), and `1..2` as two floats (DEC-061). `1.2.3` also becomes one error operand.
+- It settles `123é` as an error.
+- `a .5`, `a/*c*/.5`, `1. foo`, and `1...x` are unaffected.
+
+These consequences are mechanical, but they reverse decisions the user explicitly approved earlier, so they are flagged to the user.
+
+**Nutzerangabe/beschlossen (DEC-084):** Unterminated block comments and raw strings extend to EOF, and an error is reported ("Correct, and then an error is reported").
+
+**Nutzerangabe (offen):** "Can there be ties?" **Ableitung:** Ties between token classes cannot occur, because the first characters determine the class and equal-length operator candidates are identical. Overlap is possible only between integer and float candidate shapes, for example `0x1p0` under an alphanumeric hex-integer candidate. **Vorschlag:** Use a single numeric candidate, classified after matching.
+
+**Nutzerangabe/beschlossen (DEC-085):** A fallback run consumes "the smallest number of character so we can again parse a token after". **Ableitung:** Whitespace and comments count as parsable, so `a §  b` yields the error `§`.
+
+**Nutzerangabe/beschlossen (DEC-086):** Operator-classified errors use "tightest binding, left assoc". **Ableitung:** This is tighter than every source operator, including `@`.
+
+**Nutzerangabe/beschlossen (DEC-087):** Whitespace does not block collapse: "error merging happens after parsing created the errors (at least by an as-if rule), and by then, whitespace is already no longer relevant". **Ableitung:** Comments are included via DEC-075.
+
+**Nutzerangabe/beschlossen:**
+- The innermost-closer interpretation of DEC-081 is confirmed ("that works").
+- Empty and whitespace/BOM-only files are `EMPTY` (DEC-080, "yes").
+- Span questions are postponed to implementation (DEC-088).
+
+**Offen:** Confirmation of the single numeric candidate proposal, and the exact numeric candidate grammar.
+
+**Verification/scope:** Documentation-only update of the design and both context views; no implementation or test. Changes since `0ade6eb` (KP-086–088) remain uncommitted.
+
+### KP-089 - Unified numeric candidate accepted
+
+- Documentation date: 2026-11-06 (+01:00). Source: SRC-122.
+- Related: DEC-089; refines DEC-067/071 and Q-014.
+- Status: beschlossen (approach); exact candidate grammar remains open.
+
+**Nutzerangabe/beschlossen (DEC-089):** The user accepted the proposal to use one unified numeric candidate for integers and floats, then classify the match. The candidate includes numeric suffixes. Candidate matching remains longest-match with post-match validation; the implementation/specification must preserve `1e3` as a float, `16#1e2` as a radix integer, `0x1p0` as a hexadecimal float, and DEC-047's suffix rules. Separate integer and float candidate ties are thereby avoided by construction.
+
+**Offen:** The exact permissive numeric candidate shape, classification and validation details, and any numeric length limits remain Q-014 work. No implementation was requested.
+
+**Verification/scope:** Documentation-only update of the design and both context views; no parser implementation or tests. Changes since `0ade6eb` remain uncommitted.
