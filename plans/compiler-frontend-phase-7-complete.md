@@ -58,7 +58,9 @@ issues. Reviewer did not execute automated checks; conductor ran them separately
   retaining all structural entries. Known lexical operand errors retain trees.
 - Contextual error classification, trivia-independent collapse, recovery around
   unresolved entries and full byte-to-CST conformance remain Phase 8.
-- Phase 7 is uncommitted. Await user commit/continue confirmation before Phase 8.
+- User confirmed commit/continue on 2026-11-06 at 22:39 (+01:00).
+  Phase 7 committed as `d91ffb4`; Phase 8 authorized. Its policy-review blocker
+  is recorded in KP-106; Phase 8 is not yet complete.
 
 **Git commit message:**
 

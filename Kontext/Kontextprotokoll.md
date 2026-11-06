@@ -2083,3 +2083,135 @@ No dependency or generated-data changes.
 
 **Next:** Await user checkpoint for Phase 7 commit and/or Phase 8 continuation.
 No Phase 7 commit and no Phase 8 implementation performed.
+
+### KP-106 - Phase 7 committed; Phase 8 awaits error-role policy decision
+
+- Event date: 2026-11-06 22:39 (+01:00), user "commit that, then continue".
+- Documentation date: 2026-11-06 (+01:00).
+- Sources: current conversation, commit `d91ffb4`, implementation/static review
+  reports, Language Design DEC-068/077/079/083 and independent validation.
+- Status: Phase 7 committed; Phase 8 provisionally implemented, review blocked.
+
+**Nutzerangabe/beschlossen:** Commit reviewed Phase 7 and continue. Its ten
+files were committed as `d91ffb4`. An unrelated untracked `.trunk/` directory
+was excluded and left untouched.
+
+**Belegt/provisional:** Integrated recovery collapses consecutive errors across
+trivia before choosing roles, retains original error parts/interior trivia and
+all diagnostics, and builds full error-bearing trees. Error operators bind
+most tightly with left associativity. `reconstructSource` walks ordered CST
+source ranges and rejects gaps/overlaps/incomplete coverage rather than
+returning a copy of the input without checking its structure.
+
+**Offen Q-017:** Implementer flagged, and reviewer confirmed, a consequential
+policy conflict. DEC-068 uses a zero-insertion role or otherwise operand;
+DEC-079 collapses errors before classification. DEC-077/083 name malformed
+numbers/touching candidates error operands. Current code forces any collapsed
+run containing a lexically known operand error to operand, documented explicitly
+as an interpretation rather than agreement. In `a 0x b`, this needs two APPLYs
+where contextual operator classification needs none. `a 0x § b` also exposes
+whether that designation fixes a mixed collapsed run. Both fixed-role and
+uniform contextual approaches remain options pending user choice; no decision
+is inferred from code or passing tests.
+
+**TDD/review:** Implementer reported 46 of 47 new tests failed behaviorally
+against Phase 7 before implementation. Static review NEEDS_REVISION: policy
+decision required; exhaustive 5,460-input oracle currently covers fallback
+errors only and should include known/mixed errors after agreement. Add full
+expression-retention assertions for malformed numeric candidates. Reviewer
+did not execute automated checks.
+
+**Independent provisional validation:** `npm test`: 526 passing tests in ten
+files; `npm run typecheck`, `npm run smoke:exports` (includes build) and
+`git diff --check` pass. Tests cover large error runs, deep groups, long
+error chains, malformed UTF-8/BOM/global escapes, reconstruction and tamper
+rejection. This verifies current behavior, not resolution of the specification
+conflict. No dependency or generated-data changes.
+
+**Next:** Ask user to select error-role precedence, record selected policy,
+align source/docs/tests test-first, cover the identified gaps and revalidate.
+No Phase 8 completion document or commit; plan not declared complete.
+
+### KP-107 - Fixed error-operand policy approved as DEC-092
+
+- Event/documentation date: 2026-11-06 23:16 (+01:00).
+- Source: current conversation, user selected "1" from the two explicit
+  error-role policies in response to KP-106's blocker.
+- Status: beschlossen; Q-017 resolved, Phase 8 review work resumes.
+
+**Nutzerangabe/beschlossen:** A lexically designated error operand remains
+operand, and so does any collapsed run containing one. Thus `a 0x b` and
+`a 0x § b` require two APPLYs. Uniform contextual classification of all
+collapsed errors was rejected. DEC-068 still classifies runs without a
+designated operand part. Recorded in Language Design as DEC-092; this resolves
+the apparent precedence conflict rather than silently rewriting past decisions.
+
+**Next:** Existing provisional code already follows the chosen role policy.
+Align README/JSDoc, extend independent known/mixed-error coverage and assert
+full-tree retention, then review and independently validate. Approval is of
+the policy, not a Phase 8 commit or proof that all implementation checks pass.
+
+### KP-108 - Phase 8 and approved frontend implementation plan complete
+
+- Documentation/event date: 2026-11-06 (+01:00).
+- Sources: implementation/static review reports, conductor inspection and
+  executed checks, [Phase 8 record](../plans/compiler-frontend-phase-8-complete.md)
+  and [overall report](../plans/compiler-frontend-complete.md).
+- Status: implemented/verified, reviewed after revisions; Phase 8 uncommitted.
+
+**Belegt:** DEC-092 policy is reflected in README/JSDoc and constrained-oracle
+fixtures. Malformed numeric/literal/touching errors and mixed runs in both
+orders, comments and unexpected closers now assert fixed roles, insertion
+counts, complete trees, exact spans/diagnostics and byte reconstruction.
+These coverage-only additions required no role-algorithm change; initial
+fixture expectation errors were corrected without claiming production red.
+The previously disputed policy is resolved by user choice, not by tests alone.
+
+**Review/root fix:** Final static review found that three function-call spreads
+of held trivia could exceed the JavaScript argument limit. Three regression
+tests with 200,000 comments each failed with `RangeError: Maximum call stack
+size exceeded` before replacement with iterative appends. All passed afterward,
+including exact trivia/source retention. Added missing overlap/reorder
+reconstruction negatives and explicit touching-operand cases. Conductor
+inspected final revisions and validated; reviewers ran static review only.
+Both NEEDS_REVISION reports are resolved on that basis.
+
+**Independent final checks:** `npm test`: 541 passed in ten files;
+`npm run typecheck`, `npm run smoke:exports` (includes build) and
+`git diff --check`: pass. Recovery adds 62 runner tests over Phase 7.
+Independent fallback oracle covers 5,460 sequences; constrained known-operand
+fixtures cover DEC-092. Tests include 50,000 error parts, 20,000 error operators,
+20,000 nested groups and 200,000 trivia entries on each flush path.
+Existing full Unicode18 normalization conformance remains covered.
+
+**Public migration:** Error entries own original parts/interior trivia in
+`components`, with operand/operator roles; direct source/errorKind fields and
+unresolved barriers are removed. Error operators bind tightly and
+left-associatively. Reconstruction walks ordered CST ranges, rejecting gaps,
+overlaps, reordered or incomplete coverage. Error diagnostics retain error
+status despite complete recovered trees.
+
+**Completion/next:** All eight implementation phases completed, evidence and
+overall file/commit inventory saved. Phase 8 and these records are uncommitted;
+await explicit commit authorization. No automatic new scope. Semantics, AST,
+numeric suffix interpretation/rounding, runtime and backend remain deferred.
+Unrelated `.trunk/` unchanged. The documented Phase 2 TDD evidence exception
+remains; completion does not retroactively fabricate missing red evidence.
+
+### KP-109 - Final frontend commit authorized; next scope to clarify
+
+- Event/documentation date: 2026-11-06 23:50 (+01:00).
+- Source: current conversation, user "commit that, then continue".
+- Status: final commit authorized; approved eight-phase implementation complete.
+
+The user authorized committing Phase 8 and the final documentation. This entry
+accompanies `feat(frontend)!: complete recovery and conformance`; its hash can
+be retrieved from Git history without embedding a self-referential hash.
+Unrelated `.trunk/` remains excluded. Prior 541-test/type-check/build/export
+verification is unchanged; documentation-only authorization updates need no
+new fabricated TDD run.
+
+"Continue" has no remaining phase in the approved plan. Next scope is open,
+not inferred approval to implement semantics, runtime or backend. Ask whether
+to plan semantic analysis or prioritize frontend tooling/hardening; these are
+proposals, not selected requirements.

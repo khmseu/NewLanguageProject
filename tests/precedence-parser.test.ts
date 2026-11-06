@@ -25,6 +25,8 @@ function signature(node: CstExpression): string {
     case "binary": {
       const operator = node.operator.operatorKind === "apply"
         ? "APPLY"
+        : node.operator.operatorKind === "error"
+        ? "ERROR"
         : node.operator.token.spelling;
       return `(${operator} ${signature(node.left)} ${signature(node.right)})`;
     }
@@ -266,12 +268,12 @@ describe("precedence-based binary CST (DEC-021/022/066/068/069/072/073/074/076/0
     expect(viaLexedTokens.root.expression?.span).toEqual({ start: 0, end: 5 });
   });
 
-  it("preserves unresolved structural errors as explicit partial output", () => {
+  it("retains structural errors with a full tree and error status", () => {
     const unexpected = parse("a)");
     expect(unexpected.status).toBe("error");
-    expect(unexpected.root.expression).toBeUndefined();
+    expect(signature(expression(unexpected))).toBe("(APPLY a ERROR(1:2))");
     expect(unexpected.root.structure.entries.map(({ kind }) => kind))
-      .toEqual(["operand", "error"]);
+      .toEqual(["operand", "operator", "error"]);
     expect(unexpected.diagnostics.map(({ code }) => code))
       .toEqual(["unexpected-closing-delimiter"]);
 
@@ -289,12 +291,12 @@ describe("precedence-based binary CST (DEC-021/022/066/068/069/072/073/074/076/0
       .toEqual(["missing-closing-delimiter"]);
   });
 
-  it("does not collapse unresolved lexer errors or report them as success", () => {
+  it("collapses lexer errors but keeps every diagnostic and never succeeds", () => {
     const result = parse("a § § b");
     expect(result.status).toBe("error");
-    expect(result.root.expression).toBeUndefined();
+    expect(signature(expression(result))).toBe("(ERROR a b)");
     expect(result.root.structure.entries.filter(({ kind }) => kind === "error"))
-      .toHaveLength(2);
+      .toHaveLength(1);
     expect(result.diagnostics.map(({ code }) => code))
       .toEqual(["unrecognized-character", "unrecognized-character"]);
   });

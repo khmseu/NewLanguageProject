@@ -78,8 +78,8 @@ touching identifier/number runs as error operands. `lexCore` scans the whole
 input. Unknown characters are explicit shortest unsupported runs with
 `unrecognized-character` diagnostics; Unicode-error units remain separate.
 `status` reports scanner coverage, not compiler success; inspect diagnostics
-independently. Contextual parser-error recovery and parser-level error collapse
-are not implemented.
+independently. Fallback regions and malformed Unicode units stay separate lexical
+items; the parser (Phase 8, below) collapses and classifies them.
 
 ### Structural grouping API (Phase 6)
 
@@ -88,9 +88,8 @@ are not implemented.
 `()`, `[]`, and `{}`. Within each scope, recognized operands and explicit
 operators alternate using only the required implicit `APPLY` between adjacent
 operands and `EMPTY` between adjacent operators or at operator boundaries.
-Lexer error entries with an already-declared lexical operand role participate
-as operands; unresolved fallback and unexpected-closer errors remain explicit
-barriers to insertion.
+Errors are collapsed and role-classified first (see Phase 8) and then take part
+in alternation as operands or operators.
 Groups are outer operands; their interior sequences get independent boundaries.
 Empty and trivia-only files/groups contain one `EMPTY`. Trivia stays as ordered
 entries, and source tokens retain original byte provenance. This is the lossless structural input to the Phase 7 precedence parser.
@@ -105,11 +104,11 @@ are zero-width at byte EOF and have no source token or invented bytes. Tests pin
 these choices to DEC-088.
 
 `structureCore` carries all lexer diagnostics forward and adds explicit
-unexpected-closer and missing-closer diagnostics. Errors without an already
-declared lexical operand role remain distinct `CstError` entries with an
-unresolved role; errors are not collapsed or assigned contextual
-operator/operand roles. This Phase 6 API is structural output, not a parse
-success result.
+unexpected-closer and missing-closer diagnostics. As of Phase 8 it also
+collapses errors; DEC-092 fixes runs containing lexically designated operand
+errors as operands, and DEC-068 contextually classifies the other runs (the
+Phase 6 `unresolved` role and per-token `CstError.source`/`errorKind` no longer
+exist). This API is structural output, not a parse success result.
 
 ### Precedence parser API (Phase 7)
 
@@ -154,15 +153,72 @@ same binary rules and the structure phase's synthetic `EMPTY` nodes, e.g.
 unary-minus expression.
 
 Malformed input is not reported as successful. Lexer, delimiter, and
-precedence errors set `status` to `"error"` while retaining diagnostics and
-structural source. When a scope contains an unresolved `CstError`, its
-`expression` is `undefined`; the complete explicit `structure.entries`
-remains available as partial output. This phase intentionally does not merge
-errors across trivia, infer contextual error-operator roles, recover tree
-fragments around unresolved entries, or perform the final Phase 8
-byte-to-CST conformance classification. Missing closers are retained as
-zero-width EOF insertions with diagnostics; their enclosing group can still
-have a tree, but the result remains in error status.
+precedence errors set `status` to `"error"` while retaining diagnostics, the
+full tree, and structural source. Missing closers are retained as zero-width
+EOF insertions with diagnostics; their enclosing group still has a tree.
+
+### Integrated recovery and reconstruction (Phase 8)
+
+Pipeline: bytes, then `processSource` (UTF-8 + global escapes, byte provenance),
+`lexCore`, `structureCore` (groups, error collapse/roles, `APPLY`/`EMPTY`) and
+`parseCore` (precedence). `parseSource(input)` is the byte-to-CST entry point and
+`reconstructSource(result, input)` returns the original bytes.
+
+**Error collapse (DEC-079/087).** Within one scope, a maximal run of error units
+(fallback regions, malformed-Unicode error characters, invalid numbers/literals,
+touching runs, unexpected closers) becomes one `CstError`, even when whitespace
+or comments separate the units. A token, group or opener ends the run. The
+error owns, in `components`, each original `CstErrorPart` (unmodified lexer
+token/region and `errorKind`) and the trivia between parts; trivia before the
+first or after the last part stays at scope level. Unicode error characters
+remain separate lexical units and only collapse here. Inside comments and
+literals they are diagnosed only and never become errors. Diagnostics are not
+merged: every constituent keeps its own diagnostic and byte location.
+
+**Role selection (DEC-092/068).** A lexically designated operand error—such as
+an invalid numeric candidate, malformed literal, or touching-operand run
+(DEC-077/083)—retains its operand role. After collapse, any run containing one
+of these parts is an operand, including a mixed run with fallback errors or
+unexpected closers. Thus `a 0x b` and `a 0x § b` both retain the error as an
+operand and need two `APPLY` operators. This lexical role constraint applies
+even where classifying the run as an operator would need zero insertions.
+
+For a collapsed run without a designated operand part, DEC-068 counts the
+insertions needed for each role: as operand, one per operand neighbor; as
+operator, one per operator neighbor. Scope start and end count as operator
+neighbors, so a leading or trailing operator requires an `EMPTY`. The cheaper
+role wins; ties choose operand. Because collapse prevents error runs from
+neighboring one another, these fallback-only choices are independent and
+minimize insertions subject to DEC-092's fixed-role constraint. For example,
+the fallback-only run in `a § b` is an operator and needs no insertion.
+
+**Binding (DEC-086).** An operator-classified error is a `CstErrorOperator`
+with `ERROR_OPERATOR_PRECEDENCE` (priority -1, left): `a E b + c` is
+`(a E b) + c` and `@x E y` is `@(x E y)`. An operand-classified error is a
+`CstErrorOperand` leaf.
+
+**Reconstruction.** `reconstructSource` iteratively walks the ordered `structure`
+entries (trivia, tokens, error parts and trivia, group delimiters), copying each
+range from the `SourceInput`. It throws if entries leave a gap, overlap or end
+before EOF, so malformed bytes, BOM and escape spellings come from original
+provenance, not decoded text.
+
+**Complexity.** Collapse, role selection and insertion are linear passes per
+scope; tree reduction and reconstruction are linear and use explicit stacks, so
+long error runs, long chains and deep nesting do not recurse.
+
+**Migration from Phase 6/7.** `CstError` now has `errorRole: "operand" |
+"operator"` and `components`; `source`, `errorKind` and the `unresolved` role
+are gone (use the parts). `CstOperator` gained `CstErrorOperator`. Error-bearing
+scopes now have an `expression` (previously `undefined`), but `status` stays
+`"error"`. Adjacent errors are one entry, and an error no longer suppresses
+`APPLY`/`EMPTY` insertion around it.
+
+**Limits.** No semantic checks, AST or backend. Error recovery retains
+diagnostics and a structural/expression tree but does not make malformed input
+successful: any error diagnostic yields `status: "error"`. Synthetic spans
+retain the selected Phase 6 zero-width anchors and do not invent source bytes.
+Diagnostics inside NFC-normalized literals use original byte spans.
 
 Numeric tokens expose frozen `numeric: CoreNumber` metadata with integer,
 fraction, exponent, and suffix components retained as written; `suffixKey` is

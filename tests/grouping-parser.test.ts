@@ -279,8 +279,12 @@ describe("structural grouping and implicit elements", () => {
 
     expect(inner.contents.entries).toContainEqual(expect.objectContaining({
       kind: "error",
-      source: expect.objectContaining({ spelling: ")" }),
-      errorKind: "unexpected-closer",
+      errorRole: "operand",
+      components: [expect.objectContaining({
+        kind: "error-part",
+        source: expect.objectContaining({ spelling: ")" }),
+        errorKind: "unexpected-closer",
+      })],
     }));
     expect(inner.close).toMatchObject({
       spelling: "]",
@@ -299,12 +303,14 @@ describe("structural grouping and implicit elements", () => {
     );
   });
 
-  it("retains unmatched closers and unclosed nested groups without collapsing errors", () => {
+  it("collapses adjacent unmatched closers, keeping both diagnostics, and closes nested groups", () => {
     const text = ")}";
     const result = structureCore(lexCore(
       new SourceInput(new TextEncoder().encode(text)),
     ));
-    expect(result.root.entries.filter((entry) => entry.kind === "error")).toHaveLength(2);
+    const errors = result.root.entries.filter((entry) => entry.kind === "error");
+    expect(errors).toHaveLength(1);
+    expect(errors[0]!.kind === "error" && errors[0]!.components).toHaveLength(2);
     expect(result.diagnostics.map(({ code }) => code)).toEqual([
       "unexpected-closing-delimiter",
       "unexpected-closing-delimiter",
@@ -356,15 +362,17 @@ describe("structural grouping and implicit elements", () => {
     expect(result.diagnostics).toEqual([]);
   });
 
-  it("preserves lexer errors as unresolved entries and retains lexer diagnostics", () => {
+  it("classifies lexer errors contextually and retains lexer diagnostics", () => {
     const lexed = lexCore(new SourceInput(new TextEncoder().encode("a § b")));
     const result = structureCore(lexed);
     expect(result.root.entries.some((entry) =>
-      entry.kind === "error" && entry.errorKind === "lexer"
+      entry.kind === "error" &&
+      entry.components.some((part) =>
+        part.kind === "error-part" && part.errorKind === "lexer")
     )).toBe(true);
     expect(result.diagnostics).toEqual(lexed.diagnostics);
     expect(result.root.entries.some((entry) =>
-      entry.kind === "error" && entry.errorRole === "unresolved"
+      entry.kind === "error" && entry.errorRole === "operator"
     )).toBe(true);
 
     const malformedLiteral = structureCore(lexCore(
@@ -376,8 +384,8 @@ describe("structural grouping and implicit elements", () => {
     expect(malformedLiteral.root.entries.filter((entry) =>
       entry.kind === "error"
     )[0]).toMatchObject({
-      errorKind: "lexer",
       errorRole: "operand",
+      components: [expect.objectContaining({ errorKind: "lexer" })],
     });
     expect(signature(malformedLiteral.root.entries)).toEqual([
       "operand:a",
@@ -428,6 +436,8 @@ function originalBytes(
       ...(entry.close.token ? [...input.slice(entry.close.token.range.bytes)] : []),
     ];
   }
-  if (entry.kind === "error") return [...input.slice(entry.source.range.bytes)];
+  if (entry.kind === "error") {
+    return entry.components.flatMap((part) => [...input.slice(part.source.range.bytes)]);
+  }
   return [];
 }

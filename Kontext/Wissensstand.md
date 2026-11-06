@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-06 (timezone +01:00); Phase 6 committed as `6a0e637` on user authorization. Phase 7 precedence-based binary CST implemented and statically approved: 479 tests, type-check, build/export smoke and whitespace checks pass independently (KP-105). Awaiting Phase 7 commit/continue confirmation.
+- Last substantive update: 2026-11-06 (timezone +01:00); all eight compiler frontend phases implemented. DEC-092 resolves Q-017; Phase 8 reviewed after revisions and independently verified: 541 tests, type-check, build/export smoke and whitespace checks pass (KP-108). Final commit authorized at 23:50; these records accompany `feat(frontend)!: complete recovery and conformance` (KP-109). Next scope requires clarification; no semantics/AST/runtime/backend added.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -398,8 +398,8 @@ The cheapest useful starting slice was assessed as source positions/diagnostics,
 | Q-011 | Specify reference identity/aliasing and field/temporary collection types and operations; define proof criteria and behavior-preserving optimizations for predictable reference lifetimes. | Partially resolved by DEC-015/016/017: reference values have GC-like behavior and predictable lifetimes may be optimized; detailed identity, collection, and optimization semantics remain open. | KP-014, KP-015, KP-016 |
 | Q-012 | Specify class-variable semantics; decide whether local functions are function objects; clarify method/instantiation type roles, packed types, and how NewLang package/import configuration and namespace components integrate with DEC-018 lookup. | Open; DEC-019 adopts the model where notes are explicit but does not resolve questions or underspecified mechanics in those notes. | KP-018, KP-019 |
 | Q-013 | Specify what continuation operations are provided (including full/delimited and one-shot/multi-shot behavior), what control state they capture, interactions with exceptions/coroutines and GC, and which calls qualify as tail calls. | Open; DEC-020 requires proper tail calls and continuations but does not select their full semantics or implementation. | KP-020 |
-| Q-014 | Define remaining lexical candidate grammar, validation boundaries, error-token details, and source-location behavior. | Lexical grammar gate resolved: DEC-067/071/077/078/082–085 select candidate validation, literal/Unicode recovery, normalization, adjacency and fallback. DEC-089–091 complete unified numeric components, malformed boundaries and no language-level length caps; implemented through Phase 5. Parser-level error classification/collapse and CST span representation remain later implementation work under Q-015, not a numeric grammar approval blocker. | KP-025, KP-034, KP-048, KP-069, KP-071, KP-072, KP-077, KP-078, KP-082, KP-083, KP-086, KP-087, KP-088, KP-089, KP-101, KP-102, KP-103 |
-| Q-015 | Complete the concrete binary CST/source-map/error-result contract. | DEC-069 selects binary operators plus comments without an AST. DEC-072–076 specify groups and generic syntax; DEC-079–081 specify collapse, comment-only `EMPTY` and unexpected closer errors. DEC-086–088 specify operator-error binding, trivia-independent collapse and implementation-selected spans. Phases 6/7 implement structural sequences, binary nodes, retained trivia, synthetic byte anchors and error status. Remaining Phase 8 work: contextual error roles/collapse and full byte-to-CST conformance. | KP-025, KP-034, KP-048, KP-050, KP-053, KP-071, KP-080, KP-082, KP-083, KP-085, KP-086, KP-087, KP-088, KP-104, KP-105 |
+| Q-014 | Define remaining lexical candidate grammar, validation boundaries, error-token details, and source-location behavior. | Resolved for the frontend plan: DEC-067/071/077/078/082–085 select validation, recovery, normalization, adjacency and fallback. DEC-089–091 complete unified numeric boundaries and length policy. Phases 6–8 implement CST spans and parser recovery; DEC-092 resolves fixed operand roles. | KP-025, KP-034, KP-048, KP-069, KP-071, KP-072, KP-077, KP-078, KP-082, KP-083, KP-086, KP-087, KP-088, KP-089, KP-101–108 |
+| Q-015 | Complete the concrete binary CST/source-map/error-result contract. | Implemented/verified for this plan: generic binary CST plus ordered structural sequences/trivia, source-byte and synthetic spans, EOF closers, contextual or fixed error roles, collapse across trivia, tightest left-associative error operators, retained malformed-input trees, error status and checked reconstruction. DEC-092 settles the role conflict; semantics remain out of scope. | KP-025, KP-034, KP-048, KP-050, KP-053, KP-071, KP-080, KP-082, KP-083, KP-085, KP-086, KP-087, KP-088, KP-104–108 |
 | Q-016 | Specify tagged raw-string content behavior and remaining delimiter/newline details. | Partially resolved by DEC-026/027/032/035/036: tagged backticks, ASCII tags after source NFC (empty allowed, no fixed limit), multiline content, and normalization of recognized physical and escape-generated line endings to LF are selected; adjacent CRLF is one ending even with mixed origins. Non-universal raw backslashes are literal (DEC-055); raw content cannot contain its own closing sequence (Ableitung from DEC-026/055). | KP-027, KP-028, KP-029, KP-032, KP-040, KP-046, KP-048 |
 
 ## Lexer/parser decision triage
@@ -912,8 +912,51 @@ hooks were added.
 - **Independently verified:** 479 tests in nine files, type-check,
   build/public export smoke and whitespace check pass. Includes 1,500 nested
   parsed groups and 5,000-operator left/right chains with iterative assertions.
-- **Limits/checkpoint:** Phase 7 uncommitted; await user confirmation before
-  Phase 8 contextual recovery/collapse and integrated conformance.
+- **Limits/checkpoint:** User authorized commit/continue at 22:39 (+01:00);
+  Phase 7 committed as `d91ffb4`. Phase 8 started (KP-106).
+
+### Integrated recovery checkpoint (complete; uncommitted)
+
+- **Implemented/verified:** Phase 8 [completion evidence](../plans/compiler-frontend-phase-8-complete.md),
+  KP-108. Working changes add trivia-independent
+  error collapse, contextual roles, tightest left-associative error operators
+  and [CST reconstruction](../src/cst/reconstruction.ts). Collapsed errors own
+  original parts and interior trivia; diagnostics remain separate. All eight
+  implementation phases complete; [overall report](../plans/compiler-frontend-complete.md).
+  Phase 8 is not committed.
+- **Q-017 — resolved by DEC-092:** DEC-068 selects a zero-insertion role,
+  otherwise operand; DEC-079 collapses errors before classification.
+  DEC-077/083 explicitly call malformed numeric/touching candidates error
+  operands. Should that lexical designation fix the parser role, including
+  any collapsed run containing such a part, or should DEC-068 classify every
+  collapsed error? Example `a 0x b`: fixed operand requires two APPLYs;
+  contextual operator requires none. `a 0x § b` exposes mixed-run policy too.
+  Sources: Language Design decisions, implementer report and static review,
+  KP-106. User selected option 1 at 23:16 (+01:00), KP-107: lexical operand
+  designations take precedence and any collapsed run containing one remains
+  operand. Uniform contextual reclassification was rejected.
+- **Approved policy, implemented/tested:** Any collapsed run with a
+  lexically known operand error is forced to operand; fallback-only runs use
+  DEC-068. README/JSDoc and constrained-oracle/full-tree tests reflect DEC-092.
+  The prior provisional behavior required no role-algorithm change.
+- **TDD/review:** Implementer reported 46 of 47 new tests failed initially.
+  Initial review blocked on policy and coverage; DEC-092 resolves policy and
+  tests now cover numeric/literal/touching/mixed roles, exact full trees and
+  diagnostics. Final static review found three unbounded argument spreads
+  flushing trivia. Each 200,000-comment regression failed with RangeError
+  before iterative-appending fixes. Added overlap/reorder reconstruction
+  rejection tests. Conductor inspected fixes; reviewers did not run commands.
+- **Independently verified:** 541 tests in ten files, type-check,
+  build/export smoke and whitespace check pass. Fallback oracle covers all
+  5,460 sequences of lengths 1–6; constrained fixtures cover fixed operands.
+  Stress tests cover 50,000 error parts, 20,000 nested groups/error operators,
+  200,000 trivia entries on each flush path and lossless reconstruction.
+- **Public migration:** `CstError` now has resolved operand/operator role and
+  ordered `components`; source/errorKind live on constituent parts.
+  `CstOperator` includes error operators. Unresolved barriers are removed.
+- **Review/checkpoint:** Approved after revisions by conductor inspection and
+  verification. Phase 8 awaits commit authorization; unrelated `.trunk/`
+  untouched. Semantics, separate AST, runtime and backend remain out of scope.
 
 ### Phase 5 numeric approval gate
 
@@ -1019,12 +1062,12 @@ not numeric digits or identifier letters.
 
 ## Next steps
 
-1. Await user confirmation to commit Phase 7 and/or continue. Read its [completion record](../plans/compiler-frontend-phase-7-complete.md) for TDD, static review, independent verification and public parser APIs. Phase 6 is committed as `6a0e637`. Maintain [JSDoc instructions](../.github/instructions/jsdoc.instructions.md).
-2. After confirmation, implement Phase 8 integrated recovery/conformance with TDD: contextual error roles, collapse across trivia, tightest left-associative error operators, byte reconstruction, diagnostics and no success with errors. Q-014's numeric gate is resolved; Phase 6/7 choose CST layouts, spans and parsing algorithm. Follow the [approved plan](../plans/compiler-frontend-plan.md) and [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
+1. User authorized Phase 8/final-record commit at 23:50 (+01:00), KP-109. These records accompany `feat(frontend)!: complete recovery and conformance`; use Git history to locate its hash. Read the [Phase 8 evidence](../plans/compiler-frontend-phase-8-complete.md) and [overall report](../plans/compiler-frontend-complete.md). Preserve unrelated `.trunk/`.
+2. The eight-phase frontend implementation is complete. Further semantic analysis, numeric rounding/suffix meanings, runtime and code generation need separately agreed scope. Q-014/015/017 are resolved for this plan; do not reopen them or add construct-specific parser requirements. Maintain [JSDoc instructions](../.github/instructions/jsdoc.instructions.md).
 3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
 
 ## Handover
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 
-> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and KP-105. Phase 6 committed as `6a0e637`; Phase 7 binary CST/parseSource/parseCore implemented and statically approved. Independently verified 479 tests, type-check, build/export smoke and whitespace checks. Read the Phase 7 completion record and await commit/continue confirmation before Phase 8 contextual recovery/collapse and integrated conformance. Preserve staged/unstaged changes and complete JSDoc.
+> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `Kontext/Wissensstand.md`, KP-108/109 and `plans/compiler-frontend-complete.md`. All eight frontend implementation phases complete; final commit authorized, with these records accompanying `feat(frontend)!: complete recovery and conformance` (locate hash in Git). Independent 541 tests/typecheck/build export smoke/whitespace checks pass. Clarify next scope before a new implementation plan; semantics/AST/runtime/backend were outside this plan. Preserve unrelated `.trunk/` and maintain complete JSDoc.

@@ -1,6 +1,7 @@
 /**
  * Public frontend entry point: byte-preserving input, source translation,
- * pinned Unicode services, diagnostic contracts, and the core lexer.
+ * pinned Unicode services, diagnostics, the core lexer, error-recovering CST
+ * parser, and byte-exact CST reconstruction.
  * Declaration contracts live in the re-exported modules.
  * @module
  */
@@ -62,6 +63,9 @@ export {
   type CstEmptyOperand,
   type CstEntry,
   type CstError,
+  type CstErrorComponent,
+  type CstErrorOperator,
+  type CstErrorPart,
   type CstBinaryExpression,
   type CstErrorOperand,
   type CstExpression,
@@ -83,7 +87,9 @@ export {
   type PrecedenceDiagnosticCode,
 } from "./cst/cst.js";
 export { structureCore } from "./parser/grouping.js";
+export { reconstructSource } from "./cst/reconstruction.js";
 export {
+  ERROR_OPERATOR_PRECEDENCE,
   OPERATOR_PRECEDENCE,
   parseCore,
   parseSource,

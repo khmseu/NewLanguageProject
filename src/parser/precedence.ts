@@ -1,7 +1,8 @@
 /**
  * Public precedence-parser entry points, operator binding table, and tree
  * construction. The parser does not perform keyword- or construct-specific
- * grammar, semantic legality checks, or Phase 8 error-role recovery.
+ * grammar or semantic legality checks. Error collapse and role selection happen
+ * in structural grouping, so each scope arrives strictly alternating.
  * @module
  */
 import type {
@@ -88,6 +89,15 @@ export const OPERATOR_PRECEDENCE = Object.freeze({
   ",": binding(20, "left"),
   ";": binding(21, "left"),
 } satisfies Readonly<Record<string, OperatorPrecedence>>);
+
+/**
+ * DEC-086 binding of an operator-classified error: tighter than `@` (priority
+ * zero) and left-associative.
+ */
+export const ERROR_OPERATOR_PRECEDENCE: OperatorPrecedence = binding(
+  -1,
+  "left",
+);
 
 /** An operator waiting to be reduced from the explicit operator stack. */
 interface PendingOperator {
@@ -205,8 +215,9 @@ function binding(
 }
 
 /**
- * Reduce one shallow structural scope. Any unresolved error makes the entire
- * scope's precedence tree unavailable; its original entries remain intact.
+ * Reduce one shallow structural scope. Operand-role errors are leaves and
+ * operator-role errors are tightest left-associative operators. A malformed
+ * alternation (not produced by recovery) leaves the tree unavailable.
  * @param sequence - Grouped entries for one file or delimiter scope.
  * @param parsedGroups - Post-order parsed group wrappers.
  * @param diagnostics - Shared parser diagnostic accumulator.
@@ -218,20 +229,13 @@ function parseSequenceExpression(
   parsedGroups: WeakMap<CstGroup, CstParsedGroup>,
   diagnostics: CstParseDiagnostic[],
 ): CstExpression | undefined {
-  if (sequence.entries.some((entry) =>
-    entry.kind === "error" && entry.errorRole === "unresolved"
-  )) {
-    return undefined;
-  }
-
   const operands: CstExpression[] = [];
   const operators: CstOperator[] = [];
   let expectsOperand = true;
 
   for (const entry of sequence.entries) {
     if (entry.kind === "trivia") continue;
-    if (entry.kind === "error") {
-      if (entry.errorRole !== "operand") return undefined;
+    if (entry.kind === "error" && entry.errorRole === "operand") {
       const operand: CstErrorOperand = Object.freeze({
         kind: "error-operand",
         error: entry as CstError & { readonly errorRole: "operand" },
@@ -245,12 +249,20 @@ function parseSequenceExpression(
       expectsOperand = false;
       continue;
     }
-    if (entry.kind === "operator") {
+    if (entry.kind === "operator" || entry.kind === "error") {
       if (expectsOperand) {
         diagnostics.push(invalidSequence(entry.span));
         return undefined;
       }
-      operators.push(entry);
+      operators.push(entry.kind === "error"
+        ? Object.freeze({
+          kind: "operator",
+          operatorKind: "error",
+          error: entry as CstError & { readonly errorRole: "operator" },
+          span: entry.span,
+          synthetic: false,
+        } as const)
+        : entry);
       expectsOperand = true;
       continue;
     }
@@ -302,7 +314,9 @@ function reduceOperators(
   for (let index = 0; index < operators.length; index++) {
     const operator = operators[index]!;
     const spelling = operatorSpelling(operator);
-    const precedence = precedenceFor(spelling);
+    const precedence = operator.operatorKind === "error"
+      ? ERROR_OPERATOR_PRECEDENCE
+      : precedenceFor(spelling);
     if (!precedence) {
       diagnostics.push(precedenceDiagnostic(
         "unknown-operator-precedence",
@@ -397,9 +411,9 @@ function precedenceFor(
  * @returns Operator spelling used by the precedence table and diagnostics.
  */
 function operatorSpelling(operator: CstOperator): string {
-  return operator.operatorKind === "apply"
-    ? operator.spelling
-    : operator.token.spelling;
+  if (operator.operatorKind === "apply") return operator.spelling;
+  if (operator.operatorKind === "error") return "ERROR";
+  return operator.token.spelling;
 }
 
 /**

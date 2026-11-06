@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import {
   lexCore,
   parseSource,
+  reconstructSource,
+  ERROR_OPERATOR_PRECEDENCE,
   OPERATOR_PRECEDENCE,
   normalizeUnicode18,
   scanCoreAt,
@@ -63,3 +65,10 @@ assert.deepEqual(
   ],
 );
 assert.equal(literals.diagnostics[0].code, "invalid-literal-escape");
+
+const recovered = new SourceInput(new TextEncoder().encode("a /*c*/ § § b"));
+const recoveredResult = parseSource(recovered);
+assert.equal(recoveredResult.status, "error");
+assert.equal(recoveredResult.root.expression.operator.operatorKind, "error");
+assert.equal(ERROR_OPERATOR_PRECEDENCE.priority, -1);
+assert.deepEqual(reconstructSource(recoveredResult, recovered), recovered.bytes);

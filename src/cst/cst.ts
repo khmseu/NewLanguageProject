@@ -1,6 +1,7 @@
 /**
  * Lossless structural CST contracts for delimiter grouping and implicit
  * operand/operator insertion. This is intentionally not a precedence tree.
+ * Errors are collapsed and role-classified under DEC-092 and DEC-068.
  * @module
  */
 import type { ErrorDiagnostic } from "../diagnostics/diagnostic.js";
@@ -80,7 +81,25 @@ export interface CstEmptyOperand {
 /** An explicit source operator or inserted `APPLY` operator. */
 export type CstOperator =
   | CstExplicitOperator
-  | CstApplyOperator;
+  | CstApplyOperator
+  | CstErrorOperator;
+
+/**
+ * An operator-classified collapsed error as a binary operator (DEC-086). It
+ * binds tighter than every source operator and is left-associative.
+ */
+export interface CstErrorOperator {
+  /** Identifies an operator entry. */
+  readonly kind: "operator";
+  /** Marks an error acting as an operator in a parsed tree. */
+  readonly operatorKind: "error";
+  /** The original collapsed error with its operator role. */
+  readonly error: CstError & { readonly errorRole: "operator" };
+  /** Original-byte error span. */
+  readonly span: ByteRange;
+  /** Always false: the bytes are source bytes, not an insertion. */
+  readonly synthetic: false;
+}
 
 /** An operator token retained from the lexer. */
 export interface CstExplicitOperator {
@@ -120,20 +139,43 @@ export interface CstTriviaEntry {
   readonly span: ByteRange;
 }
 
-/** A lexical or unexpected-closer error retained without contextual role selection. */
-export interface CstError {
-  /** Identifies an error entry, which remains a distinct item in this phase. */
-  readonly kind: "error";
+/**
+ * One original lexical or unexpected-closer error unit. Parts are never merged
+ * with each other; a {@link CstError} owns an ordered run of them.
+ */
+export interface CstErrorPart {
+  /** Identifies one original error unit inside a collapsed error. */
+  readonly kind: "error-part";
   /** Distinguishes preserved lexer errors from mismatched source closers. */
   readonly errorKind: "lexer" | "unexpected-closer";
-  /**
-   * Known lexical operand role or unresolved contextual role. Phase 8 handles
-   * only the latter; this phase does not infer a role for fallback errors.
-   */
-  readonly errorRole: "operand" | "unresolved";
-  /** Original lexer token or fallback region, never collapsed with neighbors. */
+  /** Original lexer token or fallback region, with its own diagnostics. */
   readonly source: CoreToken | UnsupportedCoreRegion;
-  /** Original-byte error span. */
+  /** Original-byte span of this part alone. */
+  readonly span: ByteRange;
+}
+
+/** An original item owned by a collapsed error: an error part or trivia between parts. */
+export type CstErrorComponent = CstErrorPart | CstTriviaEntry;
+
+/**
+ * A maximal run of consecutive error units (DEC-079/087), collapsed across
+ * whitespace and comments. DEC-092 fixes runs containing a lexically
+ * designated operand error as operands; DEC-068 contextually classifies other
+ * runs. The trivia between parts is owned by the error so byte order stays
+ * lossless.
+ */
+export interface CstError {
+  /** Identifies an error entry. */
+  readonly kind: "error";
+  /**
+   * Operand or operator role: DEC-092 fixes a run containing a lexically
+   * designated operand error as an operand; otherwise DEC-068 selects the role
+   * requiring fewer `APPLY`/`EMPTY` insertions, preferring operand on a tie.
+   */
+  readonly errorRole: "operand" | "operator";
+  /** Ordered original parts and interior trivia; first and last are parts. */
+  readonly components: readonly CstErrorComponent[];
+  /** Original-byte span from the first part's start through the last part's end. */
   readonly span: ByteRange;
 }
 
@@ -164,8 +206,10 @@ export interface CstDelimiter {
 }
 
 /**
- * Structural grouping output. Diagnostics are retained as data; this API does
- * not claim parse success or make a contextual error classification.
+ * Structural grouping output with DEC-092-constrained error roles, DEC-068
+ * contextual classification for other runs, and minimal `APPLY`/`EMPTY`
+ * insertions subject to those roles. Diagnostics are retained as data; this
+ * API does not claim parse success.
  */
 export interface CoreStructureResult {
   /** Root file sequence, retaining source entries and implicit elements. */
@@ -208,10 +252,7 @@ export interface CstParsedGroup {
   readonly span: ByteRange;
 }
 
-/**
- * A lexical error already classified as an operand by the structural phase.
- * Unresolved errors are deliberately not converted to expression operands.
- */
+/** A collapsed error whose selected role is operand, acting as an ordinary leaf. */
 export interface CstErrorOperand {
   /** Identifies a preserved lexical-error operand. */
   readonly kind: "error-operand";
@@ -231,13 +272,13 @@ export type CstExpression =
 
 /**
  * One precedence-parsed file or group scope plus its lossless structural form.
- * `expression` is undefined when an unresolved error or malformed alternation
- * prevents a complete tree for that scope.
+ * After recovery every scope alternates operands and operators, so `expression`
+ * is only undefined if an unknown operator precedence is reported.
  */
 export interface CstParsedSequence {
   /** Original structural entries, including all trivia and explicit errors. */
   readonly structure: CstSequence;
-  /** Binary expression tree, or undefined when only explicit partial output exists. */
+  /** Binary expression tree; undefined only after an internal precedence diagnostic. */
   readonly expression: CstExpression | undefined;
   /** Original-byte extent of this scope. */
   readonly span: ByteRange;
