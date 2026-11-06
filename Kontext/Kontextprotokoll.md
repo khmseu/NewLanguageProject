@@ -137,6 +137,9 @@ This log records the material context and evidence behind the current file class
 | SRC-121 | User decisions in this conversation (nine numbered answers) | 2026-11-06 16:18 (+01:00) | Adds an identifier/number adjacency rule; answers the KP-087 open points on EOF extents, ties, fallback runs, error binding, collapse, closers, empty files, and spans | Answer 3 is a question ("Can there be ties?"), not a decision. |
 | SRC-122 | User decision in this conversation | 2026-11-06 16:30 (+01:00) | Accepts the proposal to use one numeric candidate for integers and floats, then classify the match | Exact candidate grammar remains open. |
 | SRC-123 | User request in this conversation | 2026-11-06 16:35 (+01:00) | Requests a documentation directory with a design/research subdirectory, and relocation of `langlist` and `Language-Design.md` into it | The user did not prescribe directory names or request changes to the experiment trees. |
+| SRC-124 | User request in this conversation | 2026-11-06 16:47 (+01:00) | Requests a compiler plan: generic base, then lexer/parser according to Language Design; always TDD; necessary agent support files | Planning/guidance request, not approval of implementation phases, new tooling, or commits. |
+| SRC-125 | Current Language Design, relevant current knowledge and KP-088–090, repository inventory | Reviewed 2026-11-06 (+01:00), baseline commit `7da7c1f` | Compiler frontend constraints, remaining numeric grammar question, confirmed TypeScript, and absence of compiler source/manifests/tests or agent guidance | Earlier experiment trees and historical source coverage were not re-examined. |
+| SRC-126 | User approval in this conversation | 2026-11-06 17:05 (+01:00) | "approved. commit changes, then start implementing the plan." | Approves roadmap/toolchain and requests planning commit before implementation; existing per-phase confirmation checkpoints remain. |
 
 ## Entries
 
@@ -1551,3 +1554,84 @@ These consequences are mechanical, but they reverse decisions the user explicitl
 **Belegt:** Both files now reside in [docs/design-research](../docs/design-research/): [langlist](../docs/design-research/langlist) and [Language Design](../docs/design-research/Language-Design.md). The directory name is an implementation choice. The list continues to name the same external experiment roots by absolute path. Links and the handover were updated; the experiment trees were not moved. The preceding design changes were committed as `2963acd` before this cleanup.
 
 **Verification/scope:** The list matches its pre-move bytes; the design differs only in its relative knowledge-view link. All 43 relative Markdown links in the three affected documents resolved. No parser code was changed or tested.
+
+### KP-091 - TDD-first compiler roadmap and project agent support
+
+- Documentation/event date: 2026-11-06 (+01:00); user request at 16:47.
+- Sources: SRC-124, SRC-125.
+- Related requirement/questions: REQ-003, Q-014, Q-015, DEC-054/069/076/088/089.
+- Status: planning request recorded; roadmap/toolchain proposed, not approved.
+
+**Nutzerangabe:** Start a compiler plan with the generic base followed by lexer
+and parser work according to the current Language Design. Always follow TDD
+and create the necessary agent support files. No further motivation or preferred
+test framework/package manager was supplied.
+
+**Belegt:** The worktree was clean at inspection. The repository contained
+design/context documents and workspace metadata, but no compiler source,
+package manifest, test harness, or existing project agent support files.
+TypeScript is already selected. The lossless binary CST, generic
+operator/operand syntax, semantic identifier recognition, Unicode 18.0.0,
+token-level normalization, error behavior, and unified numeric candidate must
+be preserved; this request does not reopen those language decisions.
+
+**Vorschlag:** Eight independently tested phases: (1) generic base and harness,
+(2) source/Unicode/provenance, (3) core lexer/trivia/comments, (4) literals,
+(5) numeric candidates and lexical recovery, (6) groups and implicit elements,
+(7) binary precedence CST, (8) integrated recovery/conformance. The detailed
+draft is preserved in
+[current knowledge](./Wissensstand.md#proposed-compiler-implementation-plan).
+One strict TypeScript package with Node.js LTS, npm, and Vitest is proposed;
+exact versions and commands are not yet selected. Every behavior slice has
+test-first red/green/refactor acceptance checks. Compiler implementation waits
+for plan approval, and each reviewed phase waits for commit/continue
+confirmation. Save the standalone plan in `plans/` after approval.
+
+**Offen:** Approve roadmap/toolchain. Resolve Q-014's exact permissive numeric
+candidate grammar and length policy before its implementation, without blocking
+independent foundation work. Unicode-data provider availability must be verified
+against the pinned version, not inferred from host APIs. CST representation,
+synthetic spans, and normalized-literal diagnostic mapping remain implementation
+choices under DEC-088, to be documented and tested in their phases.
+
+**Belegt / support delivered:** Created [AGENTS.md](../AGENTS.md) for entry
+points, strict TDD, initial scope, phase gates, plan directory, and continuity.
+Created [frontend instructions](../.github/instructions/compiler-frontend.instructions.md)
+with discovery metadata and `src/**,tests/**` scope to preserve lexer/parser
+contracts and supersessions. These are project-local, not personal settings.
+
+**Alternatives not adopted in this proposal:** No speculative plugin/pipeline
+framework, duplicated always-on instruction file, extra custom-agent roles,
+or executable hooks: the requested frontend work needs concise shared guidance,
+not additional orchestration infrastructure. No AST or construct-specific
+grammar is added; those would contradict the selected parser model rather
+than provide a necessary foundation.
+
+**Verification/scope:** Documentation and agent-support changes only. No
+compiler implementation, dependency installation, project build/tests, or
+commit performed. `git diff --check` passed. A documentation check verified all
+55 project-relative Markdown links/heading fragments in the four changed
+documents, instruction metadata structure/scope, eight draft phases, and stable
+ID uniqueness. External URLs and absolute experiment-archive references were
+excluded (102 references). An initial broader link check encountered an
+unavailable historical absolute archive reference; no archive files or old
+references were changed. These checks do not prove editor instruction loading
+or compiler behavior.
+
+### KP-092 - Compiler plan approved; foundation implementation authorized
+
+- Documentation/event date: 2026-11-06 (+01:00); user approval at 17:05.
+- Source: SRC-126. Related: REQ-003, KP-091, Q-014.
+- Status: beschlossen; planning commit and Phase 1 execution authorized.
+
+**Nutzerangabe:** The user approved the presented roadmap/toolchain and requested
+committing the changes, then starting implementation.
+
+**Belegt:** Saved the [approved plan](../plans/compiler-frontend-plan.md) with
+eight test-first phases and updated agent guidance to point to it. No language
+rules changed. The shell reports Node v26.13.0 and npm 12.2.2; runtime LTS status
+and compatible package versions must be verified during foundation setup.
+
+**Next step:** Commit the planning/support documents, implement Phase 1 with
+recorded red/green evidence, review, and stop at the phase checkpoint. Numeric
+grammar approval remains a gate before Phase 5, not a foundation blocker.

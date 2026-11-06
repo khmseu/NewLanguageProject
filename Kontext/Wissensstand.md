@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-06 (timezone +01:00); relocated the design and research documents and updated their references (KP-090), following acceptance of unified numeric candidate matching (DEC-089, KP-089). Earlier experiment sources were not re-reviewed for this update.
+- Last substantive update: 2026-11-06 (timezone +01:00); user approved the compiler plan/toolchain and requested the planning commit followed by implementation (KP-092). Earlier experiment sources were not re-reviewed.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -307,6 +307,7 @@ The cheapest useful starting slice was assessed as source positions/diagnostics,
 | DEC-014 | For type compatibility, allow an operation only when safety can be proven; otherwise reject it. | User-approved principle; exact safety properties and proof criteria remain open. | KP-013 |
 | DEC-015 | Distinguish value and reference types; a reference type consists of an implicit pointer-like value identifying a variable, and variables may hold either category. | User-stated model; identity, aliasing, lifetime, and memory-management semantics remain open. | KP-014 |
 | REQ-002 | Support collections of fields identified by names or indices. | User-stated requirement; concrete collection forms and their value/reference behavior remain open. | KP-014 |
+| REQ-003 | Plan the compiler with a generic base followed by lexer/parser implementation according to Language Design; always use TDD and create the necessary agent support files. | User-approved plan/toolchain; planning commit and starting Phase 1 authorized. Subsequent phase checkpoints retained. | KP-091, KP-092 |
 | DEC-016 | Model multiple parameters and multiple return values logically as one temporary collection each. | User-approved semantic model; concrete collection/type/syntax and observability remain open. | KP-015 |
 | DEC-017 | Reference values behave as if garbage-collected; implementations may optimize cases with sufficiently predictable lifetimes. | User-approved lifetime model; optimization must preserve the GC-model behavior. Specific techniques and proof criteria remain open. | KP-016 |
 | DEC-018 | Resolve names through predefined, imported, and block-related namespace hierarchy, preferring the closest namespace; create overload groups only through explicit declarations; resolve by type compatibility, preferring identical types, with exactly one candidate required. | User-approved lookup and overload policy; namespace/import details, overload declaration syntax, and ranking among mixed exact/compatible arguments remain open. | KP-017 |
@@ -573,7 +574,166 @@ The user clarified the compilation in KP-071/072, settled further numeric and fl
 - Representation choices remain: node/root/trivia layouts and spans of implicit nodes, inserted closers, and diagnostics inside normalized literals (LP-23/Q-015). These can be implementation choices if they preserve agreed contracts.
 - No additional language-form parser productions are required (DEC-076, resolving LP-21/22's structural-syntax concern); remaining language-form meanings belong to semantic analysis.
 
-TypeScript is confirmed (DEC-054). Type inference, safety proofs, reference lifetimes, dispatch, numeric rounding/representation, suffix type meanings, and continuation runtime semantics can be deferred unless a selected syntax depends on them. Representation and recovery algorithms may be chosen during implementation if they preserve the approved observable contracts; independent components can start without resolving every full-parser question. No parser implementation has been requested.
+TypeScript is confirmed (DEC-054). Type inference, safety proofs, reference lifetimes, dispatch, numeric rounding/representation, suffix type meanings, and continuation runtime semantics can be deferred unless a selected syntax depends on them. Representation and recovery algorithms may be chosen during implementation if they preserve the approved observable contracts; independent components can start without resolving every full-parser question. Compiler planning is now requested (REQ-003); implementation approval remains pending.
+
+### Proposed compiler implementation plan
+
+Status: **Approved**, 2026-11-06 at 17:05 (+01:00), source KP-092.
+The [approved implementation plan](../plans/compiler-frontend-plan.md) is now the
+execution reference; the original roadmap below preserves the proposal's
+detail. The user authorized committing planning/support changes, then starting
+Phase 1. No language-design decisions were changed by this approval.
+
+**Scope:** A small TypeScript compiler foundation followed by the complete
+selected lexical and generic parsing model, returning diagnostics and a lossless
+binary CST. No separate AST, name resolution, type checker, runtime, evaluator,
+or backend in this plan.
+
+**Approved toolchain (KP-092):** One package using Node.js LTS, npm, strict
+TypeScript, and Vitest. Establish reproducible dependency versions, a lockfile,
+and documented focused-test, full-test, type-check, and build commands in Phase
+1. Select the exact supported Node version and compatible package versions then.
+Use explicit typed contracts rather than a general-purpose plugin/pipeline
+framework. No parser library or parser algorithm is selected by this proposal.
+
+**Proposed layout:** `src/index.ts` for public frontend entry points;
+`src/source/`, `src/diagnostics/`, `src/lexer/`, `src/cst/`, and `src/parser/`;
+mirrored tests under `tests/`, with shared conformance fixtures in
+`tests/fixtures/`. Create directories/modules only as the relevant phase needs
+them. Keep each module independently testable without importing later stages.
+
+**All phases follow the same cycle:** add a focused behavioral test; run it and
+confirm the expected missing-behavior failure; implement the smallest complete
+slice; run it green; refactor; run affected regression tests and type-check.
+Do not count missing dependencies or a broken harness as the red step. Keep
+each phase green before review; report the actual red/green evidence. Review
+each phase and pause for the user's commit/continue confirmation. Documentation
+and initial test-harness configuration do not require artificial failing tests.
+
+1. **Phase 1: Generic compiler foundation**
+   - Objective: establish a working package, test harness, and small shared
+     contracts for byte-backed source input, diagnostics, and explicit outcomes.
+   - Proposed files: package/build/test configuration, `src/index.ts`,
+     `src/source/`, `src/diagnostics/`, corresponding unit tests, and a README.
+   - Tests first: original bytes remain unchanged; byte slices use half-open
+     ranges; diagnostics retain code/severity/location; an error result is not
+     successful. Assert public exports and build/type-check compatibility.
+   - Finish with a passing smoke test and documented commands. Do not expose a
+     fake successful parser or scaffold semantic/backend subsystems.
+
+2. **Phase 2: Source decoding, Unicode, and provenance**
+   - Objective: decode UTF-8, handle BOM/physical locations, implement global
+     Unicode translation, and preserve mappings back to original bytes.
+   - Proposed files: `src/source/`, a versioned Unicode-data adapter as needed,
+     and source/Unicode conformance tests.
+   - Tests first: multibyte offsets, BOM offsets, all selected hard breaks,
+     scalar-based physical columns/tabs, maximal-subpart malformed UTF-8,
+     scalar-only escapes, Java-style backslash eligibility, one-pass translation,
+     generated line endings, and mixed-origin CRLF.
+   - Establish a verified Unicode 18.0.0 source for properties, names/aliases,
+     and normalization. Test version mismatches explicitly; do not silently use
+     host Unicode data. Test provenance through expansions/replacements.
+   - Gate: verify data availability/provenance before depending on an adapter;
+     report a blocker if the selected version cannot be obtained.
+
+3. **Phase 3: Core lexer and lossless token stream**
+   - Objective: add token/trivia contracts, identifiers, operators, delimiters,
+     whitespace, and comments over the translated stream.
+   - Proposed files: `src/lexer/` token model and core scanner, lossless
+     source/trivia representation, and corresponding fixtures/tests.
+   - Tests first: Unicode XID boundaries and rejected leading underscore;
+     case-sensitive NFC display/NFKC lookup; longest operator matching;
+     all delimiter spellings; Unicode whitespace; non-nested comments;
+     comments as separators; unterminated block comments to EOF; embedded
+     Unicode diagnostics without splitting a comment.
+   - Assert exact original byte coverage including BOM/trivia and escape
+     spelling. Numeric and literal scanners are not silently approximated by
+     this independently tested core slice.
+
+4. **Phase 4: Character, ordinary-string, and raw-string lexing**
+   - Objective: implement complete selected literal forms and decoded values.
+   - Proposed files: literal scanners/validators within `src/lexer/`,
+     normalization provenance support, and literal fixtures/tests.
+   - Tests first: every selected ordinary escape and rejected alternative;
+     Unicode names/aliases with selected matching; one-scalar characters;
+     NFC-before-escapes and no post-escape NFC; physical/generated continuation;
+     line-ended ordinary-literal errors; tagged/empty-tag raw delimiters;
+     raw LF normalization, literal non-universal backslashes, and EOF errors.
+   - Include `'e\u0301'` versus `'e\x{301}'` as language-source fixture cases
+     (one literal backslash in each source spelling), and the generated
+     backslash interaction. Test embedded Unicode errors as diagnostics while
+     retaining intact literal constructs and U+FFFD values where required.
+
+5. **Phase 5: Unified numeric candidates and lexical recovery**
+   - Objective: complete numeric matching/classification/validation and full
+     lexer integration without shorter-valid-token fallback.
+   - Proposed files: numeric candidate scanner/validator and recovery logic in
+     `src/lexer/`, numeric boundary fixtures, and full lexer integration tests.
+   - Gate before matcher code: resolve Q-014 by proposing exact permissive
+     candidate boundaries, classification, and a numeric length policy;
+     obtain agreement and update Language Design. Do not use JavaScript numeric
+     precision as a language limit or decide semantic suffix types.
+   - Tests first: integer radices, decimal/hex floats, separator rules, suffix
+     ambiguity, incomplete forms, and maximal invalid candidate extents.
+     Include `1e3`, `16#1e2`, `0x1p0`, `36#1#I32`, and `0d16#ff`.
+   - Test DEC-083 touching runs: `1.foo`, `a.5`, `1..2`, `1.2.3`, and `123é`
+     as error operands, versus `foo123`, `a .5`, `a/*c*/.5`, and `1...x`.
+     Test shortest fallback runs and termination/progress on malformed input.
+
+6. **Phase 6: Delimiter structure and implicit elements**
+   - Objective: produce independently tested nested group operands and the
+     minimal alternating operand/operator representation for tree construction.
+   - Proposed files: `src/parser/` grouping/insertion logic, `src/cst/`
+     contracts, and parser-unit tests using explicit token fixtures.
+   - Tests first: adjacent operands insert `APPLY`; adjacent operators insert
+     `EMPTY`; missing boundary operands and empty groups/files use `EMPTY`;
+     all group kinds recurse and form one outer operand; group boundaries use
+     the selected interior loosest-operator boundary.
+   - Test mismatched innermost closers, `([a)]`, unexpected closers, and missing
+     EOF closers while retaining trivia and error evidence. Select/document
+     synthetic-node spans under DEC-088 without inventing original bytes.
+
+7. **Phase 7: Precedence-based binary CST parser**
+   - Objective: turn the grouped alternating representation into the selected
+     binary operator/operand CST with comments and physical-source provenance.
+   - Proposed files: precedence/associativity table and tree construction in
+     `src/parser/`, concrete `src/cst/` nodes, public parse entry point, tests.
+   - Tests first: every selected precedence boundary and all level
+     associativities; non-associative chains; right-associative exponentiation;
+     dot versus arrow; ordinary prefix/postfix `EMPTY` trees; `a * -b` without
+     a special unary rule; selected conditional nesting and sequence/list trees.
+   - Test generic binding/function/template/block forms without dedicated
+     productions; predefined names remain identifiers and `::` is accepted
+     structurally. Assert exact tree shape, not semantic validity.
+
+8. **Phase 8: Integrated recovery and frontend conformance**
+   - Objective: complete the byte-input-to-CST API, error-result contract, and
+     full valid/invalid conformance coverage.
+   - Proposed files: integrated parser recovery and diagnostics, `src/index.ts`,
+     CST reconstruction, integration fixtures/tests, and user-facing API docs.
+   - Tests first: contextual DEC-068 error classification; collapse across
+     whitespace/comments; tightest left-associative operator errors;
+     multiple diagnostics/recovery; lexer/parser-error interactions; exact
+     synthetic span policy and normalized-literal diagnostic provenance.
+   - Reconstruct original bytes exactly for valid and invalid input, including
+     malformed UTF-8, comments, BOM, and global escape spelling. Missing closers
+     and implicit elements must not change reconstructed input.
+   - Assert no successful result with errors, parser progress/termination, and
+     complete CST retention on representative malformed inputs. Run full tests,
+     type-check, and build; report actual results and remaining semantic work.
+
+**Remaining approval point:** Q-014's
+numeric candidate grammar/length policy before Phase 5. Unicode data provider,
+the parser algorithm, CST layouts, and DEC-088 mapping choices can be selected
+in the affected phases with documented rationale and tests, provided approved
+observable behavior is unchanged.
+
+**Agent support created:** [AGENTS.md](../AGENTS.md) provides project entry
+points, strict TDD, phase boundaries, and plan/continuity conventions.
+[Frontend instructions](../.github/instructions/compiler-frontend.instructions.md)
+apply to `src/**` and `tests/**` and guard the selected language contracts.
+No duplicate always-on instructions, speculative agent roles, or executable
+hooks were added.
 
 ## Work status and verification
 
@@ -591,14 +751,18 @@ TypeScript is confirmed (DEC-054). Type inference, safety proofs, reference life
 - A one-off enumeration checked the four operand/operator assignments for two consecutive error tokens between operands: three require one insertion and one requires three (KP-086). It does not decide which assignment DEC-068 selects.
 - The Unicode 18.0.0 core specification, chapter 3, §3.9.6 "U+FFFD Substitution of Maximal Subparts" was fetched and checked. Node v26 `TextDecoder` replaced `E2 82` with one U+FFFD and `F0 80 80`, `C0 AF`, and `ED A0 80` with three, two, and three respectively. Node NFC (Unicode 17) mapped `\n`+U+0303 to `\ñ`, `e`+U+0301 to U+00E9, and U+037E to `;` (KP-087). These probes are not project lexer tests.
 - Source trees remain unchanged.
+- Compiler planning checkpoint (KP-091): draft roadmap and agent support
+  created; no compiler implementation, dependency installation, or compiler
+  test execution. Documentation/customization checks are recorded in KP-091.
 
 ## Next steps
 
-1. Specify the exact unified numeric candidate grammar and numeric length limits (Q-014); the unified integer/float matching approach is approved in DEC-089. Everything else on the parser-readiness checklist is selected or postponed to implementation. DEC-083–088 settle adjacency, EOF extents, fallback runs, error binding/collapse, and span postponement. DEC-077–082 settle incomplete candidates, Unicode errors, collapse, comment-only files, unexpected closers, and token-level normalization. DEC-072–076 settle group behavior, EOF closer insertion, ordinary prefix/postfix parsing, semantic `::` rejection, comments as lexical whitespace, and universal operator/operand syntax. Retain the earlier selected literal, precedence, insertion, and semantic-identifier decisions. Use the [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
-2. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
+1. Commit the approved planning/support changes, then implement Phase 1 of the [approved plan](../plans/compiler-frontend-plan.md) using TDD. Review the green foundation and stop for commit/continue confirmation.
+2. Before Phase 5, specify the exact unified numeric candidate grammar and numeric length limits (Q-014); the unified integer/float matching approach is approved in DEC-089. Everything else on the parser-readiness checklist is selected or postponed to implementation. DEC-083–088 settle adjacency, EOF extents, fallback runs, error binding/collapse, and span postponement. DEC-077–082 settle incomplete candidates, Unicode errors, collapse, comment-only files, unexpected closers, and token-level normalization. DEC-072–076 settle group behavior, EOF closer insertion, ordinary prefix/postfix parsing, semantic `::` rejection, comments as lexical whitespace, and universal operator/operand syntax. Retain the earlier selected literal, precedence, insertion, and semantic-identifier decisions. Use the [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
+3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
 
 ## Handover
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 
-> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant entries in `Kontext/Kontextprotokoll.md`. Treat NewLang, GenLang, LangLLVM, and OPPrs as distinct experiments with overlapping goals. TypeScript and the full selected-language target are confirmed; retain the generic expression parser and semantic identifier-recognition boundary. Check Q-001 before cleanup of the experiment sources.
+> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant entries in `Kontext/Kontextprotokoll.md`. KP-092 records plan/toolchain approval and authorization to commit planning changes and start Phase 1 using TDD; check the latest progress before continuing. Retain the generic expression parser and semantic identifier-recognition boundary. Resolve Q-014 before numeric matcher implementation; check Q-001 before cleanup of experiment sources.
