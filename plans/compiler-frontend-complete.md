@@ -7,6 +7,7 @@ reconstructs bytes from ordered CST ranges. All eight implementation phases
 are complete; the final phase awaits user commit authorization.
 
 **Phases Completed: 8 of 8**
+
 1. [Generic foundation](compiler-frontend-phase-1-complete.md)
 2. [Source decoding, Unicode and provenance](compiler-frontend-phase-2-complete.md)
 3. [Core tokens, trivia and normalization](compiler-frontend-phase-3-complete.md)
@@ -17,6 +18,7 @@ are complete; the final phase awaits user commit authorization.
 8. [Integrated recovery/conformance](compiler-frontend-phase-8-complete.md)
 
 **Files created/modified across the plan:**
+
 - Guidance: [AGENTS.md](../AGENTS.md),
   [frontend instructions](../.github/instructions/compiler-frontend.instructions.md),
   [JSDoc instructions](../.github/instructions/jsdoc.instructions.md).
@@ -65,6 +67,7 @@ are complete; the final phase awaits user commit authorization.
 No keywords, separate AST or construct-specific parser were introduced.
 
 **Final verification:**
+
 - 541 passing runner tests in ten files; build/export smoke also passes.
 - Independent exhaustive role oracle: 5,460 sequences plus constrained
   DEC-092 mixed/designated operand fixtures.

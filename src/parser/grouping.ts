@@ -15,8 +15,12 @@ import type {
   CoreStructureResult,
   GroupingDiagnostic,
 } from "../cst/cst.js";
-import type { CoreLexResult, CoreToken, CoreTrivia,
-  UnsupportedCoreRegion } from "../lexer/core-lexer.js";
+import type {
+  CoreLexResult,
+  CoreToken,
+  CoreTrivia,
+  UnsupportedCoreRegion,
+} from "../lexer/core-lexer.js";
 import type { ByteRange } from "../source/source-input.js";
 
 /** Span and spelling of a synthetic closing delimiter inserted at EOF. */
@@ -106,8 +110,11 @@ export function structureCore(lexed: CoreLexResult): CoreStructureResult {
       }
 
       const matchingOpen = openingDelimiter[item.spelling];
-      if (matchingOpen !== undefined && frame.open &&
-        frame.open.spelling === matchingOpen) {
+      if (
+        matchingOpen !== undefined &&
+        frame.open &&
+        frame.open.spelling === matchingOpen
+      ) {
         frames.pop();
         const group = finishGroup(frame, item, false, diagnostics);
         frames[frames.length - 1]!.entries.push(group);
@@ -115,15 +122,17 @@ export function structureCore(lexed: CoreLexResult): CoreStructureResult {
       }
 
       frame.entries.push(unexpectedCloser(item));
-      diagnostics.push(Object.freeze({
-        code: "unexpected-closing-delimiter",
-        severity: "error",
-        message: frame.open
-          ? `Closing delimiter ${item.spelling} does not match the innermost open delimiter.`
-          : `Closing delimiter ${item.spelling} has no open delimiter.`,
-        location: item.range.bytes,
-        actual: item.spelling,
-      }));
+      diagnostics.push(
+        Object.freeze({
+          code: "unexpected-closing-delimiter",
+          severity: "error",
+          message: frame.open
+            ? `Closing delimiter ${item.spelling} does not match the innermost open delimiter.`
+            : `Closing delimiter ${item.spelling} has no open delimiter.`,
+          location: item.range.bytes,
+          actual: item.spelling,
+        }),
+      );
       continue;
     }
 
@@ -143,9 +152,10 @@ export function structureCore(lexed: CoreLexResult): CoreStructureResult {
     ...lexed.diagnostics,
     ...diagnostics,
   ];
-  allDiagnostics.sort((left, right) =>
-    left.location.start - right.location.start ||
-    left.location.end - right.location.end
+  allDiagnostics.sort(
+    (left, right) =>
+      left.location.start - right.location.start ||
+      left.location.end - right.location.end,
   );
   return Object.freeze({
     root,
@@ -168,22 +178,25 @@ function finishGroup(
   diagnostics: GroupingDiagnostic[],
 ): CstGroup {
   const open = frame.open!;
-  const delimiter = "kind" in close
-    ? Object.freeze({
-        spelling: close.spelling,
-        span: close.range.bytes,
-        synthetic: false,
-        token: close,
-      })
-    : close;
+  const delimiter =
+    "kind" in close
+      ? Object.freeze({
+          spelling: close.spelling,
+          span: close.range.bytes,
+          synthetic: false,
+          token: close,
+        })
+      : close;
   if (missing) {
-    diagnostics.push(Object.freeze({
-      code: "missing-closing-delimiter",
-      severity: "error",
-      message: `Missing closing delimiter ${delimiter.spelling} at end of input.`,
-      location: delimiter.span,
-      expected: delimiter.spelling,
-    }));
+    diagnostics.push(
+      Object.freeze({
+        code: "missing-closing-delimiter",
+        severity: "error",
+        message: `Missing closing delimiter ${delimiter.spelling} at end of input.`,
+        location: delimiter.span,
+        expected: delimiter.spelling,
+      }),
+    );
   }
   const contents = finishSequence(
     frame.entries,
@@ -220,13 +233,14 @@ function finishSequence(
   emptyAnchor = spanEnd,
 ): CstSequence {
   const slots = collapseErrors(sourceEntries);
-  const significant = slots.filter((slot) =>
-    !(slot.kind === "trivia")
-  );
+  const significant = slots.filter((slot) => !(slot.kind === "trivia"));
   const span = Object.freeze({ start: spanStart, end: spanEnd });
   if (significant.length === 0) {
     return Object.freeze({
-      entries: Object.freeze([...(slots as CstEntry[]), emptyOperand(emptyAnchor)]),
+      entries: Object.freeze([
+        ...(slots as CstEntry[]),
+        emptyOperand(emptyAnchor),
+      ]),
       span,
     });
   }
@@ -238,12 +252,16 @@ function finishSequence(
   const roles = new Map<PendingError, CstError["errorRole"]>();
   significant.forEach((slot, index) => {
     if (slot.kind !== "pending-error") return;
-    const previous = index === 0 ? "operator" : fixedKind(significant[index - 1]!);
-    const next = index === significant.length - 1
-      ? "operator"
-      : fixedKind(significant[index + 1]!);
-    const asOperand = Number(previous === "operand") + Number(next === "operand");
-    const asOperator = Number(previous === "operator") + Number(next === "operator");
+    const previous =
+      index === 0 ? "operator" : fixedKind(significant[index - 1]!);
+    const next =
+      index === significant.length - 1
+        ? "operator"
+        : fixedKind(significant[index + 1]!);
+    const asOperand =
+      Number(previous === "operand") + Number(next === "operand");
+    const asOperator =
+      Number(previous === "operator") + Number(next === "operator");
     roles.set(
       slot,
       !slot.forcedOperand && asOperator < asOperand ? "operator" : "operand",
@@ -256,18 +274,21 @@ function finishSequence(
   let previousOutputIndex = -1;
 
   for (const slot of slots) {
-    const entry = slot.kind === "pending-error"
-      ? finishError(slot, roles.get(slot)!)
-      : slot;
+    const entry =
+      slot.kind === "pending-error"
+        ? finishError(slot, roles.get(slot)!)
+        : slot;
     if (entry.kind === "trivia") {
       output.push(entry);
       continue;
     }
     const currentKind = alternationKind(entry);
     if (previousKind === currentKind) {
-      output.push(currentKind === "operand"
-        ? applyOperator(entry.span.start)
-        : emptyOperand(entry.span.start));
+      output.push(
+        currentKind === "operand"
+          ? applyOperator(entry.span.start)
+          : emptyOperand(entry.span.start),
+      );
     }
     output.push(entry);
     previousKind = currentKind;
@@ -329,7 +350,10 @@ function collapseErrors(
  * @param errorRole - Fixed DEC-092 operand role or DEC-068 contextual role.
  * @returns Frozen error entry spanning first through last part.
  */
-function finishError(run: PendingError, errorRole: CstError["errorRole"]): CstError {
+function finishError(
+  run: PendingError,
+  errorRole: CstError["errorRole"],
+): CstError {
   const first = run.components[0]!;
   const last = run.components[run.components.length - 1]!;
   return Object.freeze({
@@ -378,11 +402,11 @@ function triviaEntry(source: CoreTrivia): CstEntry {
  * @param source - Non-delimiter lexer token or unsupported region.
  * @returns Explicit operator, source operand, or an uncollapsed error unit.
  */
-function sourceEntry(
-  source: CoreToken | UnsupportedCoreRegion,
-): FrameEntry {
-  if (source.kind === "unsupported" ||
-    (source.kind === "token" && source.tokenKind === "error")) {
+function sourceEntry(source: CoreToken | UnsupportedCoreRegion): FrameEntry {
+  if (
+    source.kind === "unsupported" ||
+    (source.kind === "token" && source.tokenKind === "error")
+  ) {
     return rawError("lexer", source);
   }
   if (source.tokenKind === "operator") {
@@ -468,10 +492,7 @@ function applyOperator(anchor: number): CstEntry {
  * @param end - Original-byte EOF offset.
  * @returns Synthetic delimiter data without a fabricated source token.
  */
-function syntheticDelimiter(
-  spelling: string,
-  end: number,
-): SyntheticDelimiter {
+function syntheticDelimiter(spelling: string, end: number): SyntheticDelimiter {
   return Object.freeze({
     spelling,
     span: Object.freeze({ start: end, end }),

@@ -50,10 +50,7 @@ describe("diagnostic contracts", () => {
       message: "Invalid source byte",
       location: { start: 0, end: 1 },
     };
-    const specificFailure: CompilerResult<
-      number,
-      ErrorDiagnostic<"LEX001">
-    > = {
+    const specificFailure: CompilerResult<number, ErrorDiagnostic<"LEX001">> = {
       ok: false,
       diagnostics: [specificError] as const,
     };

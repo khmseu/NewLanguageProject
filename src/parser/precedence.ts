@@ -151,13 +151,16 @@ export function parseCore(lexed: CoreLexResult): CstParseResult {
       if (!contents) {
         throw new Error("Group contents were not parsed before their parent.");
       }
-      parsedGroups.set(entry, Object.freeze({
-        kind: "group-expression",
-        open: entry.open,
-        close: entry.close,
-        contents,
-        span: entry.span,
-      }));
+      parsedGroups.set(
+        entry,
+        Object.freeze({
+          kind: "group-expression",
+          open: entry.open,
+          close: entry.close,
+          contents,
+          span: entry.span,
+        }),
+      );
     }
 
     const expression = parseSequenceExpression(
@@ -165,26 +168,30 @@ export function parseCore(lexed: CoreLexResult): CstParseResult {
       parsedGroups,
       diagnostics,
     );
-    parsedSequences.set(frame.sequence, Object.freeze({
-      structure: frame.sequence,
-      expression,
-      span: frame.sequence.span,
-    }));
+    parsedSequences.set(
+      frame.sequence,
+      Object.freeze({
+        structure: frame.sequence,
+        expression,
+        span: frame.sequence.span,
+      }),
+    );
   }
 
   const root = parsedSequences.get(grouped.root);
   if (!root) throw new Error("Root sequence was not parsed.");
-  diagnostics.sort((left, right) =>
-    left.location.start - right.location.start ||
-    left.location.end - right.location.end
+  diagnostics.sort(
+    (left, right) =>
+      left.location.start - right.location.start ||
+      left.location.end - right.location.end,
   );
   const frozenDiagnostics = Object.freeze(diagnostics);
   return Object.freeze({
     root,
     diagnostics: frozenDiagnostics,
-    status: frozenDiagnostics.some((diagnostic) =>
-        diagnostic.severity === "error"
-      )
+    status: frozenDiagnostics.some(
+      (diagnostic) => diagnostic.severity === "error",
+    )
       ? "error"
       : "complete",
   });
@@ -254,15 +261,17 @@ function parseSequenceExpression(
         diagnostics.push(invalidSequence(entry.span));
         return undefined;
       }
-      operators.push(entry.kind === "error"
-        ? Object.freeze({
-          kind: "operator",
-          operatorKind: "error",
-          error: entry as CstError & { readonly errorRole: "operator" },
-          span: entry.span,
-          synthetic: false,
-        } as const)
-        : entry);
+      operators.push(
+        entry.kind === "error"
+          ? Object.freeze({
+              kind: "operator",
+              operatorKind: "error",
+              error: entry as CstError & { readonly errorRole: "operator" },
+              span: entry.span,
+              synthetic: false,
+            } as const)
+          : entry,
+      );
       expectsOperand = true;
       continue;
     }
@@ -283,8 +292,11 @@ function parseSequenceExpression(
     expectsOperand = false;
   }
 
-  if (operands.length === 0 || expectsOperand ||
-    operands.length !== operators.length + 1) {
+  if (
+    operands.length === 0 ||
+    expectsOperand ||
+    operands.length !== operators.length + 1
+  ) {
     const span = sequence.entries.at(-1)?.span ?? sequence.span;
     diagnostics.push(invalidSequence(span));
     return undefined;
@@ -314,16 +326,19 @@ function reduceOperators(
   for (let index = 0; index < operators.length; index++) {
     const operator = operators[index]!;
     const spelling = operatorSpelling(operator);
-    const precedence = operator.operatorKind === "error"
-      ? ERROR_OPERATOR_PRECEDENCE
-      : precedenceFor(spelling);
+    const precedence =
+      operator.operatorKind === "error"
+        ? ERROR_OPERATOR_PRECEDENCE
+        : precedenceFor(spelling);
     if (!precedence) {
-      diagnostics.push(precedenceDiagnostic(
-        "unknown-operator-precedence",
-        `No precedence is defined for operator ${spelling}.`,
-        operator.span,
-        spelling,
-      ));
+      diagnostics.push(
+        precedenceDiagnostic(
+          "unknown-operator-precedence",
+          `No precedence is defined for operator ${spelling}.`,
+          operator.span,
+          spelling,
+        ),
+      );
       return undefined;
     }
 
@@ -332,18 +347,22 @@ function reduceOperators(
     }
     if (precedence.associativity === "non-associative") {
       if (nonAssociativeSeen.has(precedence.priority)) {
-        diagnostics.push(precedenceDiagnostic(
-          "non-associative-operator-chain",
-          `Operator ${spelling} is chained at a non-associative precedence level.`,
-          operator.span,
-          spelling,
-        ));
+        diagnostics.push(
+          precedenceDiagnostic(
+            "non-associative-operator-chain",
+            `Operator ${spelling} is chained at a non-associative precedence level.`,
+            operator.span,
+            spelling,
+          ),
+        );
       }
       nonAssociativeSeen.set(precedence.priority, spelling);
     }
 
-    while (operatorStack.length > 0 &&
-      shouldReduce(operatorStack[operatorStack.length - 1]!, precedence)) {
+    while (
+      operatorStack.length > 0 &&
+      shouldReduce(operatorStack[operatorStack.length - 1]!, precedence)
+    ) {
       reduceTop(valueStack, operatorStack);
     }
     operatorStack.push({ operator, precedence });
@@ -397,12 +416,10 @@ function reduceTop(
  * @param spelling - Source spelling or the structural `APPLY` name.
  * @returns Binding entry, or undefined if the operator is not in DEC-022.
  */
-function precedenceFor(
-  spelling: string,
-): OperatorPrecedence | undefined {
-  return (OPERATOR_PRECEDENCE as Readonly<
-    Record<string, OperatorPrecedence>
-  >)[spelling];
+function precedenceFor(spelling: string): OperatorPrecedence | undefined {
+  return (OPERATOR_PRECEDENCE as Readonly<Record<string, OperatorPrecedence>>)[
+    spelling
+  ];
 }
 
 /**
@@ -425,7 +442,8 @@ function invalidSequence(location: ByteRange): PrecedenceDiagnostic {
   return Object.freeze({
     code: "invalid-operator-sequence",
     severity: "error",
-    message: "Expected alternating operands and operators in this source scope.",
+    message:
+      "Expected alternating operands and operators in this source scope.",
     location,
   });
 }

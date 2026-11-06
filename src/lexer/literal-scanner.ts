@@ -47,8 +47,17 @@ export interface LiteralCandidate {
 
 /** Selected ordinary single-character escapes; no numeric/octal shorthand exists. */
 const simpleEscapes: Readonly<Record<string, string>> = Object.freeze({
-  a: "\x07", b: "\b", e: "\x1b", f: "\f", n: "\n",
-  r: "\r", t: "\t", v: "\v", "'": "'", '"': '"', "\\": "\\",
+  a: "\x07",
+  b: "\b",
+  e: "\x1b",
+  f: "\f",
+  n: "\n",
+  r: "\r",
+  t: "\t",
+  v: "\v",
+  "'": "'",
+  '"': '"',
+  "\\": "\\",
 });
 
 /**
@@ -65,12 +74,15 @@ export function scanLiteralAt(
 ): LiteralCandidate | undefined {
   const quote = source.units[start]!.character;
   if (quote !== "'" && quote !== '"' && quote !== "`") return undefined;
-  const kind: LiteralKind = quote === "'" ? "character" : quote === '"' ? "string" : "raw-string";
+  const kind: LiteralKind =
+    quote === "'" ? "character" : quote === '"' ? "string" : "raw-string";
   let contentStart = start + 1;
   let tag = "";
   if (kind === "raw-string") {
-    while (contentStart < source.units.length &&
-      /^[A-Za-z0-9_]$/.test(source.units[contentStart]!.character)) {
+    while (
+      contentStart < source.units.length &&
+      /^[A-Za-z0-9_]$/.test(source.units[contentStart]!.character)
+    ) {
       tag += source.units[contentStart]!.character;
       contentStart += 1;
     }
@@ -85,8 +97,13 @@ export function scanLiteralAt(
   while (end < source.units.length) {
     const current = source.units[end]!;
     if (kind === "raw-string") {
-      if (current.character === '"' &&
-        closer.every((character, index) => source.units[end + index]?.character === character)) {
+      if (
+        current.character === '"' &&
+        closer.every(
+          (character, index) =>
+            source.units[end + index]?.character === character,
+        )
+      ) {
         contentEnd = end;
         end += closer.length;
         terminated = true;
@@ -103,18 +120,29 @@ export function scanLiteralAt(
       }
       if (current.character === "\\") {
         const next = source.units[end + 1];
-        const breakWidth = hardLineBreakWidth(next?.codePoint, source.units[end + 2]?.codePoint);
+        const breakWidth = hardLineBreakWidth(
+          next?.codePoint,
+          source.units[end + 2]?.codePoint,
+        );
         if (breakWidth > 0) {
           end += 1;
           if (kind === "string") {
             end += breakWidth;
-            while (source.units[end]?.character === " " || source.units[end]?.character === "\t") end += 1;
+            while (
+              source.units[end]?.character === " " ||
+              source.units[end]?.character === "\t"
+            )
+              end += 1;
           }
         } else {
           end += next === undefined ? 1 : 2;
           // A control escape can consume a backslash without escaping the closer.
-          if (next?.character === "c" && source.units[end] !== undefined &&
-            source.units[end]!.character !== quote && !isHardLineBreak(source.units[end]!.codePoint)) {
+          if (
+            next?.character === "c" &&
+            source.units[end] !== undefined &&
+            source.units[end]!.character !== quote &&
+            !isHardLineBreak(source.units[end]!.codePoint)
+          ) {
             end += 1;
           }
         }
@@ -128,19 +156,26 @@ export function scanLiteralAt(
   const diagnostics: LiteralDiagnostic[] = [];
   if (!terminated) {
     diagnostics.push({
-      code: "unterminated-literal", severity: "error",
-      message: "Literal is not closed before its terminating line ending or end of file.",
+      code: "unterminated-literal",
+      severity: "error",
+      message:
+        "Literal is not closed before its terminating line ending or end of file.",
       location: source.originalRange(start, end),
     });
   }
-  const content = source.units.slice(contentStart, contentEnd).map((unit) => unit.character).join("");
+  const content = source.units
+    .slice(contentStart, contentEnd)
+    .map((unit) => unit.character)
+    .join("");
   const normalized = normalizeUnicode18WithOrigins(content, "NFC");
-  const value = kind === "raw-string"
-    ? rawValue(normalized)
-    : ordinaryValue(source, contentStart, normalized, diagnostics);
+  const value =
+    kind === "raw-string"
+      ? rawValue(normalized)
+      : ordinaryValue(source, contentStart, normalized, diagnostics);
   if (kind === "character" && [...value].length !== 1) {
     diagnostics.push({
-      code: "invalid-character-length", severity: "error",
+      code: "invalid-character-length",
+      severity: "error",
       message: "A character literal must decode to exactly one Unicode scalar.",
       location: source.originalRange(start, end),
     });
@@ -149,7 +184,10 @@ export function scanLiteralAt(
   return Object.freeze({
     end,
     literal: Object.freeze({
-      kind, value, terminated, valid: diagnostics.length === 0,
+      kind,
+      value,
+      terminated,
+      valid: diagnostics.length === 0,
       diagnostics: Object.freeze(diagnostics),
     }),
   });
@@ -164,7 +202,8 @@ function rawValue(units: readonly NormalizedScalar[]): string {
   let value = "";
   for (let index = 0; index < units.length;) {
     const width = hardLineBreakWidth(
-      units[index]!.character.codePointAt(0), units[index + 1]?.character.codePointAt(0),
+      units[index]!.character.codePointAt(0),
+      units[index + 1]?.character.codePointAt(0),
     );
     value += width > 0 ? "\n" : units[index]!.character;
     index += width > 0 ? width : 1;
@@ -200,10 +239,17 @@ function ordinaryValue(
     const escape = units[index + 1]?.character;
     index += escape === undefined ? 1 : 2;
     let decoded: string | undefined;
-    const width = hardLineBreakWidth(escape?.codePointAt(0), units[index]?.character.codePointAt(0));
+    const width = hardLineBreakWidth(
+      escape?.codePointAt(0),
+      units[index]?.character.codePointAt(0),
+    );
     if (width > 0) {
       index += width - 1;
-      while (units[index]?.character === " " || units[index]?.character === "\t") index += 1;
+      while (
+        units[index]?.character === " " ||
+        units[index]?.character === "\t"
+      )
+        index += 1;
       continue;
     }
     if (escape !== undefined && simpleEscapes[escape] !== undefined) {
@@ -213,32 +259,55 @@ function ordinaryValue(
       if (control !== undefined) {
         index += 1;
         if (control >= 0x3f && control <= 0x7e) {
-          decoded = String.fromCodePoint(control === 0x3f ? 0x7f : control & 0x1f);
+          decoded = String.fromCodePoint(
+            control === 0x3f ? 0x7f : control & 0x1f,
+          );
         }
       }
-    } else if ((escape === "x" || escape === "N") && units[index]?.character === "{") {
+    } else if (
+      (escape === "x" || escape === "N") &&
+      units[index]?.character === "{"
+    ) {
       index += 1;
       const bodyStart = index;
-      while (index < units.length && units[index]!.character !== "}") index += 1;
-      const body = units.slice(bodyStart, index).map((unit) => unit.character).join("");
+      while (index < units.length && units[index]!.character !== "}")
+        index += 1;
+      const body = units
+        .slice(bodyStart, index)
+        .map((unit) => unit.character)
+        .join("");
       if (index < units.length) {
         index += 1;
-        const codePoint = escape === "N" ? findUnicodeCharacter(body)
-          : /^[0-9A-Fa-f]+$/.test(body) ? Number.parseInt(body, 16) : undefined;
-        if (codePoint !== undefined && codePoint <= 0x10ffff &&
-          !(codePoint >= 0xd800 && codePoint <= 0xdfff)) {
+        const codePoint =
+          escape === "N"
+            ? findUnicodeCharacter(body)
+            : /^[0-9A-Fa-f]+$/.test(body)
+              ? Number.parseInt(body, 16)
+              : undefined;
+        if (
+          codePoint !== undefined &&
+          codePoint <= 0x10ffff &&
+          !(codePoint >= 0xd800 && codePoint <= 0xdfff)
+        ) {
           decoded = String.fromCodePoint(codePoint);
         }
       }
     }
     const sourceErrors = sourceErrorContributors(
-      source, contentStart, units.slice(escapeStart, index),
+      source,
+      contentStart,
+      units.slice(escapeStart, index),
     );
     if (decoded === undefined) {
       diagnostics.push({
-        code: "invalid-literal-escape", severity: "error",
+        code: "invalid-literal-escape",
+        severity: "error",
         message: "Unrecognized or malformed ordinary literal escape.",
-        location: contributorRange(source, contentStart, units.slice(escapeStart, index)),
+        location: contributorRange(
+          source,
+          contentStart,
+          units.slice(escapeStart, index),
+        ),
       });
       value += "\ufffd";
     } else {

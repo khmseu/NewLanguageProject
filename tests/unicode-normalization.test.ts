@@ -42,8 +42,9 @@ describe("Unicode 18 NormalizationTest.txt", () => {
   });
 
   it("passes every official NFC and NFKC column assertion", () => {
-    expect(normalizationFixture.startsWith("# NormalizationTest-18.0.0.txt"))
-      .toBe(true);
+    expect(
+      normalizationFixture.startsWith("# NormalizationTest-18.0.0.txt"),
+    ).toBe(true);
 
     let rows = 0;
     for (const rawLine of normalizationFixture.split(/\r?\n/u)) {
@@ -61,15 +62,17 @@ describe("Unicode 18 NormalizationTest.txt", () => {
         c4 === undefined ||
         c5 === undefined
       ) {
-        throw new Error(`Malformed Unicode normalization fixture row: ${rawLine}`);
+        throw new Error(
+          `Malformed Unicode normalization fixture row: ${rawLine}`,
+        );
       }
 
-      expect([c1, c2, c3, c4, c5].map((value) =>
-        normalizeUnicode18(value, "NFC"),
-      )).toEqual([c2, c2, c2, c4, c4]);
-      expect([c1, c2, c3, c4, c5].map((value) =>
-        normalizeUnicode18(value, "NFKC"),
-      )).toEqual([c4, c4, c4, c4, c4]);
+      expect(
+        [c1, c2, c3, c4, c5].map((value) => normalizeUnicode18(value, "NFC")),
+      ).toEqual([c2, c2, c2, c4, c4]);
+      expect(
+        [c1, c2, c3, c4, c5].map((value) => normalizeUnicode18(value, "NFKC")),
+      ).toEqual([c4, c4, c4, c4, c4]);
       rows += 1;
     }
 

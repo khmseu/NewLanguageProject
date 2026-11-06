@@ -6,6 +6,7 @@ coverage and explicitly defers numeric/literal surfaces. Identifier display
 and lookup forms use Unicode 18 NFC/NFKC, never host normalization.
 
 **Files created/changed:**
+
 - [Core scanner](../src/lexer/core-lexer.ts)
 - [Normalization implementation](../src/source/unicode-normalization.ts)
   and [generated tables](../src/source/unicode-normalization-data.ts)
@@ -17,6 +18,7 @@ and lookup forms use Unicode 18 NFC/NFKC, never host normalization.
   [README](../README.md), context records, this record, and Phase 2 commit status
 
 **Functions/contracts created:**
+
 - `scanCoreAt(source, unitOffset)` recognizes one core surface at a translated
   scalar offset; invalid offsets throw `RangeError`.
 - `lexCore(input)` returns the source, ordered tokens/trivia/unsupported or
@@ -31,6 +33,7 @@ and lookup forms use Unicode 18 NFC/NFKC, never host normalization.
   canonical ordering/composition, exclusions, and algorithmic Hangul.
 
 **TDD evidence reported by implementation:**
+
 - Importable skeleton was verified before assertions: initial core suite
   produced 8 behavioral failures, not missing imports/APIs.
 - Implemented slices reached green; supplementary-character deferred-offset
@@ -47,6 +50,7 @@ and lookup forms use Unicode 18 NFC/NFKC, never host normalization.
 `git diff --check`; all passed.
 
 **Unicode conformance and provenance:**
+
 - Generated minimal normalization data from official Unicode 18
   `UnicodeData.txt` and `DerivedNormalizationProps.txt` using SHA-256-verified
   inputs. Exact URLs, checksums, and regeneration procedure are documented in

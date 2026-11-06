@@ -43,7 +43,9 @@ describe("Unicode 18 data adapter", () => {
     expect(isXidStart(0x0558)).toBe(true);
     expect(isXidContinue(0x0558)).toBe(true);
     expect(getUnicodeName(0x0558)).toBe("MODIFIER LETTER ARMENIAN SMALL EH");
-    expect(findUnicodeCharacter("modifier letter armenian small eh")).toBe(0x0558);
+    expect(findUnicodeCharacter("modifier letter armenian small eh")).toBe(
+      0x0558,
+    );
   });
 });
 
@@ -57,7 +59,9 @@ describe("processSource", () => {
     const results = sources.map(processBytes);
 
     expect(results.map((result) => result.text)).toEqual([
-      "\uFFFD", "\uFFFD", "\uFFFD",
+      "\uFFFD",
+      "\uFFFD",
+      "\uFFFD",
     ]);
     expect(results.map((result) => result.units[0])).toEqual(
       [
@@ -75,13 +79,15 @@ describe("processSource", () => {
     );
     expect(results.map((result) => result.diagnostics)).toEqual([
       [],
-      [{
-        code: "invalid-utf8",
-        severity: "error",
-        message: expect.any(String),
-        location: { start: 0, end: 1 },
-        position: { line: 1, column: 1 },
-      }],
+      [
+        {
+          code: "invalid-utf8",
+          severity: "error",
+          message: expect.any(String),
+          location: { start: 0, end: 1 },
+          position: { line: 1, column: 1 },
+        },
+      ],
       [],
     ]);
     results.forEach((result, index) => {
@@ -102,98 +108,222 @@ describe("processSource", () => {
   });
 
   it.each([
-    [-1, 0], [1, 0], [0, 2], [2, 2], [0.5, 1], [0, 0.5],
-    [NaN, 1], [0, NaN], [Infinity, Infinity], [0, Infinity],
-  ])("rejects invalid translated-unit range [%s, %s) (DEC-036)", (start, end) => {
-    const result = processBytes(new TextEncoder().encode("a"));
-    expect(() => result.originalRange(start, end)).toThrow(RangeError);
-  });
+    [-1, 0],
+    [1, 0],
+    [0, 2],
+    [2, 2],
+    [0.5, 1],
+    [0, 0.5],
+    [NaN, 1],
+    [0, NaN],
+    [Infinity, Infinity],
+    [0, Infinity],
+  ])(
+    "rejects invalid translated-unit range [%s, %s) (DEC-036)",
+    (start, end) => {
+      const result = processBytes(new TextEncoder().encode("a"));
+      expect(() => result.originalRange(start, end)).toThrow(RangeError);
+    },
+  );
 
   it.each([
     { label: "truncated two-byte", bytes: [0xc2], spans: [[0, 1]] },
     { label: "truncated three-byte", bytes: [0xe2, 0x82], spans: [[0, 2]] },
-    { label: "truncated four-byte", bytes: [0xf0, 0x9f, 0x98], spans: [[0, 3]] },
-    { label: "overlong two-byte", bytes: [0xc0, 0xaf], spans: [[0, 1], [1, 2]] },
-    { label: "overlong three-byte", bytes: [0xe0, 0x80, 0xaf], spans: [[0, 1], [1, 2], [2, 3]] },
-    { label: "overlong four-byte", bytes: [0xf0, 0x80, 0x80, 0xaf], spans: [[0, 1], [1, 2], [2, 3], [3, 4]] },
-    { label: "surrogate", bytes: [0xed, 0xa0, 0x80], spans: [[0, 1], [1, 2], [2, 3]] },
-    { label: "above maximum scalar", bytes: [0xf4, 0x90, 0x80, 0x80], spans: [[0, 1], [1, 2], [2, 3], [3, 4]] },
-    { label: "out-of-range lead", bytes: [0xf5, 0x80, 0x80, 0x80], spans: [[0, 1], [1, 2], [2, 3], [3, 4]] },
-    { label: "isolated continuation bytes", bytes: [0x80, 0xbf], spans: [[0, 1], [1, 2]] },
-  ])("recovers $label UTF-8 by maximal subparts (DEC-078)", ({ bytes, spans }) => {
-    const input = new SourceInput(new Uint8Array(bytes));
-    const result = processSource(input);
-    expect(result.text).toBe("\uFFFD".repeat(spans.length));
-    expect(result.units).toEqual(spans.map(([start, end], index) => ({
-      character: "\uFFFD",
-      codePoint: 0xfffd,
-      byteRange: { start, end },
-      position: { line: 1, column: index + 1 },
-      origin: "invalid-utf8",
-      isError: true,
-    })));
-    expect(result.diagnostics).toEqual(spans.map(([start, end], index) => ({
-      code: "invalid-utf8",
-      severity: "error",
-      message: expect.any(String),
-      location: { start, end },
-      position: { line: 1, column: index + 1 },
-    })));
-    expect(input.slice(result.originalRange(0, result.units.length))).toEqual(
-      new Uint8Array(bytes),
-    );
-  });
+    {
+      label: "truncated four-byte",
+      bytes: [0xf0, 0x9f, 0x98],
+      spans: [[0, 3]],
+    },
+    {
+      label: "overlong two-byte",
+      bytes: [0xc0, 0xaf],
+      spans: [
+        [0, 1],
+        [1, 2],
+      ],
+    },
+    {
+      label: "overlong three-byte",
+      bytes: [0xe0, 0x80, 0xaf],
+      spans: [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+      ],
+    },
+    {
+      label: "overlong four-byte",
+      bytes: [0xf0, 0x80, 0x80, 0xaf],
+      spans: [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4],
+      ],
+    },
+    {
+      label: "surrogate",
+      bytes: [0xed, 0xa0, 0x80],
+      spans: [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+      ],
+    },
+    {
+      label: "above maximum scalar",
+      bytes: [0xf4, 0x90, 0x80, 0x80],
+      spans: [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4],
+      ],
+    },
+    {
+      label: "out-of-range lead",
+      bytes: [0xf5, 0x80, 0x80, 0x80],
+      spans: [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4],
+      ],
+    },
+    {
+      label: "isolated continuation bytes",
+      bytes: [0x80, 0xbf],
+      spans: [
+        [0, 1],
+        [1, 2],
+      ],
+    },
+  ])(
+    "recovers $label UTF-8 by maximal subparts (DEC-078)",
+    ({ bytes, spans }) => {
+      const input = new SourceInput(new Uint8Array(bytes));
+      const result = processSource(input);
+      expect(result.text).toBe("\uFFFD".repeat(spans.length));
+      expect(result.units).toEqual(
+        spans.map(([start, end], index) => ({
+          character: "\uFFFD",
+          codePoint: 0xfffd,
+          byteRange: { start, end },
+          position: { line: 1, column: index + 1 },
+          origin: "invalid-utf8",
+          isError: true,
+        })),
+      );
+      expect(result.diagnostics).toEqual(
+        spans.map(([start, end], index) => ({
+          code: "invalid-utf8",
+          severity: "error",
+          message: expect.any(String),
+          location: { start, end },
+          position: { line: 1, column: index + 1 },
+        })),
+      );
+      expect(input.slice(result.originalRange(0, result.units.length))).toEqual(
+        new Uint8Array(bytes),
+      );
+    },
+  );
 
   it("accepts the maximum legal UTF-8 scalar (DEC-078)", () => {
     const result = processBytes(new Uint8Array([0xf4, 0x8f, 0xbf, 0xbf]));
     expect(result.text).toBe("\u{10FFFF}");
-    expect(result.units).toEqual([{
-      character: "\u{10FFFF}",
-      codePoint: 0x10ffff,
-      byteRange: { start: 0, end: 4 },
-      position: { line: 1, column: 1 },
-      origin: "source",
-      isError: false,
-    }]);
+    expect(result.units).toEqual([
+      {
+        character: "\u{10FFFF}",
+        codePoint: 0x10ffff,
+        byteRange: { start: 0, end: 4 },
+        position: { line: 1, column: 1 },
+        origin: "source",
+        isError: false,
+      },
+    ]);
     expect(result.diagnostics).toEqual([]);
   });
 
   it.each([
-    { text: "a\r", positions: [[1, 1], [1, 2]] },
-    { text: "a\r\r\nb", positions: [[1, 1], [1, 2], [2, 1], [2, 2], [3, 1]] },
-  ])("retains physical positions in $text (DEC-036/078)", ({ text, positions }) => {
-    const result = processBytes(new TextEncoder().encode(text));
-    expect(result.text).toBe(text);
-    expect(result.units.map((unit) => [unit.position.line, unit.position.column]))
-      .toEqual(positions);
-    expect(result.units.map((unit) => unit.byteRange)).toEqual(
-      [...text].map((_, index) => ({ start: index, end: index + 1 })),
-    );
-    expect(result.diagnostics).toEqual([]);
-  });
+    {
+      text: "a\r",
+      positions: [
+        [1, 1],
+        [1, 2],
+      ],
+    },
+    {
+      text: "a\r\r\nb",
+      positions: [
+        [1, 1],
+        [1, 2],
+        [2, 1],
+        [2, 2],
+        [3, 1],
+      ],
+    },
+  ])(
+    "retains physical positions in $text (DEC-036/078)",
+    ({ text, positions }) => {
+      const result = processBytes(new TextEncoder().encode(text));
+      expect(result.text).toBe(text);
+      expect(
+        result.units.map((unit) => [unit.position.line, unit.position.column]),
+      ).toEqual(positions);
+      expect(result.units.map((unit) => unit.byteRange)).toEqual(
+        [...text].map((_, index) => ({ start: index, end: index + 1 })),
+      );
+      expect(result.diagnostics).toEqual([]);
+    },
+  );
 
-  it.each([3, 4, 5, 6])("applies eligibility to %s raw backslashes (DEC-082)", (count) => {
-    const result = processBytes(new TextEncoder().encode("\\".repeat(count) + "u0041"));
-    const translates = count % 2 === 1;
-    expect(result.text).toBe(
-      translates ? "\\".repeat(count - 1) + "A" : "\\".repeat(count) + "u0041",
-    );
-    expect(result.units.filter((unit) => unit.origin === "escape").map((unit) => unit.byteRange))
-      .toEqual(translates ? [{ start: count - 1, end: count + 5 }] : []);
-    expect(result.units.every((unit) => !unit.isError)).toBe(true);
-    expect(result.diagnostics).toEqual([]);
-  });
+  it.each([3, 4, 5, 6])(
+    "applies eligibility to %s raw backslashes (DEC-082)",
+    (count) => {
+      const result = processBytes(
+        new TextEncoder().encode("\\".repeat(count) + "u0041"),
+      );
+      const translates = count % 2 === 1;
+      expect(result.text).toBe(
+        translates
+          ? "\\".repeat(count - 1) + "A"
+          : "\\".repeat(count) + "u0041",
+      );
+      expect(
+        result.units
+          .filter((unit) => unit.origin === "escape")
+          .map((unit) => unit.byteRange),
+      ).toEqual(translates ? [{ start: count - 1, end: count + 5 }] : []);
+      expect(result.units.every((unit) => !unit.isError)).toBe(true);
+      expect(result.diagnostics).toEqual([]);
+    },
+  );
 
   it.each([
-    { source: String.raw`\u005C\\u0041`, text: "\\\\A", origins: ["escape", "source", "escape"] },
-    { source: String.raw`\u0041\\u0042`, text: String.raw`A\\u0042`, origins: ["escape", ...Array<string>(7).fill("source")] },
-  ])("handles escape output before a raw pair: $source (DEC-082)", ({ source, text, origins }) => {
-    const result = processBytes(new TextEncoder().encode(source));
-    expect(result.text).toBe(text);
-    expect(result.units.map((unit) => unit.origin)).toEqual(origins);
-    expect(result.originalRange(0, result.units.length)).toEqual({ start: 0, end: source.length });
-    expect(result.diagnostics).toEqual([]);
-  });
+    {
+      source: String.raw`\u005C\\u0041`,
+      text: "\\\\A",
+      origins: ["escape", "source", "escape"],
+    },
+    {
+      source: String.raw`\u0041\\u0042`,
+      text: String.raw`A\\u0042`,
+      origins: ["escape", ...Array<string>(7).fill("source")],
+    },
+  ])(
+    "handles escape output before a raw pair: $source (DEC-082)",
+    ({ source, text, origins }) => {
+      const result = processBytes(new TextEncoder().encode(source));
+      expect(result.text).toBe(text);
+      expect(result.units.map((unit) => unit.origin)).toEqual(origins);
+      expect(result.originalRange(0, result.units.length)).toEqual({
+        start: 0,
+        end: source.length,
+      });
+      expect(result.diagnostics).toEqual([]);
+    },
+  );
 
   it("retains UTF-8 diagnostics inside a malformed escape's selected extent (DEC-078/082)", () => {
     const input = new SourceInput(
@@ -245,12 +375,12 @@ describe("processSource", () => {
   });
 
   it("ignores only the initial BOM while preserving byte offsets and scalar columns", () => {
-    const result = processBytes(
-      new TextEncoder().encode("\uFEFFA😀\tZ\uFEFF"),
-    );
+    const result = processBytes(new TextEncoder().encode("\uFEFFA😀\tZ\uFEFF"));
 
     expect(result.text).toBe("A😀\tZ\uFEFF");
-    expect(result.units.map((unit) => [unit.character, unit.byteRange])).toEqual([
+    expect(
+      result.units.map((unit) => [unit.character, unit.byteRange]),
+    ).toEqual([
       ["A", { start: 3, end: 4 }],
       ["😀", { start: 4, end: 8 }],
       ["\t", { start: 8, end: 9 }],
@@ -273,13 +403,24 @@ describe("processSource", () => {
       new TextEncoder().encode("a\r\nb\rc\u0085d\u000be\u000cf\u2028g\u2029h"),
     );
 
-    expect(result.units.filter((unit) => unit.character === "\r").map((unit) => unit.position))
-      .toEqual([{ line: 1, column: 2 }, { line: 2, column: 2 }]);
-    expect(result.units.filter((unit) => unit.character === "\n").map((unit) => unit.position))
-      .toEqual([{ line: 1, column: 3 }]);
     expect(
       result.units
-        .filter((unit) => ["b", "c", "d", "e", "f", "g", "h"].includes(unit.character))
+        .filter((unit) => unit.character === "\r")
+        .map((unit) => unit.position),
+    ).toEqual([
+      { line: 1, column: 2 },
+      { line: 2, column: 2 },
+    ]);
+    expect(
+      result.units
+        .filter((unit) => unit.character === "\n")
+        .map((unit) => unit.position),
+    ).toEqual([{ line: 1, column: 3 }]);
+    expect(
+      result.units
+        .filter((unit) =>
+          ["b", "c", "d", "e", "f", "g", "h"].includes(unit.character),
+        )
         .map((unit) => unit.position),
     ).toEqual([
       { line: 2, column: 1 },
@@ -299,17 +440,24 @@ describe("processSource", () => {
     const result = processBytes(bytes);
 
     expect(result.text).toBe("\uFFFDb\uFFFD\uFFFD\uFFFDa\uFFFD");
-    expect(result.units.map((unit) => [unit.character, unit.byteRange, unit.isError]))
-      .toEqual([
-        ["\uFFFD", { start: 0, end: 2 }, true],
-        ["b", { start: 2, end: 3 }, false],
-        ["\uFFFD", { start: 3, end: 4 }, true],
-        ["\uFFFD", { start: 4, end: 5 }, true],
-        ["\uFFFD", { start: 5, end: 6 }, true],
-        ["a", { start: 6, end: 7 }, false],
-        ["\uFFFD", { start: 7, end: 10 }, true],
-      ]);
-    expect(result.diagnostics.map(({ code, location }) => [code, location])).toEqual([
+    expect(
+      result.units.map((unit) => [
+        unit.character,
+        unit.byteRange,
+        unit.isError,
+      ]),
+    ).toEqual([
+      ["\uFFFD", { start: 0, end: 2 }, true],
+      ["b", { start: 2, end: 3 }, false],
+      ["\uFFFD", { start: 3, end: 4 }, true],
+      ["\uFFFD", { start: 4, end: 5 }, true],
+      ["\uFFFD", { start: 5, end: 6 }, true],
+      ["a", { start: 6, end: 7 }, false],
+      ["\uFFFD", { start: 7, end: 10 }, true],
+    ]);
+    expect(
+      result.diagnostics.map(({ code, location }) => [code, location]),
+    ).toEqual([
       ["invalid-utf8", { start: 0, end: 2 }],
       ["invalid-utf8", { start: 3, end: 4 }],
       ["invalid-utf8", { start: 4, end: 5 }],
@@ -356,14 +504,18 @@ describe("processSource", () => {
     );
 
     expect(result.text).toBe("\uFFFD \uFFFD \uFFFD \uFFFD");
-    expect(result.units.filter((unit) => unit.isError).map((unit) => unit.byteRange)).toEqual([
+    expect(
+      result.units.filter((unit) => unit.isError).map((unit) => unit.byteRange),
+    ).toEqual([
       { start: 0, end: 6 },
       { start: 7, end: 17 },
       { start: 18, end: 24 },
       { start: 25, end: 30 },
     ]);
     expect(result.diagnostics).toHaveLength(4);
-    expect(result.diagnostics.every((diagnostic) => diagnostic.position.line === 1)).toBe(true);
+    expect(
+      result.diagnostics.every((diagnostic) => diagnostic.position.line === 1),
+    ).toBe(true);
   });
 
   it("does not combine adjacent surrogate escapes into a supplementary scalar", () => {
@@ -383,11 +535,14 @@ describe("processSource", () => {
     const result = processBytes(new TextEncoder().encode("a\\u000D\nb"));
 
     expect(result.text).toBe("a\r\nb");
-    expect(result.units.slice(1, 3).map((unit) => [unit.character, unit.origin, unit.byteRange]))
-      .toEqual([
-        ["\r", "escape", { start: 1, end: 7 }],
-        ["\n", "source", { start: 7, end: 8 }],
-      ]);
+    expect(
+      result.units
+        .slice(1, 3)
+        .map((unit) => [unit.character, unit.origin, unit.byteRange]),
+    ).toEqual([
+      ["\r", "escape", { start: 1, end: 7 }],
+      ["\n", "source", { start: 7, end: 8 }],
+    ]);
     expect(result.units[3]).toMatchObject({
       character: "b",
       position: { line: 2, column: 1 },
@@ -399,13 +554,18 @@ describe("processSource", () => {
     expect(generatedOnly.text).toBe("a\r\nb");
     expect(generatedOnly.units[3]?.position).toEqual({ line: 1, column: 14 });
 
-    const rawCr = processBytes(
-      new TextEncoder().encode("a\r\\u000Ab"),
-    );
+    const rawCr = processBytes(new TextEncoder().encode("a\r\\u000Ab"));
     expect(rawCr.text).toBe("a\r\nb");
-    expect(rawCr.units.slice(1).map((unit) => [
-      unit.character, unit.origin, unit.byteRange, unit.position,
-    ])).toEqual([
+    expect(
+      rawCr.units
+        .slice(1)
+        .map((unit) => [
+          unit.character,
+          unit.origin,
+          unit.byteRange,
+          unit.position,
+        ]),
+    ).toEqual([
       ["\r", "source", { start: 1, end: 2 }, { line: 1, column: 2 }],
       ["\n", "escape", { start: 2, end: 8 }, { line: 2, column: 1 }],
       ["b", "source", { start: 8, end: 9 }, { line: 2, column: 7 }],

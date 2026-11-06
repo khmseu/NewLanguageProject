@@ -80,7 +80,9 @@ export function reconstructSource(
         stack.push({
           entries: entry.contents.entries,
           index: 0,
-          ...(entry.close.token ? { close: entry.close.token.range.bytes } : {}),
+          ...(entry.close.token
+            ? { close: entry.close.token.range.bytes }
+            : {}),
         });
         break;
     }

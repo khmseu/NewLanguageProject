@@ -6,6 +6,7 @@ malformed candidates, touching-operand errors and original-byte coverage.
 No parser, numeric rounding or suffix semantics were added.
 
 **Files created/changed:**
+
 - [Numeric scanner](../src/lexer/numeric-scanner.ts)
 - [Core scanner](../src/lexer/core-lexer.ts)
 - [Public exports](../src/index.ts)
@@ -20,6 +21,7 @@ No parser, numeric rounding or suffix semantics were added.
 - Previous phase completion record updated with its commit checkpoint.
 
 **Functions/contracts added or changed:**
+
 - `CoreNumber`: text-preserving integer, fraction, exponent and suffix
   components, bounded base, lowercase suffix key, validity and diagnostics.
 - Unified numeric candidate matching/classification/validation, including
@@ -33,6 +35,7 @@ No parser, numeric rounding or suffix semantics were added.
 - Complete source JSDoc maintained; no dependency or generated-data changes.
 
 **Test-first evidence:**
+
 - Implementer reported initial behavioral red: 62 failed, two passed.
 - Subsequent exponent regression: one failed, 67 passed before the fix.
 - Reported focused green: 336 tests. Full-suite green independently verified
@@ -47,6 +50,7 @@ No parser, numeric rounding or suffix semantics were added.
 in static review. It did not execute checks; conductor ran them separately.
 
 **Final verification:**
+
 - `npm test`: **432 tests pass in seven files**, including existing complete
   official Unicode normalization fixture coverage.
 - `npm run typecheck`: pass.

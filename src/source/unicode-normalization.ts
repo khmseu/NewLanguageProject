@@ -80,7 +80,8 @@ export function normalizeUnicode18(
   form: UnicodeNormalizationForm,
 ): string {
   return normalizeUnicode18WithOrigins(input, form)
-    .map((unit) => unit.character).join("");
+    .map((unit) => unit.character)
+    .join("");
 }
 
 /**
@@ -112,10 +113,14 @@ export function normalizeUnicode18WithOrigins(
     inputOffset += 1;
   }
   canonicalOrder(decomposed);
-  return Object.freeze(canonicalCompose(decomposed).map((unit) => Object.freeze({
-    character: String.fromCodePoint(unit.codePoint),
-    inputOffsets: Object.freeze(unit.inputOffsets),
-  })));
+  return Object.freeze(
+    canonicalCompose(decomposed).map((unit) =>
+      Object.freeze({
+        character: String.fromCodePoint(unit.codePoint),
+        inputOffsets: Object.freeze(unit.inputOffsets),
+      }),
+    ),
+  );
 }
 
 /**
@@ -134,8 +139,7 @@ function decompose(
   if (hangulIndex >= 0 && hangulIndex < hangulSCount) {
     const leading = hangulLBase + Math.floor(hangulIndex / hangulNCount);
     const vowel =
-      hangulVBase +
-      Math.floor((hangulIndex % hangulNCount) / hangulTCount);
+      hangulVBase + Math.floor((hangulIndex % hangulNCount) / hangulTCount);
     const trailingIndex = hangulIndex % hangulTCount;
     output.push(leading, vowel);
     if (trailingIndex !== 0) output.push(hangulTBase + trailingIndex);
@@ -159,7 +163,8 @@ function decompose(
  */
 function canonicalOrder(codePoints: NormalizationUnit[]): void {
   for (let index = 1; index < codePoints.length; index += 1) {
-    const currentClass = combiningClassByCodePoint.get(codePoints[index]!.codePoint) ?? 0;
+    const currentClass =
+      combiningClassByCodePoint.get(codePoints[index]!.codePoint) ?? 0;
     if (currentClass === 0) continue;
 
     let position = index;
@@ -182,10 +187,14 @@ function canonicalOrder(codePoints: NormalizationUnit[]): void {
  * @param codePoints - Ordered decomposition records, read without mutation.
  * @returns A new mutable array using eligible table and Hangul compositions.
  */
-function canonicalCompose(codePoints: readonly NormalizationUnit[]): NormalizationUnit[] {
+function canonicalCompose(
+  codePoints: readonly NormalizationUnit[],
+): NormalizationUnit[] {
   if (codePoints.length < 2) return [...codePoints];
 
-  const output = [{ ...codePoints[0]!, inputOffsets: [...codePoints[0]!.inputOffsets] }];
+  const output = [
+    { ...codePoints[0]!, inputOffsets: [...codePoints[0]!.inputOffsets] },
+  ];
   let starterPosition = 0;
   let starter = codePoints[0]!.codePoint;
   let previousClass = 0;
@@ -202,8 +211,12 @@ function canonicalCompose(codePoints: readonly NormalizationUnit[]): Normalizati
     ) {
       output[starterPosition] = {
         codePoint: composite,
-        inputOffsets: [...new Set([...output[starterPosition]!.inputOffsets, ...unit.inputOffsets])]
-          .sort((left, right) => left - right),
+        inputOffsets: [
+          ...new Set([
+            ...output[starterPosition]!.inputOffsets,
+            ...unit.inputOffsets,
+          ]),
+        ].sort((left, right) => left - right),
       };
       starter = composite;
       continue;
@@ -247,8 +260,7 @@ function composeHangul(first: number, second: number): number | undefined {
     vowelIndex < hangulVCount
   ) {
     return (
-      hangulSBase +
-      (leadingIndex * hangulVCount + vowelIndex) * hangulTCount
+      hangulSBase + (leadingIndex * hangulVCount + vowelIndex) * hangulTCount
     );
   }
 

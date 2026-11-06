@@ -15,25 +15,23 @@ import type { ByteRange } from "../source/source-input.js";
 
 /** Diagnostic codes added while matching or inserting delimiter closers. */
 export type GroupingDiagnosticCode =
-  | "unexpected-closing-delimiter"
-  | "missing-closing-delimiter";
+  "unexpected-closing-delimiter" | "missing-closing-delimiter";
 
 /**
  * A delimiter-specific recovery error located in original bytes.
  * @typeParam Code - One of the grouping recovery codes.
  */
-export type GroupingDiagnostic<Code extends GroupingDiagnosticCode = GroupingDiagnosticCode> =
-  ErrorDiagnostic<Code> & {
-    /** Expected closing delimiter, present only for a missing closer. */
-    readonly expected?: string;
-    /** Unexpected source delimiter, present only for an unexpected closer. */
-    readonly actual?: string;
-  };
+export type GroupingDiagnostic<
+  Code extends GroupingDiagnosticCode = GroupingDiagnosticCode,
+> = ErrorDiagnostic<Code> & {
+  /** Expected closing delimiter, present only for a missing closer. */
+  readonly expected?: string;
+  /** Unexpected source delimiter, present only for an unexpected closer. */
+  readonly actual?: string;
+};
 
 /** Diagnostics preserved from lexing, plus structural delimiter diagnostics. */
-export type CoreStructureDiagnostic =
-  | CoreLexerDiagnostic
-  | GroupingDiagnostic;
+export type CoreStructureDiagnostic = CoreLexerDiagnostic | GroupingDiagnostic;
 
 /** An ordered, shallow sequence at file or group scope; not precedence-parsed. */
 export interface CstSequence {
@@ -80,9 +78,7 @@ export interface CstEmptyOperand {
 
 /** An explicit source operator or inserted `APPLY` operator. */
 export type CstOperator =
-  | CstExplicitOperator
-  | CstApplyOperator
-  | CstErrorOperator;
+  CstExplicitOperator | CstApplyOperator | CstErrorOperator;
 
 /**
  * An operator-classified collapsed error as a binary operator (DEC-086). It
@@ -302,9 +298,7 @@ export type PrecedenceDiagnostic<
 };
 
 /** Precedence parser diagnostics, including all lexer and grouping errors. */
-export type CstParseDiagnostic =
-  | CoreStructureDiagnostic
-  | PrecedenceDiagnostic;
+export type CstParseDiagnostic = CoreStructureDiagnostic | PrecedenceDiagnostic;
 
 /**
  * Precedence parse output. `status: "error"` is used whenever an error

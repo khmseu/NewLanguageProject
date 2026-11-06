@@ -6,6 +6,7 @@ each scope retains its lossless structural sequence and trivia. No keywords,
 special unary grammar, conditional reassociation or semantic checks were added.
 
 **Files created/changed:**
+
 - [Precedence parser and table](../src/parser/precedence.ts)
 - [CST contracts](../src/cst/cst.ts)
 - [Public exports](../src/index.ts)
@@ -14,6 +15,7 @@ special unary grammar, conditional reassociation or semantic checks were added.
 - [README](../README.md), both context records and phase completion records.
 
 **Functions/contracts added:**
+
 - `parseSource(SourceInput)` and `parseCore(CoreLexResult)`.
 - `OPERATOR_PRECEDENCE`, `OperatorPrecedence`, `OperatorAssociativity`:
   all 22 DEC-022 levels and DEC-066 level associativities.
@@ -28,6 +30,7 @@ special unary grammar, conditional reassociation or semantic checks were added.
   Phase 6 synthetic span rules remain unchanged.
 
 **Tests and TDD evidence:**
+
 - Implementer reported 31 of 32 initial tests failed behaviorally against an
   importable skeleton because trees were absent. One later expected span had
   an off-by-one fixture error; correcting that assertion was not a production fix.
@@ -46,6 +49,7 @@ special unary grammar, conditional reassociation or semantic checks were added.
 issues. Reviewer did not execute automated checks; conductor ran them separately.
 
 **Final verification:**
+
 - `npm test`: **479 tests pass in nine files**.
 - `npm run typecheck`: pass.
 - `npm run smoke:exports`: pass, including build.
@@ -53,6 +57,7 @@ issues. Reviewer did not execute automated checks; conductor ran them separately
 - No dependencies or generated-data changes.
 
 **Limits and next checkpoint:**
+
 - Any error diagnostic produces `status: "error"`, never `"complete"`.
   Unresolved error roles leave that scope's expression undefined while
   retaining all structural entries. Known lexical operand errors retain trees.

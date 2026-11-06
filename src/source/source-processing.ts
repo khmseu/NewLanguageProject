@@ -20,10 +20,7 @@ export interface PhysicalPosition {
  * a malformed UTF-8 replacement, or a malformed/non-scalar escape replacement.
  */
 export type SourceUnitOrigin =
-  | "source"
-  | "escape"
-  | "invalid-utf8"
-  | "invalid-escape";
+  "source" | "escape" | "invalid-utf8" | "invalid-escape";
 
 /** One translated scalar (possibly U+FFFD) with its physical source provenance. */
 export interface SourceUnit {
@@ -148,15 +145,14 @@ export function processSource(input: SourceInput): SourceProcessingResult {
         isError,
       }),
     );
-    trailingBackslashes =
-      codePoint === 0x5c ? trailingBackslashes + 1 : 0;
-    previousOutputWasEscape = origin === "escape" || origin === "invalid-escape";
+    trailingBackslashes = codePoint === 0x5c ? trailingBackslashes + 1 : 0;
+    previousOutputWasEscape =
+      origin === "escape" || origin === "invalid-escape";
   };
 
   while (index < decoded.length) {
     const scalar = decoded[index]!;
-    const eligible =
-      previousOutputWasEscape || trailingBackslashes % 2 === 0;
+    const eligible = previousOutputWasEscape || trailingBackslashes % 2 === 0;
     const introducer = decoded[index + 1]?.codePoint;
 
     if (
@@ -182,7 +178,10 @@ export function processSource(input: SourceInput): SourceProcessingResult {
 
       const consumed = Math.max(2, escapeScalars.length);
       const lastConsumed = decoded[index + consumed - 1] ?? scalar;
-      const range = input.range(scalar.byteRange.start, lastConsumed.byteRange.end);
+      const range = input.range(
+        scalar.byteRange.start,
+        lastConsumed.byteRange.end,
+      );
       const position = scalar.position;
       if (valid && isUnicodeScalar(value)) {
         append(
@@ -194,7 +193,14 @@ export function processSource(input: SourceInput): SourceProcessingResult {
           false,
         );
       } else {
-        append(replacementCharacter, 0xfffd, range, position, "invalid-escape", true);
+        append(
+          replacementCharacter,
+          0xfffd,
+          range,
+          position,
+          "invalid-escape",
+          true,
+        );
         diagnostics.push(
           makeDiagnostic(
             "invalid-unicode-escape",
@@ -336,7 +342,7 @@ function decodeOne(
   /** Exclusive consumed byte offset, leaving the offending next byte for recovery. */
   readonly end: number;
   /** True when a malformed maximal subpart was replaced. */
-  readonly invalid: boolean
+  readonly invalid: boolean;
 } {
   const first = bytes[start]!;
   if (first <= 0x7f) {

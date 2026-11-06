@@ -6,6 +6,7 @@ its public ESM exports work; decoding, Unicode processing, lexing, and parsing
 remain intentionally deferred.
 
 **Files created/changed:**
+
 - [Package manifest](../package.json) and [lockfile](../package-lock.json).
 - [TypeScript configuration](../tsconfig.json),
   [build configuration](../tsconfig.build.json),
@@ -20,6 +21,7 @@ remain intentionally deferred.
   and this completion record.
 
 **Functions/contracts created:**
+
 - `SourceInput`: byte-backed input with defensive copies on construction,
   exposure, and slicing. Unsupported runtime inputs throw `TypeError`.
 - `range()` and `slice()` / internal `validateByteRange()`: integer half-open
@@ -30,6 +32,7 @@ remain intentionally deferred.
   validation factories; future frontend producers must uphold them.
 
 **Test-first evidence:**
+
 - Initial source behavior suite failed 10/10 against incomplete behavior,
   exposing missing defensive copies and range validation, then passed 10/10.
 - Review identified runtime constructor coercion and inconsistent malformed

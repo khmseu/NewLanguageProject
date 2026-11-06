@@ -56,9 +56,14 @@ function digits(text: string, base: number, empty = false): boolean {
       if (!previousDigit || i + 1 === text.length) return false;
       previousDigit = false;
     } else {
-      const value = c >= 48 && c <= 57 ? c - 48
-        : c >= 65 && c <= 90 ? c - 65 + 10
-          : c >= 97 && c <= 122 ? c - 97 + 10 : 99;
+      const value =
+        c >= 48 && c <= 57
+          ? c - 48
+          : c >= 65 && c <= 90
+            ? c - 65 + 10
+            : c >= 97 && c <= 122
+              ? c - 97 + 10
+              : 99;
       if (value >= base) return false;
       previousDigit = true;
     }
@@ -86,10 +91,18 @@ function boundedBase(text: string): number | undefined {
  * @param start - Inclusive translated scalar-unit offset.
  * @returns Candidate or undefined when no number begins at the offset.
  */
-export function scanNumericAt(source: SourceProcessingResult, start: number): NumericCandidate | undefined {
+export function scanNumericAt(
+  source: SourceProcessingResult,
+  start: number,
+): NumericCandidate | undefined {
   const at = (index: number) => source.units[index]?.character;
-  const decimalDigit = (c: string | undefined) => c !== undefined && c >= "0" && c <= "9";
-  if (!decimalDigit(at(start)) && !(at(start) === "." && decimalDigit(at(start + 1)))) return undefined;
+  const decimalDigit = (c: string | undefined) =>
+    c !== undefined && c >= "0" && c <= "9";
+  if (
+    !decimalDigit(at(start)) &&
+    !(at(start) === "." && decimalDigit(at(start + 1)))
+  )
+    return undefined;
   let i = start;
   let base = 10;
   let prefix = "";
@@ -103,7 +116,10 @@ export function scanNumericAt(source: SourceProcessingResult, start: number): Nu
   if (at(i) !== ".") {
     let fieldEnd = i;
     while (decimalDigit(at(fieldEnd)) || at(fieldEnd) === "_") fieldEnd++;
-    const field = source.units.slice(i, fieldEnd).map((u) => u.character).join("");
+    const field = source.units
+      .slice(i, fieldEnd)
+      .map((u) => u.character)
+      .join("");
     const candidateBase = boundedBase(field);
     if (at(fieldEnd) === "#" && candidateBase !== undefined) {
       radix = true;
@@ -126,8 +142,14 @@ export function scanNumericAt(source: SourceProcessingResult, start: number): Nu
     let result = "";
     while (component(at(i))) {
       const c = at(i)!;
-      if (stopExponent && !invalidLetter && (base === 16 ? /^[pP]$/.test(c) : /^[eE]$/.test(c))) break;
-      if (/^[A-Za-z]$/.test(c) && !(base === 16 && /^[a-fA-F]$/.test(c))) invalidLetter = true;
+      if (
+        stopExponent &&
+        !invalidLetter &&
+        (base === 16 ? /^[pP]$/.test(c) : /^[eE]$/.test(c))
+      )
+        break;
+      if (/^[A-Za-z]$/.test(c) && !(base === 16 && /^[a-fA-F]$/.test(c)))
+        invalidLetter = true;
       result += c;
       i++;
     }
@@ -153,17 +175,27 @@ export function scanNumericAt(source: SourceProcessingResult, start: number): Nu
     suffix = read(false);
   }
   const numericValid = floating
-    ? digits(integer, base, true) && digits(fraction ?? "", base, true)
-      && (integer.length > 0 || (fraction?.length ?? 0) > 0)
-      && (base !== 16 || exponent !== undefined)
-      && (exponent === undefined || digits(exponent.replace(/^[+-]/, ""), 10))
+    ? digits(integer, base, true) &&
+      digits(fraction ?? "", base, true) &&
+      (integer.length > 0 || (fraction?.length ?? 0) > 0) &&
+      (base !== 16 || exponent !== undefined) &&
+      (exponent === undefined || digits(exponent.replace(/^[+-]/, ""), 10))
     : digits(integer, base);
-  valid = valid && numericValid && (suffix === undefined || /^[A-Za-z0-9]+$/.test(suffix));
+  valid =
+    valid &&
+    numericValid &&
+    (suffix === undefined || /^[A-Za-z0-9]+$/.test(suffix));
   return Object.freeze({
     end: i,
     numeric: Object.freeze({
-      kind: floating ? "float" : "integer", base, integer, fraction, exponent,
-      suffix, suffixKey: suffix?.toLowerCase(), valid,
+      kind: floating ? "float" : "integer",
+      base,
+      integer,
+      fraction,
+      exponent,
+      suffix,
+      suffixKey: suffix?.toLowerCase(),
+      valid,
     }),
   });
 }

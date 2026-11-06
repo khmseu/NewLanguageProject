@@ -6,6 +6,7 @@ preserves each diagnostic. Reconstruction walks original source ranges in CST
 order and rejects missing, overlapping or reordered coverage.
 
 **Files created/changed:**
+
 - [Recovery and grouping](../src/parser/grouping.ts)
 - [Precedence parser](../src/parser/precedence.ts)
 - [CST contracts](../src/cst/cst.ts)
@@ -19,6 +20,7 @@ order and rejects missing, overlapping or reordered coverage.
   (DEC-092), both context records, phase and overall completion records.
 
 **Functions/contracts added or changed:**
+
 - `structureCore`: linear error collapse, role selection and minimal insertion
   subject to fixed lexical operand roles. Interior trivia belongs to collapsed
   errors; each constituent token/region and diagnostic remains distinct.
@@ -34,6 +36,7 @@ order and rejects missing, overlapping or reordered coverage.
   Complete source JSDoc and API migration documentation maintained.
 
 **TDD and review evidence:**
+
 - Initial implementation report: 46 of 47 new integration tests failed
   behaviorally against Phase 7, then passed after implementation.
 - Initial static review blocked on conflicting role interpretations and
@@ -58,6 +61,7 @@ verification. Both NEEDS_REVISION reports are resolved: DEC-092 policy,
 known/mixed/touching coverage, large-trivia crash and reconstruction negatives.
 
 **Final verification:**
+
 - `npm test`: **541 tests pass in ten files** (62 more than Phase 7).
 - `npm run typecheck`: pass.
 - `npm run smoke:exports`: pass, including build.

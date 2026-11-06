@@ -72,7 +72,9 @@ export function isXidStart(codePoint: number): boolean {
  * @returns False for non-scalars, otherwise the pinned property membership.
  */
 export function isXidContinue(codePoint: number): boolean {
-  return isScalar(codePoint) && xidContinue.test(String.fromCodePoint(codePoint));
+  return (
+    isScalar(codePoint) && xidContinue.test(String.fromCodePoint(codePoint))
+  );
 }
 
 /**

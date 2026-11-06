@@ -6,6 +6,7 @@ NFC runs before ordinary escapes, never on decoded values afterward. Only
 numeric surfaces remain deferred; no parser or numeric semantics were added.
 
 **Files created/changed:**
+
 - [Literal scanner](../src/lexer/literal-scanner.ts)
 - [Shared line endings](../src/source/line-endings.ts)
 - [Core scanner](../src/lexer/core-lexer.ts)
@@ -19,6 +20,7 @@ numeric surfaces remain deferred; no parser or numeric semantics were added.
 - [README](../README.md), context records, and this completion record
 
 **Functions/contracts added or changed:**
+
 - `scanLiteralAt`, `CoreLiteral`, `LiteralKind`, and `LiteralDiagnostic`:
   candidate extents, decoded values, validity/termination, ordinary escapes,
   tagged raw strings, EOF/line-ending recovery and character-length checks.
@@ -34,6 +36,7 @@ numeric surfaces remain deferred; no parser or numeric semantics were added.
   third-party fixtures and dependency manifests are unchanged.
 
 **Test-first evidence:**
+
 - Implementer reported 234 assertion failures against importable incomplete
   literal behavior, not missing imports/setup, before implementation.
 - Literal tests cover selected and rejected escapes, scalar characters,
@@ -56,6 +59,7 @@ replacements; the fix and regression coverage were inspected afterward.
 The reviewer did not execute tests; runtime checks below were rerun by conductor.
 
 **Final verification:**
+
 - `npm test`: **360 tests pass** in six files, including the complete existing
   official NFC/NFKC fixture comparisons.
 - `npm run typecheck`, `npm run smoke:exports` (includes build), and

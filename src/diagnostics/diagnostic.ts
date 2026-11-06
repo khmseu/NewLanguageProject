@@ -57,9 +57,7 @@ export type InfoDiagnostic<Code extends DiagnosticCode = DiagnosticCode> =
  * @typeParam Code - Allowed codes across all severities.
  */
 export type Diagnostic<Code extends DiagnosticCode = DiagnosticCode> =
-  | ErrorDiagnostic<Code>
-  | WarningDiagnostic<Code>
-  | InfoDiagnostic<Code>;
+  ErrorDiagnostic<Code> | WarningDiagnostic<Code> | InfoDiagnostic<Code>;
 
 /** Warning and informational payloads permitted on the success branch. */
 type NonErrorDiagnostic = Exclude<Diagnostic, ErrorDiagnostic>;
@@ -83,8 +81,5 @@ export type CompilerResult<T, D extends Diagnostic = Diagnostic> =
       /** Selects failure; no successful payload is present. */
       readonly ok: false;
       /** Nonempty diagnostics with an error guaranteed in the first position. */
-      readonly diagnostics: readonly [
-        Extract<D, ErrorDiagnostic>,
-        ...D[],
-      ];
+      readonly diagnostics: readonly [Extract<D, ErrorDiagnostic>, ...D[]];
     };

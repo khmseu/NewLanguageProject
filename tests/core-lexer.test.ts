@@ -11,8 +11,8 @@ function lex(text: string) {
 }
 
 function tokenSummaries(text: string) {
-  return lex(text).items
-    .filter((item) => item.kind === "token")
+  return lex(text)
+    .items.filter((item) => item.kind === "token")
     .map((item) => [item.tokenKind, item.spelling]);
 }
 
@@ -42,12 +42,16 @@ describe("core lexer", () => {
       displayName: "é",
       lookupName: "é",
     });
-    expect(identifiers[1]?.kind === "token" && identifiers[1].identifier).toEqual({
+    expect(
+      identifiers[1]?.kind === "token" && identifiers[1].identifier,
+    ).toEqual({
       translatedText: "K",
       displayName: "K",
       lookupName: "K",
     });
-    expect(identifiers[2]?.kind === "token" && identifiers[2].identifier).toEqual({
+    expect(
+      identifiers[2]?.kind === "token" && identifiers[2].identifier,
+    ).toEqual({
       translatedText: "՘",
       displayName: "՘",
       lookupName: "է",
@@ -56,9 +60,11 @@ describe("core lexer", () => {
 
   it("rejects underscore as an identifier start and recognizes all grouping delimiters", () => {
     const result = lex("_a(){}[]");
-    expect(result.items.map((item) => item.kind === "token"
-      ? [item.tokenKind, item.spelling]
-      : item.kind)).toEqual([
+    expect(
+      result.items.map((item) =>
+        item.kind === "token" ? [item.tokenKind, item.spelling] : item.kind,
+      ),
+    ).toEqual([
       "unsupported",
       ["identifier", "a"],
       ["delimiter", "("],
@@ -72,10 +78,51 @@ describe("core lexer", () => {
 
   it("uses longest source-operator matching for the approved inventory", () => {
     const inventory = [
-      "::=", ":=", "::", "=", "@", "++", "--", "!", "~", "**", "*", "/", "%", "+", "-",
-      "<<", ">>", "&", "^", "|", "<", "<=", ">", ">=", "==", "!=", "&&", "||",
-      "<-", "->", "?", ":", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=",
-      "<<=", ">>=", ",", ";", ".",
+      "::=",
+      ":=",
+      "::",
+      "=",
+      "@",
+      "++",
+      "--",
+      "!",
+      "~",
+      "**",
+      "*",
+      "/",
+      "%",
+      "+",
+      "-",
+      "<<",
+      ">>",
+      "&",
+      "^",
+      "|",
+      "<",
+      "<=",
+      ">",
+      ">=",
+      "==",
+      "!=",
+      "&&",
+      "||",
+      "<-",
+      "->",
+      "?",
+      ":",
+      "+=",
+      "-=",
+      "*=",
+      "/=",
+      "%=",
+      "&=",
+      "|=",
+      "^=",
+      "<<=",
+      ">>=",
+      ",",
+      ";",
+      ".",
     ];
     expect(tokenSummaries(inventory.join(" "))).toEqual(
       inventory.map((spelling) => ["operator", spelling]),
@@ -94,34 +141,51 @@ describe("core lexer", () => {
 
   it("keeps Unicode whitespace, CRLF, and comments as separating trivia", () => {
     const result = lex("left\u00a0\u2003// line\r\n/* outer /* inner */right");
-    expect(result.items.map((item) => item.kind === "token"
-      ? [item.tokenKind, item.spelling]
-      : [item.kind, item.kind === "trivia" ? item.triviaKind : item.kind, item.spelling]))
-      .toEqual([
-        ["identifier", "left"],
-        ["trivia", "whitespace", "\u00a0\u2003"],
-        ["trivia", "line-comment", "// line"],
-        ["trivia", "whitespace", "\r\n"],
-        ["trivia", "block-comment", "/* outer /* inner */"],
-        ["identifier", "right"],
-      ]);
+    expect(
+      result.items.map((item) =>
+        item.kind === "token"
+          ? [item.tokenKind, item.spelling]
+          : [
+              item.kind,
+              item.kind === "trivia" ? item.triviaKind : item.kind,
+              item.spelling,
+            ],
+      ),
+    ).toEqual([
+      ["identifier", "left"],
+      ["trivia", "whitespace", "\u00a0\u2003"],
+      ["trivia", "line-comment", "// line"],
+      ["trivia", "whitespace", "\r\n"],
+      ["trivia", "block-comment", "/* outer /* inner */"],
+      ["identifier", "right"],
+    ]);
   });
 
   it("recognizes all selected Unicode hard breaks and keeps CRLF together", () => {
     const result = lex("\t\u00a0\u2003\n\r\n\u0085\u000b\u000c\u2028\u2029");
-    expect(result.items.map((item) => item.kind === "trivia" && item.triviaKind === "whitespace"
-      ? item.spelling
-      : item.kind)).toEqual(["\t\u00a0\u2003\n\r\n\u0085\u000b\u000c\u2028\u2029"]);
+    expect(
+      result.items.map((item) =>
+        item.kind === "trivia" && item.triviaKind === "whitespace"
+          ? item.spelling
+          : item.kind,
+      ),
+    ).toEqual(["\t\u00a0\u2003\n\r\n\u0085\u000b\u000c\u2028\u2029"]);
     expect(result.items).toHaveLength(1);
   });
 
   it("ends line comments at every selected hard break, treating CRLF as one", () => {
-    const result = lex("//a\n//b\r\n//c\u0085//d\u000b//e\u000c//f\u2028//g\u2029end");
-    expect(result.items.map((item) => item.kind === "trivia"
-      ? [item.triviaKind, item.spelling]
-      : item.kind === "token"
-        ? [item.tokenKind, item.spelling]
-        : [item.kind, item.spelling])).toEqual([
+    const result = lex(
+      "//a\n//b\r\n//c\u0085//d\u000b//e\u000c//f\u2028//g\u2029end",
+    );
+    expect(
+      result.items.map((item) =>
+        item.kind === "trivia"
+          ? [item.triviaKind, item.spelling]
+          : item.kind === "token"
+            ? [item.tokenKind, item.spelling]
+            : [item.kind, item.spelling],
+      ),
+    ).toEqual([
       ["line-comment", "//a"],
       ["whitespace", "\n"],
       ["line-comment", "//b"],
@@ -143,11 +207,15 @@ describe("core lexer", () => {
   it("uses the translated hard break to end a line comment without losing escape bytes", () => {
     const input = new SourceInput(new TextEncoder().encode("// one\\u000Ay"));
     const result = lexCore(input);
-    expect(result.items.map((item) => item.kind === "token"
-      ? [item.tokenKind, item.spelling, item.range.bytes]
-      : item.kind === "trivia"
-        ? [item.triviaKind, item.spelling, item.range.bytes]
-        : [item.kind, item.spelling, item.range.bytes])).toEqual([
+    expect(
+      result.items.map((item) =>
+        item.kind === "token"
+          ? [item.tokenKind, item.spelling, item.range.bytes]
+          : item.kind === "trivia"
+            ? [item.triviaKind, item.spelling, item.range.bytes]
+            : [item.kind, item.spelling, item.range.bytes],
+      ),
+    ).toEqual([
       ["line-comment", "// one", { start: 0, end: 6 }],
       ["whitespace", "\n", { start: 6, end: 12 }],
       ["identifier", "y", { start: 12, end: 13 }],
@@ -155,7 +223,9 @@ describe("core lexer", () => {
   });
 
   it("maps translated token spelling to the full original escape extent", () => {
-    const result = lexCore(new SourceInput(new TextEncoder().encode("\\u0061")));
+    const result = lexCore(
+      new SourceInput(new TextEncoder().encode("\\u0061")),
+    );
     expect(result.items[0]).toMatchObject({
       kind: "token",
       tokenKind: "identifier",
@@ -187,7 +257,9 @@ describe("core lexer", () => {
 
   it("recognizes escaped hard breaks and keeps invalid bytes and BOM in a lossless partition", () => {
     const bytes = new Uint8Array([
-      0xef, 0xbb, 0xbf,
+      0xef,
+      0xbb,
+      0xbf,
       ...new TextEncoder().encode("//line\\u000Aa/*c*/ b"),
       0xff,
       ...new TextEncoder().encode("c"),
@@ -203,18 +275,30 @@ describe("core lexer", () => {
       triviaKind: "bom",
       range: { unitStart: 0, unitEnd: 0, bytes: { start: 0, end: 3 } },
     });
-    expect(result.items.map((item) => item.kind === "token"
-      ? [item.tokenKind, item.spelling]
-      : item.kind === "trivia" ? item.triviaKind : item.kind)).toContain("line-comment");
+    expect(
+      result.items.map((item) =>
+        item.kind === "token"
+          ? [item.tokenKind, item.spelling]
+          : item.kind === "trivia"
+            ? item.triviaKind
+            : item.kind,
+      ),
+    ).toContain("line-comment");
   });
 
   it("scans numbers and later literals without deferral", () => {
-    const result = lex("name 12 + \"text\"");
+    const result = lex('name 12 + "text"');
     expect(result.status).toBe("complete");
-    expect(result.items.some((item) => item.kind === "token" && item.spelling === "12"))
-      .toBe(true);
-    expect(result.items.some((item) => item.kind === "token" && item.spelling === "\"text\""))
-      .toBe(true);
+    expect(
+      result.items.some(
+        (item) => item.kind === "token" && item.spelling === "12",
+      ),
+    ).toBe(true);
+    expect(
+      result.items.some(
+        (item) => item.kind === "token" && item.spelling === '"text"',
+      ),
+    ).toBe(true);
     expect(scanCoreAt(result.source, 5)).toMatchObject({
       kind: "token",
       tokenKind: "number",
@@ -242,7 +326,9 @@ describe("core lexer", () => {
     const touching = lex("a.5");
     expect(touching.items).toHaveLength(1);
     expect(touching.items[0]).toMatchObject({
-      kind: "token", tokenKind: "error", errorRole: "operand",
+      kind: "token",
+      tokenKind: "error",
+      errorRole: "operand",
       spelling: "a.5",
       range: { unitStart: 0, unitEnd: 3 },
     });

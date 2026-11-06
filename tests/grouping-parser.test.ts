@@ -60,7 +60,9 @@ function trivia(
   });
 }
 
-function signature(entries: ReturnType<typeof structureCore>["root"]["entries"]) {
+function signature(
+  entries: ReturnType<typeof structureCore>["root"]["entries"],
+) {
   return entries
     .filter((entry) => entry.kind !== "trivia")
     .map((entry) => {
@@ -81,13 +83,17 @@ function signature(entries: ReturnType<typeof structureCore>["root"]["entries"])
 
 describe("structural grouping and implicit elements", () => {
   it("inserts only the minimum APPLY and EMPTY elements around explicit tokens", () => {
-    const source = processSource(new SourceInput(new TextEncoder().encode("+a b +")));
-    const result = structureCore(fixture("+a b +", [
-      token(source, "operator", "+", 0),
-      token(source, "identifier", "a", 1),
-      token(source, "identifier", "b", 3),
-      token(source, "operator", "+", 5),
-    ]));
+    const source = processSource(
+      new SourceInput(new TextEncoder().encode("+a b +")),
+    );
+    const result = structureCore(
+      fixture("+a b +", [
+        token(source, "operator", "+", 0),
+        token(source, "identifier", "a", 1),
+        token(source, "identifier", "b", 3),
+        token(source, "operator", "+", 5),
+      ]),
+    );
 
     expect(signature(result.root.entries)).toEqual([
       "operand:EMPTY",
@@ -98,10 +104,15 @@ describe("structural grouping and implicit elements", () => {
       "operator:+",
       "operand:EMPTY",
     ]);
-    expect(result.root.entries.filter((entry) =>
-      entry.kind === "operand" && entry.operandKind === "empty" ||
-      entry.kind === "operator" && entry.operatorKind === "apply"
-    ).map((entry) => entry.span)).toEqual([
+    expect(
+      result.root.entries
+        .filter(
+          (entry) =>
+            (entry.kind === "operand" && entry.operandKind === "empty") ||
+            (entry.kind === "operator" && entry.operatorKind === "apply"),
+        )
+        .map((entry) => entry.span),
+    ).toEqual([
       { start: 0, end: 0 },
       { start: 3, end: 3 },
       { start: 6, end: 6 },
@@ -110,18 +121,22 @@ describe("structural grouping and implicit elements", () => {
 
   it("inserts EMPTY between adjacent operators and none into an already alternating run", () => {
     const text = "+ - a + b";
-    const source = processSource(new SourceInput(new TextEncoder().encode(text)));
-    const result = structureCore(fixture(text, [
-      token(source, "operator", "+", 0),
-      trivia(source, " ", 1),
-      token(source, "operator", "-", 2),
-      trivia(source, " ", 3),
-      token(source, "identifier", "a", 4),
-      trivia(source, " ", 5),
-      token(source, "operator", "+", 6),
-      trivia(source, " ", 7),
-      token(source, "identifier", "b", 8),
-    ]));
+    const source = processSource(
+      new SourceInput(new TextEncoder().encode(text)),
+    );
+    const result = structureCore(
+      fixture(text, [
+        token(source, "operator", "+", 0),
+        trivia(source, " ", 1),
+        token(source, "operator", "-", 2),
+        trivia(source, " ", 3),
+        token(source, "identifier", "a", 4),
+        trivia(source, " ", 5),
+        token(source, "operator", "+", 6),
+        trivia(source, " ", 7),
+        token(source, "identifier", "b", 8),
+      ]),
+    );
 
     expect(signature(result.root.entries)).toEqual([
       "operand:EMPTY",
@@ -132,9 +147,13 @@ describe("structural grouping and implicit elements", () => {
       "operator:+",
       "operand:b",
     ]);
-    expect(result.root.entries.filter((entry) =>
-      entry.kind === "operand" && entry.operandKind === "empty"
-    ).map((entry) => entry.span)).toEqual([
+    expect(
+      result.root.entries
+        .filter(
+          (entry) => entry.kind === "operand" && entry.operandKind === "empty",
+        )
+        .map((entry) => entry.span),
+    ).toEqual([
       { start: 0, end: 0 },
       { start: 2, end: 2 },
     ]);
@@ -150,10 +169,10 @@ describe("structural grouping and implicit elements", () => {
     });
 
     const text = " \t";
-    const source = processSource(new SourceInput(new TextEncoder().encode(text)));
-    const triviaOnly = structureCore(fixture(text, [
-      trivia(source, " \t", 0),
-    ]));
+    const source = processSource(
+      new SourceInput(new TextEncoder().encode(text)),
+    );
+    const triviaOnly = structureCore(fixture(text, [trivia(source, " \t", 0)]));
     expect(signature(triviaOnly.root.entries)).toEqual(["operand:EMPTY"]);
     expect(triviaOnly.root.entries.at(-1)).toMatchObject({
       kind: "operand",
@@ -161,24 +180,24 @@ describe("structural grouping and implicit elements", () => {
       span: { start: 2, end: 2 },
     });
 
-    const commentOnly = structureCore(lexCore(
-      new SourceInput(new TextEncoder().encode("/*only*/")),
-    ));
+    const commentOnly = structureCore(
+      lexCore(new SourceInput(new TextEncoder().encode("/*only*/"))),
+    );
     expect(signature(commentOnly.root.entries)).toEqual(["operand:EMPTY"]);
     expect(commentOnly.root.entries.at(-1)?.span).toEqual({ start: 8, end: 8 });
 
-    const bomOnly = structureCore(lexCore(
-      new SourceInput(new Uint8Array([0xef, 0xbb, 0xbf])),
-    ));
+    const bomOnly = structureCore(
+      lexCore(new SourceInput(new Uint8Array([0xef, 0xbb, 0xbf]))),
+    );
     expect(signature(bomOnly.root.entries)).toEqual(["operand:EMPTY"]);
     expect(bomOnly.root.entries.at(-1)?.span).toEqual({ start: 3, end: 3 });
   });
 
   it("recursively groups all delimiter families with independent inner sequences", () => {
     const text = "([{}])";
-    const result = structureCore(lexCore(
-      new SourceInput(new TextEncoder().encode(text)),
-    ));
+    const result = structureCore(
+      lexCore(new SourceInput(new TextEncoder().encode(text))),
+    );
     const outer = result.root.entries.find((entry) => entry.kind === "group");
     expect(outer).toMatchObject({
       kind: "group",
@@ -187,14 +206,18 @@ describe("structural grouping and implicit elements", () => {
     });
     if (outer?.kind !== "group") throw new Error("expected outer group");
 
-    const square = outer.contents.entries.find((entry) => entry.kind === "group");
+    const square = outer.contents.entries.find(
+      (entry) => entry.kind === "group",
+    );
     expect(square).toMatchObject({
       kind: "group",
       open: { spelling: "[" },
       close: { spelling: "]" },
     });
     if (square?.kind !== "group") throw new Error("expected square group");
-    const curly = square.contents.entries.find((entry) => entry.kind === "group");
+    const curly = square.contents.entries.find(
+      (entry) => entry.kind === "group",
+    );
     expect(curly).toMatchObject({
       kind: "group",
       open: { spelling: "{" },
@@ -211,10 +234,12 @@ describe("structural grouping and implicit elements", () => {
   });
 
   it("gives every delimiter family an EMPTY interior, including trivia-only groups", () => {
-    const result = structureCore(lexCore(
-      new SourceInput(new TextEncoder().encode("() [] {/*inside*/}")),
-    ));
-    const groups = result.root.entries.filter((entry) => entry.kind === "group");
+    const result = structureCore(
+      lexCore(new SourceInput(new TextEncoder().encode("() [] {/*inside*/}"))),
+    );
+    const groups = result.root.entries.filter(
+      (entry) => entry.kind === "group",
+    );
     expect(groups).toHaveLength(3);
     for (const group of groups) {
       if (group.kind !== "group") throw new Error("expected group");
@@ -222,7 +247,9 @@ describe("structural grouping and implicit elements", () => {
     }
     const curly = groups[2];
     if (curly?.kind !== "group") throw new Error("expected curly group");
-    expect(curly.contents.entries.some((entry) => entry.kind === "trivia")).toBe(true);
+    expect(
+      curly.contents.entries.some((entry) => entry.kind === "trivia"),
+    ).toBe(true);
     expect(curly.contents.entries.at(-1)?.span).toEqual({
       start: curly.close.span.start,
       end: curly.close.span.start,
@@ -231,16 +258,20 @@ describe("structural grouping and implicit elements", () => {
 
   it("uses each complete group as an outer operand while grouping its interior independently", () => {
     const text = "a(b c)d";
-    const source = processSource(new SourceInput(new TextEncoder().encode(text)));
-    const result = structureCore(fixture(text, [
-      token(source, "identifier", "a", 0),
-      token(source, "delimiter", "(", 1),
-      token(source, "identifier", "b", 2),
-      trivia(source, " ", 3),
-      token(source, "identifier", "c", 4),
-      token(source, "delimiter", ")", 5),
-      token(source, "identifier", "d", 6),
-    ]));
+    const source = processSource(
+      new SourceInput(new TextEncoder().encode(text)),
+    );
+    const result = structureCore(
+      fixture(text, [
+        token(source, "identifier", "a", 0),
+        token(source, "delimiter", "(", 1),
+        token(source, "identifier", "b", 2),
+        trivia(source, " ", 3),
+        token(source, "identifier", "c", 4),
+        token(source, "delimiter", ")", 5),
+        token(source, "identifier", "d", 6),
+      ]),
+    );
     const group = result.root.entries.find((entry) => entry.kind === "group");
     if (group?.kind !== "group") throw new Error("expected group operand");
 
@@ -257,35 +288,48 @@ describe("structural grouping and implicit elements", () => {
       "operand:c",
     ]);
     expect(group.contents.span).toEqual({ start: 2, end: 5 });
-    expect(result.root.entries.filter((entry) =>
-      entry.kind === "operator" && entry.operatorKind === "apply"
-    ).map((entry) => entry.span)).toEqual([
+    expect(
+      result.root.entries
+        .filter(
+          (entry) =>
+            entry.kind === "operator" && entry.operatorKind === "apply",
+        )
+        .map((entry) => entry.span),
+    ).toEqual([
       { start: 1, end: 1 },
       { start: 6, end: 6 },
     ]);
-    expect(group.contents.entries.find((entry) =>
-      entry.kind === "operator" && entry.operatorKind === "apply"
-    )?.span).toEqual({ start: 4, end: 4 });
+    expect(
+      group.contents.entries.find(
+        (entry) => entry.kind === "operator" && entry.operatorKind === "apply",
+      )?.span,
+    ).toEqual({ start: 4, end: 4 });
   });
 
   it("keeps mismatched closers as errors and inserts outstanding closers at EOF", () => {
-    const result = structureCore(lexCore(
-      new SourceInput(new TextEncoder().encode("([a)]")),
-    ));
+    const result = structureCore(
+      lexCore(new SourceInput(new TextEncoder().encode("([a)]"))),
+    );
     const outer = result.root.entries.find((entry) => entry.kind === "group");
     if (outer?.kind !== "group") throw new Error("expected outer group");
-    const inner = outer.contents.entries.find((entry) => entry.kind === "group");
+    const inner = outer.contents.entries.find(
+      (entry) => entry.kind === "group",
+    );
     if (inner?.kind !== "group") throw new Error("expected inner group");
 
-    expect(inner.contents.entries).toContainEqual(expect.objectContaining({
-      kind: "error",
-      errorRole: "operand",
-      components: [expect.objectContaining({
-        kind: "error-part",
-        source: expect.objectContaining({ spelling: ")" }),
-        errorKind: "unexpected-closer",
-      })],
-    }));
+    expect(inner.contents.entries).toContainEqual(
+      expect.objectContaining({
+        kind: "error",
+        errorRole: "operand",
+        components: [
+          expect.objectContaining({
+            kind: "error-part",
+            source: expect.objectContaining({ spelling: ")" }),
+            errorKind: "unexpected-closer",
+          }),
+        ],
+      }),
+    );
     expect(inner.close).toMatchObject({
       spelling: "]",
       synthetic: false,
@@ -305,31 +349,37 @@ describe("structural grouping and implicit elements", () => {
 
   it("collapses adjacent unmatched closers, keeping both diagnostics, and closes nested groups", () => {
     const text = ")}";
-    const result = structureCore(lexCore(
-      new SourceInput(new TextEncoder().encode(text)),
-    ));
-    const errors = result.root.entries.filter((entry) => entry.kind === "error");
+    const result = structureCore(
+      lexCore(new SourceInput(new TextEncoder().encode(text))),
+    );
+    const errors = result.root.entries.filter(
+      (entry) => entry.kind === "error",
+    );
     expect(errors).toHaveLength(1);
-    expect(errors[0]!.kind === "error" && errors[0]!.components).toHaveLength(2);
+    expect(errors[0]!.kind === "error" && errors[0]!.components).toHaveLength(
+      2,
+    );
     expect(result.diagnostics.map(({ code }) => code)).toEqual([
       "unexpected-closing-delimiter",
       "unexpected-closing-delimiter",
     ]);
 
-    const rootCloser = structureCore(lexCore(
-      new SourceInput(new TextEncoder().encode(")")),
-    ));
+    const rootCloser = structureCore(
+      lexCore(new SourceInput(new TextEncoder().encode(")"))),
+    );
     expect(rootCloser.diagnostics[0]).toMatchObject({
       code: "unexpected-closing-delimiter",
       message: "Closing delimiter ) has no open delimiter.",
     });
 
-    const nested = structureCore(lexCore(
-      new SourceInput(new TextEncoder().encode("({")),
-    ));
+    const nested = structureCore(
+      lexCore(new SourceInput(new TextEncoder().encode("({"))),
+    );
     const outer = nested.root.entries.find((entry) => entry.kind === "group");
     if (outer?.kind !== "group") throw new Error("expected outer group");
-    const inner = outer.contents.entries.find((entry) => entry.kind === "group");
+    const inner = outer.contents.entries.find(
+      (entry) => entry.kind === "group",
+    );
     if (inner?.kind !== "group") throw new Error("expected inner group");
     expect(inner.close).toMatchObject({
       spelling: "}",
@@ -346,9 +396,9 @@ describe("structural grouping and implicit elements", () => {
   it("handles deep nesting with an explicit stack instead of recursive descent", () => {
     const depth = 1_500;
     const text = "(".repeat(depth) + ")".repeat(depth);
-    const result = structureCore(lexCore(
-      new SourceInput(new TextEncoder().encode(text)),
-    ));
+    const result = structureCore(
+      lexCore(new SourceInput(new TextEncoder().encode(text))),
+    );
     let entry = result.root.entries[0];
     for (let level = 0; level < depth; level++) {
       expect(entry?.kind).toBe("group");
@@ -365,25 +415,33 @@ describe("structural grouping and implicit elements", () => {
   it("classifies lexer errors contextually and retains lexer diagnostics", () => {
     const lexed = lexCore(new SourceInput(new TextEncoder().encode("a § b")));
     const result = structureCore(lexed);
-    expect(result.root.entries.some((entry) =>
-      entry.kind === "error" &&
-      entry.components.some((part) =>
-        part.kind === "error-part" && part.errorKind === "lexer")
-    )).toBe(true);
+    expect(
+      result.root.entries.some(
+        (entry) =>
+          entry.kind === "error" &&
+          entry.components.some(
+            (part) => part.kind === "error-part" && part.errorKind === "lexer",
+          ),
+      ),
+    ).toBe(true);
     expect(result.diagnostics).toEqual(lexed.diagnostics);
-    expect(result.root.entries.some((entry) =>
-      entry.kind === "error" && entry.errorRole === "operator"
-    )).toBe(true);
+    expect(
+      result.root.entries.some(
+        (entry) => entry.kind === "error" && entry.errorRole === "operator",
+      ),
+    ).toBe(true);
 
-    const malformedLiteral = structureCore(lexCore(
-      new SourceInput(new TextEncoder().encode(String.raw`a "\q" b`)),
-    ));
-    expect(malformedLiteral.root.entries.filter((entry) =>
-      entry.kind === "error"
-    )).toHaveLength(1);
-    expect(malformedLiteral.root.entries.filter((entry) =>
-      entry.kind === "error"
-    )[0]).toMatchObject({
+    const malformedLiteral = structureCore(
+      lexCore(new SourceInput(new TextEncoder().encode(String.raw`a "\q" b`))),
+    );
+    expect(
+      malformedLiteral.root.entries.filter((entry) => entry.kind === "error"),
+    ).toHaveLength(1);
+    expect(
+      malformedLiteral.root.entries.filter(
+        (entry) => entry.kind === "error",
+      )[0],
+    ).toMatchObject({
       errorRole: "operand",
       components: [expect.objectContaining({ errorKind: "lexer" })],
     });
@@ -401,8 +459,8 @@ describe("structural grouping and implicit elements", () => {
     const input = new SourceInput(bytes);
     const lexed = lexCore(input);
     const result = structureCore(lexed);
-    const apply = result.root.entries.find((entry) =>
-      entry.kind === "operator" && entry.operatorKind === "apply"
+    const apply = result.root.entries.find(
+      (entry) => entry.kind === "operator" && entry.operatorKind === "apply",
     );
     expect(apply).toMatchObject({
       span: { start: 16, end: 16 },
@@ -433,11 +491,15 @@ function originalBytes(
     return [
       ...input.slice(entry.open.range.bytes),
       ...entry.contents.entries.flatMap((child) => originalBytes(child, input)),
-      ...(entry.close.token ? [...input.slice(entry.close.token.range.bytes)] : []),
+      ...(entry.close.token
+        ? [...input.slice(entry.close.token.range.bytes)]
+        : []),
     ];
   }
   if (entry.kind === "error") {
-    return entry.components.flatMap((part) => [...input.slice(part.source.range.bytes)]);
+    return entry.components.flatMap((part) => [
+      ...input.slice(part.source.range.bytes),
+    ]);
   }
   return [];
 }

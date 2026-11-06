@@ -5,6 +5,7 @@ elements independently at file and group scope. It retains trivia, original
 tokens and diagnostics; it is not yet a precedence tree or completed parse.
 
 **Files created/changed:**
+
 - [CST contracts](../src/cst/cst.ts)
 - [Grouping and insertion](../src/parser/grouping.ts)
 - [Public exports](../src/index.ts)
@@ -14,6 +15,7 @@ tokens and diagnostics; it is not yet a precedence tree or completed parse.
 - Both context records and phase completion records.
 
 **Functions/contracts added:**
+
 - `structureCore(CoreLexResult): CoreStructureResult`.
 - Shallow `CstSequence`, recursive `CstGroup`, token/EMPTY operands,
   explicit/APPLY operators, trivia/error entries and grouping diagnostics.
@@ -24,6 +26,7 @@ tokens and diagnostics; it is not yet a precedence tree or completed parse.
   explicit insertion barriers pending Phase 8 classification/collapse.
 
 **DEC-088 implementation choices:**
+
 - Synthetic spans are zero-width original-byte ranges, never invented bytes.
 - Leading/between-token insertions anchor at the following significant token's
   start; trailing EMPTY anchors at the preceding operator's end.
@@ -35,6 +38,7 @@ tokens and diagnostics; it is not yet a precedence tree or completed parse.
   global escape spelling. README documents these choices and API limitations.
 
 **Tests and TDD evidence:**
+
 - Implementer reported eight failing behavioral tests against the importable
   unimplemented `structureCore` skeleton, then 11 focused tests passing.
 - Coverage includes explicit token fixtures independent of lexing, minimal
@@ -50,6 +54,7 @@ independent verification. Static reviewer initially requested the two minor
 corrections above; reviewer did not execute automated checks.
 
 **Final verification:**
+
 - `npm test`: **443 tests pass in eight files**.
 - `npm run typecheck`: pass.
 - `npm run smoke:exports`: pass, including build.

@@ -14,15 +14,27 @@ import { processSource } from "../source/source-processing.js";
 import { isXidContinue, isXidStart } from "../source/unicode-data.js";
 import type { ErrorDiagnostic } from "../diagnostics/diagnostic.js";
 import whiteSpace from "@unicode/unicode-18.0.0/Binary_Property/White_Space/regex.mjs";
-import { scanLiteralAt, type CoreLiteral, type LiteralDiagnostic } from "./literal-scanner.js";
+import {
+  scanLiteralAt,
+  type CoreLiteral,
+  type LiteralDiagnostic,
+} from "./literal-scanner.js";
 import { isHardLineBreak } from "../source/line-endings.js";
 import { scanNumericAt, type CoreNumber } from "./numeric-scanner.js";
 
 /** Recognized core token families; there are no keyword token kinds. */
-export type CoreTokenKind = "identifier" | "operator" | "delimiter"
-  | "character" | "string" | "raw-string" | "number" | "error";
+export type CoreTokenKind =
+  | "identifier"
+  | "operator"
+  | "delimiter"
+  | "character"
+  | "string"
+  | "raw-string"
+  | "number"
+  | "error";
 /** Preserved non-token input, including a byte-only initial BOM. */
-export type CoreTriviaKind = "bom" | "whitespace" | "line-comment" | "block-comment";
+export type CoreTriviaKind =
+  "bom" | "whitespace" | "line-comment" | "block-comment";
 
 /** Corresponding half-open translated-scalar and original-byte extents. */
 export interface CoreSourceRange {
@@ -63,7 +75,9 @@ export interface CoreToken {
   /** Present on individual numeric candidates, valid or invalid. */
   readonly numeric?: CoreNumber;
   /** Diagnostic for a malformed numeric candidate or touching operand run. */
-  readonly lexicalDiagnostic?: ErrorDiagnostic<"invalid-number" | "touching-operands">;
+  readonly lexicalDiagnostic?: ErrorDiagnostic<
+    "invalid-number" | "touching-operands"
+  >;
   /** Malformed literals are operands for later parser insertion, not operators. */
   readonly errorRole?: "operand";
 }
@@ -102,7 +116,12 @@ export interface UnsupportedCoreRegion {
 export type CoreLexerDiagnostic =
   | SourceProcessingDiagnostic
   | LiteralDiagnostic
-  | ErrorDiagnostic<"unterminated-block-comment" | "unrecognized-character" | "invalid-number" | "touching-operands">;
+  | ErrorDiagnostic<
+      | "unterminated-block-comment"
+      | "unrecognized-character"
+      | "invalid-number"
+      | "touching-operands"
+    >;
 
 /** One direct scan outcome; EOF consumes no units and does not add diagnostics. */
 export type CoreScanStep =
@@ -129,17 +148,56 @@ export interface CoreLexResult {
    * complete can still contain source, numeric, comment, or literal errors;
    * unsupported means fallback characters were encountered.
    */
-  readonly status:
-    | "complete"
-    | "unsupported";
+  readonly status: "complete" | "unsupported";
 }
 
 /** Fixed operator spellings, stably sorted longest-first for maximal matching. */
 const operators = [
-  "<<=", ">>=", "::=", "++", "--", "**", "<<", ">>", "<=", ">=", "==",
-  "!=", "&&", "||", "<-", "->", ":=", "+=", "-=", "*=", "/=", "%=",
-  "&=", "|=", "^=", "::", "!", "~", "*", "/", "%", "+", "-", "&", "^",
-  "|", "<", ">", "=", ":", "?", ".", "@", ",", ";",
+  "<<=",
+  ">>=",
+  "::=",
+  "++",
+  "--",
+  "**",
+  "<<",
+  ">>",
+  "<=",
+  ">=",
+  "==",
+  "!=",
+  "&&",
+  "||",
+  "<-",
+  "->",
+  ":=",
+  "+=",
+  "-=",
+  "*=",
+  "/=",
+  "%=",
+  "&=",
+  "|=",
+  "^=",
+  "::",
+  "!",
+  "~",
+  "*",
+  "/",
+  "%",
+  "+",
+  "-",
+  "&",
+  "^",
+  "|",
+  "<",
+  ">",
+  "=",
+  ":",
+  "?",
+  ".",
+  "@",
+  ",",
+  ";",
 ].sort((left, right) => right.length - left.length);
 
 /** Single-character grouping delimiters; matching pairs are not checked here. */
@@ -160,26 +218,50 @@ export function scanCoreAt(
   if (first.kind === "unsupported") {
     let end = first.nextUnitOffset;
     if (!source.units[unitOffset]!.isError) {
-      while (end < source.units.length && !source.units[end]!.isError &&
-        scanSingleAt(source, end).kind === "unsupported") end++;
+      while (
+        end < source.units.length &&
+        !source.units[end]!.isError &&
+        scanSingleAt(source, end).kind === "unsupported"
+      )
+        end++;
     }
-    return Object.freeze({ ...first, spelling: translatedText(source, unitOffset, end),
-      range: sourceRange(source, unitOffset, end), nextUnitOffset: end });
+    return Object.freeze({
+      ...first,
+      spelling: translatedText(source, unitOffset, end),
+      range: sourceRange(source, unitOffset, end),
+      nextUnitOffset: end,
+    });
   }
-  if (first.kind !== "token" || !(first.tokenKind === "identifier" || first.numeric)) return first;
+  if (
+    first.kind !== "token" ||
+    !(first.tokenKind === "identifier" || first.numeric)
+  )
+    return first;
   let end = first.nextUnitOffset;
   while (end < source.units.length) {
     const next = scanSingleAt(source, end);
-    if (next.kind !== "token" || !(next.tokenKind === "identifier" || next.numeric)) break;
+    if (
+      next.kind !== "token" ||
+      !(next.tokenKind === "identifier" || next.numeric)
+    )
+      break;
     end = next.nextUnitOffset;
   }
   if (end === first.nextUnitOffset) return first;
   const range = sourceRange(source, unitOffset, end);
   return Object.freeze({
-    kind: "token", tokenKind: "error", errorRole: "operand",
-    spelling: translatedText(source, unitOffset, end), range, nextUnitOffset: end,
-    lexicalDiagnostic: Object.freeze({ code: "touching-operands", severity: "error",
-      message: "Identifier and numeric operands cannot touch.", location: range.bytes }),
+    kind: "token",
+    tokenKind: "error",
+    errorRole: "operand",
+    spelling: translatedText(source, unitOffset, end),
+    range,
+    nextUnitOffset: end,
+    lexicalDiagnostic: Object.freeze({
+      code: "touching-operands",
+      severity: "error",
+      message: "Identifier and numeric operands cannot touch.",
+      location: range.bytes,
+    }),
   });
 }
 
@@ -190,8 +272,15 @@ export function scanCoreAt(
  * @returns One unaggregated scan step.
  * @throws {RangeError} If the offset is invalid.
  */
-function scanSingleAt(source: SourceProcessingResult, unitOffset: number): CoreScanStep {
-  if (!Number.isInteger(unitOffset) || unitOffset < 0 || unitOffset > source.units.length) {
+function scanSingleAt(
+  source: SourceProcessingResult,
+  unitOffset: number,
+): CoreScanStep {
+  if (
+    !Number.isInteger(unitOffset) ||
+    unitOffset < 0 ||
+    unitOffset > source.units.length
+  ) {
     throw new RangeError(`Invalid translated-source offset ${unitOffset}`);
   }
   if (unitOffset === source.units.length) return { kind: "eof", unitOffset };
@@ -203,7 +292,10 @@ function scanSingleAt(source: SourceProcessingResult, unitOffset: number): CoreS
 
   if (isWhiteSpace(codePoint)) {
     let end = unitOffset + 1;
-    while (end < source.units.length && isWhiteSpace(source.units[end]!.codePoint)) {
+    while (
+      end < source.units.length &&
+      isWhiteSpace(source.units[end]!.codePoint)
+    ) {
       if (
         source.units[end - 1]!.codePoint === 0x0d &&
         source.units[end]!.codePoint === 0x0a
@@ -211,7 +303,10 @@ function scanSingleAt(source: SourceProcessingResult, unitOffset: number): CoreS
         end += 1;
         continue;
       }
-      if (source.units[end]!.codePoint === 0x0a && source.units[end - 1]!.codePoint === 0x0d) {
+      if (
+        source.units[end]!.codePoint === 0x0a &&
+        source.units[end - 1]!.codePoint === 0x0d
+      ) {
         break;
       }
       end += 1;
@@ -281,14 +376,23 @@ function scanSingleAt(source: SourceProcessingResult, unitOffset: number): CoreS
   if (number !== undefined) {
     const range = sourceRange(source, unitOffset, number.end);
     return Object.freeze({
-      kind: "token", tokenKind: number.numeric.valid ? "number" : "error",
-      spelling: translatedText(source, unitOffset, number.end), range,
-      nextUnitOffset: number.end, numeric: number.numeric,
-      ...(number.numeric.valid ? {} : {
-        errorRole: "operand" as const,
-        lexicalDiagnostic: Object.freeze({ code: "invalid-number" as const,
-          severity: "error" as const, message: "Invalid numeric literal.", location: range.bytes }),
-      }),
+      kind: "token",
+      tokenKind: number.numeric.valid ? "number" : "error",
+      spelling: translatedText(source, unitOffset, number.end),
+      range,
+      nextUnitOffset: number.end,
+      numeric: number.numeric,
+      ...(number.numeric.valid
+        ? {}
+        : {
+            errorRole: "operand" as const,
+            lexicalDiagnostic: Object.freeze({
+              code: "invalid-number" as const,
+              severity: "error" as const,
+              message: "Invalid numeric literal.",
+              location: range.bytes,
+            }),
+          }),
     });
   }
   if (character === "'" || character === '"' || character === "`") {
@@ -337,9 +441,7 @@ function scanSingleAt(source: SourceProcessingResult, unitOffset: number): CoreS
  */
 export function lexCore(input: SourceInput): CoreLexResult {
   const source = processSource(input);
-  const items: Array<
-    CoreToken | CoreTrivia | UnsupportedCoreRegion
-  > = [];
+  const items: Array<CoreToken | CoreTrivia | UnsupportedCoreRegion> = [];
   const diagnostics: CoreLexerDiagnostic[] = [...source.diagnostics];
   const initialBytes = input.bytes;
   if (
@@ -348,17 +450,19 @@ export function lexCore(input: SourceInput): CoreLexResult {
     initialBytes[1] === 0xbb &&
     initialBytes[2] === 0xbf
   ) {
-    items.push(Object.freeze({
-      kind: "trivia",
-      triviaKind: "bom",
-      spelling: "",
-      range: Object.freeze({
-        unitStart: 0,
-        unitEnd: 0,
-        bytes: input.range(0, 3),
+    items.push(
+      Object.freeze({
+        kind: "trivia",
+        triviaKind: "bom",
+        spelling: "",
+        range: Object.freeze({
+          unitStart: 0,
+          unitEnd: 0,
+          bytes: input.range(0, 3),
+        }),
+        nextUnitOffset: 0,
       }),
-      nextUnitOffset: 0,
-    }));
+    );
   }
 
   let unitOffset = 0;
@@ -521,7 +625,8 @@ function matchesAt(
 ): boolean {
   if (offset + spelling.length > source.units.length) return false;
   for (let index = 0; index < spelling.length; index += 1) {
-    if (source.units[offset + index]!.character !== spelling[index]) return false;
+    if (source.units[offset + index]!.character !== spelling[index])
+      return false;
   }
   return true;
 }

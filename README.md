@@ -117,9 +117,9 @@ implicit `APPLY`/`EMPTY` insertion, and precedence parser. `parseCore(lexCore(in
 accepts an existing lexer result. Both return `CstParseResult`:
 
 ```ts
-const result = parseSource(new SourceInput(
-  new TextEncoder().encode("a + b * c"),
-));
+const result = parseSource(
+  new SourceInput(new TextEncoder().encode("a + b * c")),
+);
 // result.status === "complete"
 // result.root.expression is (+ a (* b c))
 ```
@@ -310,9 +310,9 @@ from the official `UnicodeData.txt` and `DerivedNormalizationProps.txt`:
 `scripts/generate-unicode-normalization.mjs`; it validates SHA-256 values
 before generation:
 
-| Official Unicode 18.0.0 source | SHA-256 |
-| --- | --- |
-| `UnicodeData.txt` | `0736451de439ae7baf1425136617da495e09ee5afbe6e394374db7009ea08950` |
+| Official Unicode 18.0.0 source  | SHA-256                                                            |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `UnicodeData.txt`               | `0736451de439ae7baf1425136617da495e09ee5afbe6e394374db7009ea08950` |
 | `DerivedNormalizationProps.txt` | `98ac7f67d985fe781e317f6182e885e94cabb0c314769e6dd73e48b226931ccd` |
 
 These are official UCD files at

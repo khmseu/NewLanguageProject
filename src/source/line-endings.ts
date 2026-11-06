@@ -9,9 +9,15 @@
  * @returns Whether the scalar is LF, CR, VT, FF, NEL, LS or PS.
  */
 export function isHardLineBreak(codePoint: number | undefined): boolean {
-  return codePoint === 0x0a || codePoint === 0x0d ||
-    codePoint === 0x0b || codePoint === 0x0c || codePoint === 0x85 ||
-    codePoint === 0x2028 || codePoint === 0x2029;
+  return (
+    codePoint === 0x0a ||
+    codePoint === 0x0d ||
+    codePoint === 0x0b ||
+    codePoint === 0x0c ||
+    codePoint === 0x85 ||
+    codePoint === 0x2028 ||
+    codePoint === 0x2029
+  );
 }
 
 /**

@@ -92,10 +92,15 @@ describe("SourceInput", () => {
     { label: "fractional end", range: { start: 0, end: 1.5 } },
     { label: "NaN start", range: { start: Number.NaN, end: 1 } },
     { label: "NaN end", range: { start: 0, end: Number.NaN } },
-    { label: "infinite end", range: { start: 0, end: Number.POSITIVE_INFINITY } },
+    {
+      label: "infinite end",
+      range: { start: 0, end: Number.POSITIVE_INFINITY },
+    },
   ])("rejects invalid external range: $label", ({ range }) => {
     const source = new SourceInput(new Uint8Array([1, 2, 3]));
 
-    expect(() => Reflect.apply(source.slice, source, [range])).toThrow(RangeError);
+    expect(() => Reflect.apply(source.slice, source, [range])).toThrow(
+      RangeError,
+    );
   });
 });

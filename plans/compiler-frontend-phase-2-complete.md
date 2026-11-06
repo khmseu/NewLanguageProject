@@ -6,6 +6,7 @@ A version-pinned Unicode 18 adapter provides identifier properties and
 character names/aliases. No lexer/parser or token normalization is implemented.
 
 **Files created/changed:**
+
 - [Source processing](../src/source/source-processing.ts)
 - [Unicode adapter](../src/source/unicode-data.ts)
 - [Source conformance tests](../tests/source-processing.test.ts)
@@ -15,6 +16,7 @@ character names/aliases. No lexer/parser or token normalization is implemented.
 - [README](../README.md), both context records, and this completion record
 
 **Functions/contracts created:**
+
 - `processSource()`: maximal-subpart UTF-8 decoding, initial BOM handling,
   scalar columns/physical lines, one-pass Java-style escape eligibility, and
   diagnosed replacements for malformed bytes/escapes.
@@ -27,6 +29,7 @@ character names/aliases. No lexer/parser or token normalization is implemented.
   character-name/official-alias lookup with ASCII-only name case folding.
 
 **Unicode evidence:**
+
 - The official versioned [UCD ReadMe](https://www.unicode.org/Public/18.0.0/ucd/ReadMe.txt)
   identifies final Unicode 18.0.0 data; checked locally during this phase.
 - The pinned `@unicode/unicode-18.0.0@2.1.0` package reports MIT licensing and
@@ -39,6 +42,7 @@ character names/aliases. No lexer/parser or token normalization is implemented.
   phases; this adapter does not provide normalization yet.
 
 **Tests and verification:**
+
 - 45 source-processing/data tests cover BOM/empty input, byte mapping/range
   boundaries, all physical breaks, CRLF of mixed translated origins,
   UTF-8 boundary/invalid sequences, literal versus replacement U+FFFD,

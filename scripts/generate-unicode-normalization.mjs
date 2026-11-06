@@ -30,9 +30,7 @@ const expectedHashes = new Map([
   ],
 ]);
 /** Absolute local input directory, resolved from the optional first CLI argument. */
-const inputDirectory = resolve(
-  process.argv[2] ?? "tools/unicode-18.0.0/ucd",
-);
+const inputDirectory = resolve(process.argv[2] ?? "tools/unicode-18.0.0/ucd");
 
 /**
  * Read a local input and verify its raw bytes before decoding as UTF-8.
@@ -99,7 +97,11 @@ for (const rawLine of derivedNormalizationProps.split(/\r?\n/u)) {
 /** Canonical two-code-point mappings reversed to [starter, next, composite], excluding full exclusions. */
 const compositions = [];
 for (const [codePoint, compatibility, mapping] of decompositions) {
-  if (!compatibility && mapping.length === 2 && !compositionExclusions.has(codePoint)) {
+  if (
+    !compatibility &&
+    mapping.length === 2 &&
+    !compositionExclusions.has(codePoint)
+  ) {
     compositions.push([mapping[0], mapping[1], codePoint]);
   }
 }
