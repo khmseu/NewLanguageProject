@@ -121,6 +121,13 @@ This log records the material context and evidence behind the current file class
 | SRC-105 | User clarification in this conversation | 2026-11-06 00:33 (+01:00) | Selects delimiter roles, sequence and list meanings, possible parallel evaluation, and no special treatment of `a * -b` for now | Does not define tree shapes, general prefix/postfix rules, or semantic validity of `EMPTY`. |
 | SRC-106 | User decision in this conversation | 2026-11-06 00:40 (+01:00) | Makes `;` left-associative, gives same-level operators the same associativity, and assigns none where unspecified | Does not change precedence, make reserved `::` an expression, or settle semantic legality. |
 | SRC-107 | Inline Python 3 documentation check in this conversation | Executed 2026-11-06 (+01:00) | Checks 22 precedence rows have one stated associativity and verifies the changed levels | Checks the table only; it is not a parser test. |
+| SRC-108 | User decisions in this conversation | 2026-11-06 01:36 (+01:00) | Selects uniform longest tokens, minimal invalid runs, contextual error-token classification, binary CST plus comments without a first-parser AST, and single-character Unicode errors | Does not define all candidate productions, error-node layouts, or malformed-Unicode character units. |
+| SRC-109 | User clarification through the question form in this conversation | 2026-11-06 (+01:00), after SRC-108 | Combines uniform longest matching with digit/base checks only after tokenization; asks which conflicts remain | Does not broaden the grammar for incomplete numbers/separators or select an exception to longest matching. |
+| SRC-110 | [Language Design](../Language-Design.md) DEC-029/033/034/047/057–061 and current parser-output requirements | Reviewed against commit `b51e1b3`, 2026-11-06 (+01:00) | Existing complete-token shapes and diagnostic requirements compared with SRC-108/109 | Conflict examples are specification analysis, not lexer/parser test results or new selected productions. |
+| SRC-111 | User decision in this conversation | 2026-11-06 01:56 (+01:00) | Approves permissive candidate matching for malformed numeric and other constrained lexical forms, followed by validation | Selects this approach, not the exact candidate productions or token-kind tie-breaks. |
+| SRC-112 | User request in this conversation | 2026-11-06 02:10 (+01:00) | Requests an updated compilation of questions before creating a parser | Does not choose new language rules or request implementation. |
+| SRC-113 | [Language Design](../Language-Design.md) and [Wissensstand](./Wissensstand.md), current working-tree versions | Reviewed 2026-11-06 (+01:00) | DEC-067–071, existing lexer/parser requirements, and remaining questions | Includes uncommitted changes after `b51e1b3`; earlier experiment sources were not re-examined. |
+| SRC-114 | User decisions in this conversation | 2026-11-06 (+01:00), following the parser-readiness compilation | Specifies delimiter-tree behavior, matching errors and missing-closer insertion at EOF, empty groups, ordinary prefix/postfix parsing, semantic rejection of `::`, comments as lexical whitespace, and universal operator/operand syntax | Does not select concrete CST layouts, source mappings, or all remaining recovery and candidate-boundary details. No parser implementation requested. |
 
 ## Entries
 
@@ -1361,3 +1368,77 @@ Assertions also verify the revised dot/arrow shapes `(a . b) -> c` and `a -> (b 
 **Checked:** An inline documentation check verifies that all 22 precedence rows state one associativity and that the changed levels match DEC-066. It does not test a parser.
 
 **Offen:** The sequence result, semantic legality, and other prefix/postfix interactions are not decided by this choice.
+
+### KP-082 - Longest matching, error tokens, and CST-only parser output
+
+- Documented: 2026-11-06 (+01:00)
+- Event date: 2026-11-06 01:36 (+01:00) for SRC-108; the follow-up clarification's exact time is not recorded.
+- Capture: contemporaneous user decisions and follow-up analysis
+- Sources: SRC-108, SRC-109, SRC-110
+- Related questions: Q-014/015, LP-17/23/25
+- Status at capture: DEC-067–070 decided; the permissive-candidate strategy was then open and is selected later by DEC-071/KP-083. Exact candidate boundaries and detailed error contracts remain open.
+
+**Nutzerangabe/beschlossen:** Always consume the longest syntactically matching token. If no token starts at the current position, consume the minimum invalid sequence needed to resume valid tokenization and emit it as an error token (DEC-067). For implicit insertion, choose an error token's operand/operator interpretation if it requires no added insertion; otherwise use operand (DEC-068). Unicode errors produce single-character error tokens with the same classification (DEC-070).
+
+**Nutzerangabe/beschlossen:** The CST is a tree of operators with two operands each, plus comments. Postpone AST design until more semantic definitions exist; the first parser does not produce an AST (DEC-069). This replaces DEC-037's earlier separate-tree output requirement. Existing source-preservation and syntax-recovery requirements were not withdrawn; exact node/trivia/comment representation remains open.
+
+**Clarification and alternative:** The assistant pointed out that strict matching of the earlier complete valid-token grammar would split `0b102`, `123foo`, and `0x` instead of necessarily diagnosing whole malformed numbers, and offered uniform matching versus malformed-number exceptions. The user chose uniform matching combined with checking digit values against the specified base only after tokenization. A malformed-number exception was not selected.
+
+**Ableitung:** The clarification allows `0b102` to remain one candidate and then fail base-2 validation. It does not specify the complete candidate grammar. Remaining reconciliation concerns incomplete prefixes/exponents, malformed separators, leading-zero base fields, bare identifier tails, and integer/float candidate ties. Preserving `123foo` as one candidate requires deciding whether decimal candidates also admit letter digits; float-tail errors must coexist with the selected `1.` plus `foo` split.
+
+**Ableitung:** Uniform matching of only complete valid comments can split unterminated `/*text` into valid `/`, `*`, and identifier `text`, conflicting with DEC-029's earlier unterminated-comment diagnostic. Similar malformed-literal/escape recognition needs reconciliation. Broader candidate shapes followed by validation are a possible solution, not an accepted extension of DEC-067.
+
+**Offen:** Candidate productions and numeric-form tie-breaking; earlier diagnostic requirements that no longer follow from matching alone; consecutive/boundary error-token classification and operator-error precedence/associativity; the unit and original-source spans for single-character malformed-UTF-8/Unicode-escape errors; binary CST node layouts/comment attachment/trivia storage; source mappings and structural syntax recovery. No parser implementation or specification test was performed for this analysis.
+
+### KP-083 - Permissive token candidates followed by validation selected
+
+- Documented: 2026-11-06 (+01:00)
+- Event date: 2026-11-06 01:56 (+01:00)
+- Capture: contemporaneous user decision
+- Sources: SRC-111; prior analysis in KP-082
+- Related questions: Q-014/015, LP-14/17/25
+- Status: DEC-071 decided; exact candidate productions and tie-breaking remain open.
+
+**Nutzerangabe/beschlossen:** The user approves the approach of matching permissive candidates for numbers and other lexical constructs, then validating required internal constraints. Thus malformed numbers, comments, and literals are to remain candidates long enough to report their errors, rather than being split into unrelated valid tokens. The selected longest-match policy remains; no malformed-token fallback exception is introduced.
+
+**Ableitung:** Candidate validation can preserve the earlier requirements for incomplete numbers, invalid base digits, malformed separators, and unterminated comments/literals. The exact candidate spans and boundaries remain unspecified, including how `123foo` and float tails are distinguished, how integer candidates tie with exponent-form floats, and how malformed comments/literals end.
+
+**Offen:** Specify candidate productions, the validation rules and their order after matching, error-token extents for invalid candidates, and ties between candidate kinds. This decision settles the strategy, not a complete lexer grammar or implementation.
+
+### KP-084 - Parser-readiness questions recompiled
+
+- Documented: 2026-11-06 (+01:00)
+- Event date: 2026-11-06 02:10 (+01:00)
+- Capture: contemporaneous compilation and specification review
+- Sources: SRC-112, SRC-113
+- Related questions: Q-007/014/015, LP-21/22/23/25
+- Status: Question inventory and analysis; no new language decisions.
+
+**Belegt:** DEC-008/048 and DEC-063–071 already select delimiter roles, level associativities, minimal implicit insertions, longest permissive candidate matching followed by validation, contextual error-token classification, single-character Unicode errors, and a binary CST with comments rather than a first-parser AST. Syntax errors require diagnostics, recovery attempts, and a lossless CST. The user has not requested parser implementation.
+
+**Ableitung:** Remaining questions concern delimiter and group structures, the phase diagnosing use of reserved `::`, candidate boundaries/tie-breaking, CST and source mappings, Unicode-error units and phase interactions, contextual classification of consecutive/boundary errors, error-operator precedence, and structural recovery/output. For example, in `a <error> b + c`, where `<error>` denotes one error token, DEC-068 classifies it as an operator without an added insertion, but its unspecified precedence leaves the error-tree grouping open.
+
+**Ableitung:** Error-run boundaries around whitespace/comments and Unicode errors occurring inside comments/literals need precise contracts. The selected strategy is not reopened. Check whether any selected language forms require additional structural syntax; predefined-identifier recognition and semantic legality remain semantic.
+
+**Scope:** These questions block the affected components or a complete full-scope parser, not necessarily every independent valid-input component. CST representation and recovery mechanics may be implementation choices where approved observable requirements suffice. No lexer/parser implementation or test was performed.
+
+### KP-085 - Delimiter trees and generic syntax coverage clarified
+
+- Documented: 2026-11-06 (+01:00)
+- Event date: 2026-11-06 (+01:00), following KP-084
+- Capture: contemporaneous user decisions
+- Sources: SRC-114
+- Related decisions/questions: DEC-072–076, Q-007/014/015, LP-21/22/23
+- Status: User-approved language rules; concrete representation and remaining recovery details open.
+
+**Nutzerangabe/beschlossen:** Any parenthesis/bracket family encloses an operator tree. Its interior acts as a loosest operator; the complete group acts as one operand in the enclosing tree. This also applies recursively. An empty pair contains one `EMPTY`. Delimiters must match; mismatches are errors. An opener still pending at EOF is an error, and its missing closer is inserted (DEC-072). The previously chosen grouping/scope/template roles remain.
+
+**Nutzerangabe/beschlossen:** Prefix/postfix forms parse like all other operators; semantic analysis interprets their `EMPTY` arguments (DEC-073). No distinct unary or special group-boundary parsing is selected. `::` is a syntactically valid operator with no valid operands, so its use is diagnosed semantically (DEC-074), preserving its selected precedence and associativity.
+
+**Nutzerangabe/beschlossen:** Token recognition acts as if comments were replaced by whitespace (DEC-075). All language syntax fits the operator/operand model (DEC-076). This resolves KP-084's question about additional structural productions for selected language forms, without deciding their semantic meanings.
+
+**Ableitung:** Comments remain preserved under the existing lossless CST requirement; the lexical-whitespace rule does not remove them from source records, recognize comments inside literals, or change global Unicode translation. Group behavior is now specified without choosing a concrete node encoding. EOF closer insertion does not select a recovery policy for a mismatched or unmatched closing delimiter.
+
+**Offen:** Exact lexical candidate extents/ties and fallback error-run boundaries at separators; concrete CST/root/trivia layouts and empty whole-file output; original-source mappings including inserted closers; Unicode-error units/spans and phase interactions; consecutive/boundary error classification and error-operator precedence; other structural recovery and lexical/encoding-error result contracts.
+
+**Verification/scope:** Documentation-only update to the design and both context views; no lexer/parser implementation, project build, or parser test. Existing accumulated changes remain uncommitted.
