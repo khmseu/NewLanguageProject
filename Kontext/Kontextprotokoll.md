@@ -144,6 +144,9 @@ This log records the material context and evidence behind the current file class
 | SRC-128 | User confirmation in this conversation | 2026-11-06 17:36 (+01:00) | "commit that, then continue" | Authorizes Phase 1 commit and Phase 2 execution, retaining per-phase checkpoints. |
 | SRC-129 | Phase 2 implementation/review reports, source inspection and local checks | 2026-11-06 (+01:00) | Source decoder/translator/provenance, Unicode18 data package, 94-test/type-check/build/export-smoke results, explicit initial TDD evidence gap | Not a lexer/parser or normalization implementation; added coverage is not retrospective behavioral red. |
 | SRC-130 | Official versioned Unicode UCD ReadMe/DerivedAge and installed package metadata | Checked 2026-11-06 (+01:00) | ReadMe states final 18.0.0; DerivedAge lists U+0558 as 18.0; installed `@unicode/unicode-18.0.0` is 2.1.0, MIT | These probes verify provenance/version examples, not exhaustive Unicode conformance. |
+| SRC-131 | User confirmation in this conversation | 2026-11-06 18:18 (+01:00) | "commit that, then continue" | Authorizes Phase 2 commit and Phase 3 implementation, retaining phase checkpoints. |
+| SRC-132 | Phase 3 implementation/review reports, inspected code, local verification | 2026-11-06 (+01:00) | Core scanner, Unicode18 generated normalization, behavioral-red evidence, 110 tests and type-check/build/export smoke | Core lexer only; deferred literal/numeric surfaces and later parser behavior not implemented. |
+| SRC-133 | Official Unicode18 normalization files/fixture and checksum-verified generator | 2026-11-06 (+01:00) | 20,171 normalization rows, five columns each for NFC/NFKC; official hashes and licensing/provenance documented | Full fixture-row comparisons, not a claim of untested forms NFD/NFKD or host conformance. |
 
 ## Entries
 
@@ -1728,3 +1731,66 @@ before adding behavior.
 lexer/trivia has not started; a verified Unicode18 normalization implementation
 is required before normalized identifier values. Q-014 numeric matching
 remains a later approval gate. No language design rules changed.
+
+### KP-095 - Source phase committed; core lexer and Unicode18 normalization green
+
+- Documentation/event date: 2026-11-06 (+01:00); user confirmation at 18:18.
+- Sources: SRC-131–133; related REQ-003, KP-094, DEC-024/031/044/075/082.
+- Status: Phase 2 committed; Phase 3 implemented/reviewed, awaiting checkpoint.
+
+**Nutzerangabe:** Commit Phase 2 and continue. **Belegt:** Phase 2 committed
+as `aa36992` before implementation. Phase 3 now provides core identifier,
+operator, delimiter, whitespace and comment recognition over translated source,
+with explicit incomplete/deferred boundaries for numerics and literals.
+
+**Implementation choices:** Separate `scanCoreAt` for composable one-surface
+recognition and `lexCore` for ordered lossless items plus diagnostics/status.
+Scalar offsets are distinct from original byte offsets. Identifier source
+spelling is not normalized for recognition; values use NFC/NFKC as selected.
+BOM/trivia/escape spelling/invalid bytes remain recoverable through item ranges.
+Comments do not join fragments; embedded Unicode errors retain comment shape.
+Deferred regions preserve the unscanned suffix instead of pretending later
+numeric/literal syntax is implemented or diagnosing valid future forms.
+
+**Unicode choice/rationale:** The existing Unicode18 package supplies
+properties/names but no normalization mappings, while host Unicode is 17.
+Added NFC/NFKC with generated minimal decomposition, combining-class and
+composition tables from official Unicode18 UCD, plus algorithmic Hangul.
+Checksum-verified generator/README record exact source URLs, licensing and
+procedure. The implementer reproduced generated output byte-for-byte.
+The approximately 2.9 MB official fixture is retained for complete row-based
+conformance; runtime tables are approximately 227 KB, not the full raw UCD.
+No new package was needed. Host normalization was not selected.
+
+**TDD and review:** The implementer first established an importable skeleton,
+then reported eight behavioral assertion failures before core behavior.
+Supplementary-character offsets and dot-digit numeric deferral each had a
+failing regression before a fix. Focused API/lexer suite reached 15 passing
+tests. Static review APPROVED with two minor recommendations; conductor added
+`+`/`-` inventory assertions and exact generator source URLs. Those additions
+were coverage/documentation, not new red/green behavior.
+
+**Verification:** Conductor ran all 110 tests in five files, type-check,
+build/public export smoke and whitespace checks successfully. Normalization
+test asserts every official row (20,171), all five input columns for NFC and
+NFKC: 201,710 comparisons. Official fixture SHA-256 matched
+`25a50d816764b04abfb4a646d3eb2b2a803284c3873d9a06757b94fe4513dde3`.
+Reviewer itself did not run commands; execution evidence is implementation/
+conductor evidence. Phase 2's prior TDD exception remains recorded.
+
+**Next step:** Phase 3 uncommitted; present the
+[completion record](../plans/compiler-frontend-phase-3-complete.md) and wait for
+commit/continue confirmation before Phase 4 literals. Numeric grammar Q-014
+remains the Phase 5 approval gate. No parser or semantic work added.
+
+### KP-096 - Phase 3 commit authorized without continuation
+
+- Documentation/event date: 2026-11-06 18:56 (+01:00).
+- Source: user message in the current conversation, "commit that".
+- Status: Nutzerangabe/beschlossen; commit Phase 3 only.
+
+The user authorized committing the reviewed Phase 3 changes. Unlike the prior
+confirmations, this request does not ask to continue, so Phase 4 remains paused.
+This record accompanies the Phase 3 commit; its hash is retrievable in Git
+history. Verification remains the 110-test/type-check/build/export-smoke
+checkpoint in KP-095; no code behavior changed in this commit-only turn.

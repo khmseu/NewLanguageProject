@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-06 (timezone +01:00); Phase 1 committed as `5fa5ce9` on user confirmation; Phase 2 source processing and Unicode adapter verified with 94 passing tests (KP-094). Phase 2 awaits commit/continue; missing behavioral-red evidence is recorded explicitly. Earlier experiment sources were not re-reviewed.
+- Last substantive update: 2026-11-06 (timezone +01:00); user authorized the Phase 3 commit only (KP-096), following its verified 110-test checkpoint (KP-095). Phase 4 is not authorized or started. Earlier experiment sources were not re-reviewed.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -764,7 +764,8 @@ hooks were added.
 - **Implemented/verified:** Phase 2 of the
   [approved plan](../plans/compiler-frontend-plan.md), with
   [completion evidence](../plans/compiler-frontend-phase-2-complete.md) in KP-094.
-  Phase 2 remains uncommitted at the confirmation checkpoint.
+  Phase 2 was committed as `aa36992` on the user's 2026-11-06 18:18 (+01:00)
+  confirmation (KP-095).
 - [Source processing](../src/source/source-processing.ts) performs maximal-subpart
   UTF-8 decoding and one-pass eligible Unicode escape translation, retaining
   original byte ranges, physical scalar positions, origin/error metadata,
@@ -781,10 +782,38 @@ hooks were added.
   Additional tests were green immediately. This phase lacks the required
   behavioral-red evidence; correctness checks do not erase this process gap.
   Future slices must demonstrate assertion-level red before implementation.
-- **Still deferred:** Tokenization, normalization using Unicode 18 data,
-  comment/literal/number recognition, parser and CST. Translated adjacent CRLF
+- **Phase 2 scope:** Tokenization and normalization were deferred at this
+  checkpoint and have since been added for the core slice below. Literal/number
+  recognition, parser and CST remain deferred. Translated adjacent CRLF
   is preserved for subsequent lexical treatment; diagnostic physical lines
   depend on the original raw source, not generated breaks.
+
+### Core lexer and normalization checkpoint
+
+- **Implemented/verified:** Phase 3
+  [completion evidence](../plans/compiler-frontend-phase-3-complete.md), KP-095.
+  Phase 3 commit authorized 2026-11-06 at 18:56 (+01:00), KP-096.
+  This checkpoint is included in that commit; identify its hash in Git history.
+  Phase 4 remains paused pending explicit continuation.
+- [Core scanner](../src/lexer/core-lexer.ts) provides `scanCoreAt` and `lexCore`:
+  translated unnormalized XID recognition, NFC display/NFKC lookup names,
+  longest selected operators, all grouping delimiters, Unicode18 whitespace,
+  line/block comments, BOM trivia, and lossless original-byte item ranges.
+- The scanner is deliberately partial: numeric and literal starts are explicit
+  deferred boundaries, with the remaining suffix preserved and no claim of
+  full lexical success. Unknown surfaces produce explicit unsupported results
+  and diagnostics. Parser error collapse/classification remains later work.
+- [Unicode18 NFC/NFKC](../src/source/unicode-normalization.ts) now uses generated,
+  checksum-verified official UCD data. No host normalization is used.
+  [Generator](../scripts/generate-unicode-normalization.mjs) and README document
+  source URLs/hashes and regeneration. Unicode licensing/attribution retained.
+- **Verified:** 110 tests in five files, type-check/build/public export smoke,
+  and whitespace check pass. Official normalization fixture: all 20,171 rows
+  and five columns for NFC/NFKC, 201,710 comparisons. Fixture SHA-256 checked.
+- **TDD/review:** Importable skeleton first, then eight assertion-level red
+  failures reported; deferred-boundary regressions red then green. Static review
+  approved; minor operator-inventory and source-URL recommendations addressed.
+  This does not erase the earlier Phase 2 TDD evidence exception.
 
 ### Earlier research and planning evidence
 
@@ -808,7 +837,7 @@ hooks were added.
 
 ## Next steps
 
-1. Await commit/continue confirmation for [Phase 2 source processing](../plans/compiler-frontend-phase-2-complete.md). Planning/support is committed as `08c381a`; Phase 1 as `5fa5ce9`. On confirmation, commit Phase 2 and start Phase 3 core lexer/trivia, requiring behavioral-red tests and a verified Unicode 18 normalization implementation before normalized identifier values.
+1. Commit [Phase 3 core lexer](../plans/compiler-frontend-phase-3-complete.md) as authorized in KP-096, then stop. Planning/support is committed as `08c381a`, Phase 1 as `5fa5ce9`, Phase 2 as `aa36992`; find the Phase 3 hash in Git history. Await explicit continuation before Phase 4 ordinary/character/raw literals, which must use behavioral-red TDD and existing Unicode18 normalization.
 2. Before Phase 5, specify the exact unified numeric candidate grammar and numeric length limits (Q-014); the unified integer/float matching approach is approved in DEC-089. Everything else on the parser-readiness checklist is selected or postponed to implementation. DEC-083–088 settle adjacency, EOF extents, fallback runs, error binding/collapse, and span postponement. DEC-077–082 settle incomplete candidates, Unicode errors, collapse, comment-only files, unexpected closers, and token-level normalization. DEC-072–076 settle group behavior, EOF closer insertion, ordinary prefix/postfix parsing, semantic `::` rejection, comments as lexical whitespace, and universal operator/operand syntax. Retain the earlier selected literal, precedence, insertion, and semantic-identifier decisions. Use the [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
 3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
 
@@ -816,4 +845,4 @@ hooks were added.
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 
-> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-2-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. KP-094 records Phase 1 committed as `5fa5ce9` and Phase 2 source processing verified (94 tests/type-check/build/export smoke), awaiting commit/continue confirmation. Phase 2 lacks initial behavioral-red TDD evidence; do not repeat or conceal that gap. Phase 3 has not started; Unicode18 XID/names are pinned, but normalization is not implemented. Retain the generic parser/semantic boundary; resolve Q-014 before numeric matching.
+> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-3-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. KP-096 authorizes committing Phase 3 only; check Git history for its hash. Phase 3 has 110 passing tests/type-check/build/export smoke. Phase 4 is not authorized or started; await explicit continuation. Preserve behavioral-red TDD; Phase 2's missing evidence remains recorded. Literals and numbers are deferred core-scanner surfaces. Resolve Q-014 before numeric matching.

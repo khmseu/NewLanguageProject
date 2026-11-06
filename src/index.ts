@@ -17,6 +17,25 @@ export {
   isXidContinue,
   isXidStart,
 } from "./source/unicode-data.js";
+export {
+  normalizeUnicode18,
+  type UnicodeNormalizationForm,
+} from "./source/unicode-normalization.js";
+export {
+  lexCore,
+  scanCoreAt,
+  type CoreIdentifier,
+  type CoreLexResult,
+  type CoreLexerDiagnostic,
+  type CoreScanStep,
+  type CoreToken,
+  type CoreTokenKind,
+  type CoreTrivia,
+  type CoreTriviaKind,
+  type DeferredCoreRegion,
+  type DeferredSurfaceKind,
+  type UnsupportedCoreRegion,
+} from "./lexer/core-lexer.js";
 export type {
   CompilerResult,
   Diagnostic,

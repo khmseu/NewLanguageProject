@@ -59,8 +59,9 @@ red/green evidence. Do not describe this phase as fully compliant with strict
 TDD or manufacture retrospective failures. Future behavior slices must show
 an expected assertion failure against an importable API before implementation.
 
-**Scope/next checkpoint:** Phase 1 committed as `5fa5ce9`. Phase 2 is uncommitted
-and awaits commit/continue confirmation. Phase 3 is the core lexer/trivia slice.
+**Scope/next checkpoint:** Phase 1 committed as `5fa5ce9`. The user confirmed
+commit/continue on 2026-11-06 at 18:18 (+01:00); Phase 2 was committed as
+`aa36992` before starting Phase 3, the core lexer/trivia slice.
 The physical/logical line-ending distinction and token-level normalization
 policy remain unchanged; numeric grammar remains the Phase 5 approval gate.
 
