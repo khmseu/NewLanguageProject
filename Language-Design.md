@@ -20,7 +20,7 @@ DEC-031 fixes the Unicode data version and requires implementations to use it co
 
 **Decision DEC-025 — approved:** Use `//` line comments and `/* ... */` block comments; block comments do not nest. Character literals use single quotes (`'...'`) and ordinary strings use double quotes (`"..."`). Integers may be written as unmarked decimal, with `0b`, `0o`, `0d`, or `0x` base markers, or using `base#number`. Apply C++-style universal-character names `\uXXXX` and `\UXXXXXXXX` to source characters generally, and support the Perl-style escapes described in NewLang's syntax notes in character and ordinary string literals. Floating-point literals include decimal and hexadecimal forms from ISO floating-point language standards.
 
-The precise lexical productions remaining include further numeric token boundaries and the ISO standard/version and precision grammar for floating-point literals (Q-014). DEC-047 specifies numeric suffix spelling and radix/suffix disambiguation. Ordinary literal escape forms and their phase interactions are specified in DEC-039–045. DEC-055 makes non-universal raw-string backslashes literal. Detailed source mappings through translation and normalization remain open (LP-23).
+Remaining lexical questions include some malformed-token boundaries and any lexical significand/exponent length limits (Q-014). DEC-047/057–061 specify numeric suffixes and several boundary cases; DEC-062 selects the floating-point standard reference. Ordinary literal escape forms and their phase interactions are specified in DEC-039–045. DEC-055 makes non-universal raw-string backslashes literal. Detailed source mappings through translation and normalization remain open (LP-23).
 
 **Decision DEC-026 — approved:** Raw strings use NewLang's tagged-backtick delimiter structure: opening backtick, tag, and double quote; content; then double quote, the same tag, and closing backtick. For example, `` `END"raw content"END` ``. DEC-027 specifies tag characters and newline handling; DEC-055 makes non-universal backslashes literal.
 
@@ -28,7 +28,7 @@ The precise lexical productions remaining include further numeric token boundari
 
 DEC-032 specifies recognized physical line endings, DEC-035 specifies Unicode-escape eligibility, validation, and generated line-break behavior, and DEC-036 specifies mixed-origin CRLF and whole-source NFC. DEC-029 requires original-source mapping; DEC-036 selects its span units, but detailed mapping remains open. For non-universal raw escapes, the user first rejected both proposed alternatives—all other backslashes literal, or a delimiter-specific escape—and later selected literal backslashes after reviewing NewLang's scanner (DEC-055).
 
-The raw-string question concerns spellings such as `` `END"\n"END` ``: whether `\n` contributes literal backslash and `n`, or has some escape meaning. It does not reopen global `\u`/`\U` translation, which already applies inside raw strings. The user requested this clarification without selecting a replacement rule.
+For example, `` `END"\n"END` `` contains a literal backslash followed by `n` under DEC-055. Global `\u`/`\U` translation still applies inside raw strings before tokenization.
 
 **Decision DEC-028 — approved:** For integer `base#number` literals, the decimal base is from 2 through 36, with digit values represented by `0`–`9` and case-insensitive `A`–`Z`/`a`–`z` as applicable. A single underscore may separate digits in an integer literal, but may not occur immediately after a radix prefix or `#` as a digit separator. Accept both lowercase and uppercase radix-marker letters (`0b`/`0B`, `0o`/`0O`, `0d`/`0D`, and `0x`/`0X`). Leading zeros in unmarked decimal integers do not change the base: `012` means decimal twelve. Support typed numeric suffixes; DEC-047 specifies their spelling and radix disambiguation. The meanings of individual suffixes and allowed numeric types remain open.
 
@@ -183,7 +183,7 @@ This table consolidates the currently agreed source forms; it is an inventory, n
 | Integer literal | Decimal digits; `0b`/`0B`, `0o`/`0O`, `0d`/`0D`, `0x`/`0X`; or `base#number` | Bases 2–36 for `base#number`; case-insensitive letter digits; single `_` only between digits. Unmarked leading zeros remain decimal (DEC-028). `0b102` and `123foo` are invalid-digit errors (DEC-033/047). Incomplete forms, bases with leading zeros, and malformed separators are errors (DEC-057/058/060). |
 | Floating-point literal | Decimal or hexadecimal form as specified in DEC-033 | Hexadecimal floats require a `p`/`P` binary exponent; single `_` digit separators occur only between digits of a component. DEC-034 specifies additional malformed-number boundaries. Leading signs are operators; exponent signs are part of the literal. All float forms may carry suffixes (DEC-047/059); dot runs follow longest match (DEC-061). IEEE 754-2019 / ISO/IEC 60559:2020 is the selected reference (DEC-062); lexical significand/exponent limits remain open (Q-014). |
 | Numeric suffix | `#` followed by `[A-Za-z0-9]+` | ASCII case-insensitive; no empty body or underscore. After an unmarked integer from 2 through 36, the first `#` selects radix notation and a second `#` selects a suffix. Use `0d` to force decimal interpretation (DEC-047). |
-| Grouping / collection delimiters | `(` `)`, `{` `}`, `[` `]` | Parentheses group; braces delimit function expressions/bodies; square brackets delimit template parameters/arguments. Full grammar remains open (Q-015). |
+| Grouping / template / block delimiters | `(` `)`, `{` `}`, `[` `]` | Parentheses group; braces define blocks/scopes; square brackets delimit template parameters and the previously selected template arguments (DEC-011/063). Tree structure remains open (Q-015). |
 | Member-access / dot operator | `.` | Left-associative; exact operator form/semantics remain open (Q-007). |
 | Function type arrow | `->` | Used in `(INPARAMS) -> (OUTPARAMS)` and as a function-definition operator; non-associative (DEC-037). `.` binds tighter (DEC-049); other form details remain open (Q-007). |
 | Binding operators | `:` `:=` `::=` | Constant, variable, and type binding meanings respectively; each requires a left `@name` operand (DEC-052). Other binding/type/initializer semantics remain open (Q-009/010). |
@@ -191,11 +191,11 @@ This table consolidates the currently agreed source forms; it is an inventory, n
 | Name-declaration operator | `@name` | Supplies the required left operand for binding meanings of `:`, `:=`, and `::=` (DEC-052); detailed name-declaration semantics remain open (Q-007). |
 | Arithmetic / bitwise / comparison / logical operators | `++` `--` `!` `~` `**` `*` `/` `%` `+` `-` `<<` `>>` `&` `^` <code>&#124;</code> `<` `<=` `>` `>=` `==` `!=` `&&` <code>&#124;&#124;</code> | `**` is exponentiation and right-associative; `^` is XOR. Other semantics and prefix/postfix forms are not fully specified (Q-007). Their relative levels are in DEC-022. |
 | Channel operator | `<-` | Retained from the adopted precedence inventory; exact meaning/form remains open (Q-007). |
-| Conditional operators | `?` `:` | `?` begins the conditional; `:` separates its arms. Exact grammar/associativity details are in Q-007. |
-| Reserved token | `::` | Reserved, without a current expression meaning; retains its placement alongside `:` (DEC-050). |
+| Conditional operators | `?` `:` | `?` begins the conditional; `:` separates its arms. Both are right-associative at their selected levels; then-branch nesting requires parentheses (DEC-056). |
+| Reserved token | `::` | Reserved, without a current expression meaning; shares the `:` precedence and right associativity (DEC-050/066). |
 | Compound assignment operators | `+=` `-=` `*=` `/=` `%=` `&=` <code>&#124;=</code> `^=` `<<=` `>>=` | Present in the selected precedence inventory; detailed semantics/forms remain open (Q-007). |
-| Argument/element separator | `,` | Left-associative in the precedence table; exact grammar depends on the construct. |
-| Sequencing operator | `;` | Loosest operator; evaluates the left expression before the right. It is not a required statement terminator, and newlines do not insert it. Result-value and associativity details remain open (DEC-051). |
+| List operator | `,` | Creates a list of expressions, which may be evaluated in parallel; left-associative (DEC-022/064). List representation and evaluation details remain open. |
+| Sequencing operator | `;` | Creates a sequence of expressions, evaluating the left expression before the right. It is left-associative and the loosest operator, not a required statement terminator; newlines do not insert it. Its result value remains open (DEC-051/064/066). |
 | Implicit parser tokens (not source spellings) | `APPLY`, `EMPTY` | Make only the insertions needed to alternate operands and operators: `APPLY` between adjacent operands and `EMPTY` between adjacent operators (DEC-008/048). Unary prefix/postfix forms use `EMPTY` on the missing side (DEC-010). Semantic legality remains open (Q-008). |
 
 Longest-match tokenization, explicit lexical diagnostics, and original-source spans are specified by DEC-029/036. Detailed numeric boundaries and source-mapping mechanics are still open.
@@ -215,7 +215,15 @@ The transformed sequence alternates operands and operators. DEC-048 confirms tha
 
 **Decision DEC-010 — approved:** Unary prefix and postfix operators are represented using an implicit `EMPTY` operand, not separate unary-operator syntax in the tree. A prefix operator has `EMPTY` on its left; a postfix operator has `EMPTY` on its right. This is the tree representation; semantic analysis determines whether the operator is valid in that unary context.
 
-The adopted relative operator priorities are listed in DEC-022. Semantic legality rules for inserted elements remain open (Q-008); operator semantics and the remaining associativity choices are tracked in Q-007.
+The adopted relative operator priorities and associativities are listed in DEC-022/066. Semantic legality rules for inserted elements remain open (Q-008); operator semantics and remaining binding interactions are tracked in Q-007.
+
+**Decision DEC-063 — approved:** Parentheses `()` group expressions; braces `{}` define blocks (scopes); and square brackets `[]` delimit template parameters. The previously selected square-bracket form for template arguments remains in DEC-011. The exact tree representation and empty/nested group behavior remain open (Q-015).
+
+**Decision DEC-064 — approved:** `;` creates a sequence of expressions, with the left expression processed before the right (DEC-051). `,` creates a list of expressions; those expressions may be evaluated in parallel. This permits parallel evaluation but does not require it. The left associativity of `,` from DEC-022 is unchanged; DEC-066 makes `;` left-associative too. List representation, evaluation-order and side-effect details, and `;`'s result remain open.
+
+**Decision DEC-065 — approved for now:** Do nothing special for `a * -b`; no additional parsing rule is selected for this case. Minimal insertion yields `a * EMPTY - b`; under the straightforward binary-precedence interpretation checked in KP-079, it groups as `(a * EMPTY) - b`. This does not decide the semantic legality of the resulting `EMPTY`, or all other prefix/postfix binding questions.
+
+**Decision DEC-066 — approved:** `;` is left-associative, like `,`, without changing their relative precedence. Operators on the same precedence level share associativity; where none was previously specified for a level, it is non-associative. Thus `@`, `++`, `--`, `!`, `~`, and `<-` are non-associative; `->` remains non-associative. Reserved `::` shares the right associativity of `:` but remains without an expression meaning. When non-associative operators would require association at the same level, explicit grouping is required or the ungrouped chain is rejected. This does not determine semantic legality.
 
 **Decision DEC-037 — approved, sequencing interpretation refined by DEC-051:** The first parser targets the full selected language, including declarations, functions, types, blocks, classes/interfaces, packages, and imports; this choice does not complete their source forms or authorize implementation. Newlines remain whitespace, with no automatic semicolon insertion. DEC-051 specifies `;` as an expression-sequencing operator rather than a required statement terminator. DEC-053 places predefined-identifier recognition in semantic analysis, not in construct-specific parser productions.
 
@@ -249,7 +257,7 @@ The parser must produce both the selected operator/operand tree, including impli
 
 **Decision DEC-050 — approved:** Reserve `::` without assigning it a current expression meaning. Its existing relative placement alongside `:` remains unchanged.
 
-**Decision DEC-051 — approved:** `;` is an operator that sequentially processes expressions: evaluate the left expression before the right. It remains the loosest operator; it is not a required statement terminator. This refines DEC-037's earlier statement-terminator description without changing the newline-as-whitespace rule. Its result-value convention and associativity are not specified by this decision.
+**Decision DEC-051 — approved:** `;` is an operator that sequentially processes expressions: evaluate the left expression before the right. It remains the loosest operator; it is not a required statement terminator. This refines DEC-037's earlier statement-terminator description without changing the newline-as-whitespace rule. DEC-066 subsequently specifies left associativity; the result-value convention remains open.
 
 **Decision DEC-052 — approved:** The binding meanings of `:`, `:=`, and `::=` require a left `@name` operand. These bindings are expressions in the operator/operand model, not a separate parser-recognized declaration category. This refines the bare-name sketches in DEC-011; `:` also retains its separate conditional role.
 
@@ -263,15 +271,15 @@ The parser must produce both the selected operator/operand tree, including impli
 
 **Decision DEC-021 — approved:** Use GenLang's numeric priority scale as the starting point for the next language. Set `@` to priority 190; keep `.` left-associative; use `^` for XOR and `**` for exponentiation; use `->` for function definition; and set `?` to priority 45. DEC-022 resolves the remaining relative-order conflicts and assigns `**` a priority.
 
-**Decision DEC-022 — approved:** Adopt the following relative precedence for the next language, from tightest to loosest. Each line is a distinct priority level; operators on one line share a level. This uses GenLang's relative ordering to resolve the historical conflicts, with the explicit placements below, and makes `**` right-associative.
+**Decision DEC-022 — approved:** Adopt the following relative precedence for the next language, from tightest to loosest. Each line is a distinct priority level; operators on one line share a level and, under DEC-066, associativity. This uses GenLang's relative ordering to resolve the historical conflicts, with the explicit placements below, and makes `**` right-associative. Delimiters group syntax rather than introducing a separate associativity choice.
 
 | Relative level (tightest first) | Operators | Associativity / notes |
 |---|---|---|
-| Tightest | `@` | No associativity specified; name-declaration operator. |
+| Tightest | `@` | Non-associative; name-declaration operator. |
 |  | implicit `APPLY`, `(` `)` `{` `}` `[` `]` | APPLY is left-associative; delimiters group syntax. |
 |  | `.` | Left-associative member access; tighter than `->` (DEC-049). |
 |  | `->` | Function definition/type arrow; non-associative (DEC-037). |
-|  | `++` `--` `!` `~` | No infix associativity specified in the GenLang table; prefix/postfix forms and semantics remain subject to Q-007. |
+|  | `++` `--` `!` `~` | Non-associative; prefix/postfix forms and semantics remain subject to Q-007. |
 |  | `**` | Right-associative exponentiation; one level tighter than `*`. |
 |  | `*` `/` `%` | Left-associative. |
 |  | `+` `-` | Left-associative. |
@@ -283,18 +291,18 @@ The parser must produce both the selected operator/operand tree, including impli
 |  | `==` `!=` | Left-associative equality operators. |
 |  | `&&` | Left-associative logical AND. |
 |  | <code>&#124;&#124;</code> | Left-associative logical OR. |
-|  | `<-` | No associativity specified; source describes a channel operation. |
+|  | `<-` | Non-associative; source describes a channel operation. |
 |  | `?` | Right-associative; begins a ternary conditional. |
-|  | `:` `::` | `:` is right-associative and has conditional and binding meanings; `::` is reserved (DEC-050/052). |
+|  | `:` `::` | Right-associative; `:` has conditional and binding meanings, while `::` is reserved (DEC-050/052/066). |
 |  | `=` `:=` `::=` `+=` `-=` `*=` `/=` `%=` `&=` <code>&#124;=</code> `^=` `<<=` `>>=` | Assignment/binding operators are right-associative. Binding meanings of `:=` and `::=` require a left `@name` operand (DEC-052). |
-|  | `,` | Left-associative separator. |
-| Loosest | `;` | Expression sequencing; left expression is evaluated before the right. Associativity remains unspecified (DEC-051). |
+|  | `,` | Left-associative list operator; expressions may be evaluated in parallel (DEC-064). |
+| Loosest | `;` | Left-associative expression sequence; left expression is evaluated before the right (DEC-051/064/066). |
 
 **Decision DEC-023 — approved:** Place `::` at the same relative precedence level as `:`, and place `:=` and `::=` at the same level as `=`. These are relative placements only; DEC-052 subsequently clarifies their binding-expression interpretation and required left `@name` operand.
 
 `**` occupies the level immediately above `*`; no numeric priorities are part of this table. `::` remains reserved at the level of `:`. The `:=` variable and `::=` type binding operators from DEC-011/052 are placed with `=` in this relative ordering.
 
-The table adopts GenLang's relative order for APPLY versus `.`, bitwise versus comparison operators, and `?` versus assignment/`:`, resolving those historical differences for this design. The placement of reserved `::` and the binding operators is explicitly selected here rather than copied from GenLang. Historical source disagreements remain documented in the project knowledge view. Q-007 tracks operator meanings/forms and unresolved associativity, not these adopted relative priorities.
+The table adopts GenLang's relative order for APPLY versus `.`, bitwise versus comparison operators, and `?` versus assignment/`:`, resolving those historical differences for this design. The placement of reserved `::` and the binding operators is explicitly selected here rather than copied from GenLang. Historical source disagreements remain documented in the project knowledge view. Q-007 tracks operator meanings/forms and remaining binding interactions, not the adopted precedence and associativity table.
 
 ### Conditional precedence check
 
@@ -328,7 +336,7 @@ Right associativity gives the shape "condition `?` (then `:` else)" and handles 
 @NAME ::=  [TEMPLATEPARAMS] (TYPE | INITEXPR)  // type
 ```
 
-In that model, `TYPE` may itself include an initializer expression; the design note also sketches `=` as the initializer marker within a type form. These are sketches, not a complete grammar; the trailing statement terminators from the historical note are not requirements under DEC-051. Template parameters and arguments use square brackets (`NAME[ARGS]`). Function expressions use `{ BODY }`, and function types use `(INPARAMS) -> (OUTPARAMS)`.
+In that model, `TYPE` may itself include an initializer expression; the design note also sketches `=` as the initializer marker within a type form. These are sketches, not a complete grammar; the trailing statement terminators from the historical note are not requirements under DEC-051. Template parameters and arguments use square brackets (`NAME[ARGS]`). Braces define blocks/scopes (DEC-063); function expressions use `{ BODY }`, and function types use `(INPARAMS) -> (OUTPARAMS)`.
 
 This selects the LangLLVM model over GenLang's type-first declaration syntax. It does not settle scope and visibility, initialization and inference details, or whether declarations without bodies are distinct from definitions (Q-009, Q-010).
 
@@ -387,16 +395,17 @@ The decisions above establish design direction, but not a complete grammar. DEC-
 
 ### Scope and general parser blockers
 
-1. **Parser scope and language — selected:** Target the full selected language (DEC-037) in TypeScript (DEC-054). Binding expressions and predefined identifiers use the generic operator/operand model (DEC-052/053); missing semantic forms do not automatically require separate parser productions. Features that were never selected are not added by this choice.
-2. **What is the remaining lexical grammar?** DEC-024 through DEC-061 select basic token forms, global universal-character translation and source NFC, Unicode data and line-ending and whitespace behavior, numeric suffix spelling/radix disambiguation, several numeric and quoted-literal details, longest-match tokenization, diagnostics, and source positions. Raw-string backslashes are literal (DEC-055). Numeric boundaries are specified by DEC-033/034/047/057–061; the ISO/IEEE reference edition remains open (Q-014).
-3. **What structural expression rules remain?** Minimal `APPLY`/`EMPTY` insertion is confirmed by DEC-048; legality remains semantic under DEC-009/010. `.` binds tighter than `->` (DEC-049), and `::` is reserved (DEC-050). Specify remaining delimiter/grouping structure and any still-unspecified associativity needed to build trees. Then-branch conditional nesting requires parentheses (DEC-056).
-4. **What is the detailed parse-tree contract?** DEC-037 selects a lossless original-source concrete syntax tree plus the operator/operand tree; DEC-038 selects recovery with a lossless CST for syntax errors. Define node contracts for operands, operators, grouping, declarations, and source locations, and how both trees map through Unicode translation and normalization to original UTF-8 bytes, including locations for implicit elements. DEC-046 specifies human-facing diagnostic columns. Recovery mechanics and limits, the result on malformed encoding or lexical errors, and the operator/operand tree on errors remain open.
+1. **Parser scope and language — selected:** Target the full selected language (DEC-037) in TypeScript (DEC-054). Binding expressions and predefined identifiers use the generic operator/operand model (DEC-052/053); missing semantic forms do not automatically require separate parser productions. Independent parser components can be developed before all questions below are settled.
+2. **How do delimiters participate in expression trees?** DEC-063 selects grouping parentheses, scope-producing brace blocks, and square brackets for template parameters; DEC-011 also uses square brackets for template arguments. Specify their nested and empty tree structure and interaction with the already-selected implicit insertions. For example, define the operator/operand and CST shapes for `f(x, y)`, `Template[T]`, `{x; y}`, and `()`, including empty input, unmatched delimiters, and empty or trailing elements (Q-015).
+3. **How do the remaining operator forms interact?** DEC-066 specifies associativity for each operator level. Clarify remaining prefix/postfix and grouping interactions in the operator/operand tree (Q-007/015). No special rule is selected for `a * -b` for now (DEC-065); semantic legality remains separate. DEC-056 already requires parentheses for conditional then-branch nesting.
+4. **What lexical boundaries still need a contract?** Specify treatment of unlisted symbolic input and the extent/recovery of remaining malformed numeric-looking sequences, such as `0d1#` or a number immediately followed by a non-ASCII identifier. Decide whether there are lexical significand/exponent length limits (Q-014). The numeric suffix rules, selected malformed forms, dot-run longest match, and IEEE 754-2019 / ISO/IEC 60559:2020 reference are already selected (DEC-047/057–062).
+5. **What is the exact dual-tree contract?** Define node shapes for operands, operators, groups, trivia, and implicit `APPLY`/`EMPTY`; how the operator/operand tree links to the lossless original-source CST; and how original spelling, BOM, and comments are exposed (Q-014/015). Binding and keyword-like meanings remain semantic.
+6. **How are source mappings represented?** Define mappings through global Unicode translation, whole-source NFC composition/reordering, and identifier NFKC, including original-byte spans for implicit nodes and cases where normalized text and original source do not correspond one-to-one (LP-23). DEC-036/046 already select byte-span units and diagnostic column conventions.
+7. **What is returned on errors?** Define lexical/encoding-error results, whether the operator/operand tree is absent or partial on errors, and recovery mechanics and limits (Q-014/015). DEC-038 already requires explicit syntax diagnostics, attempted recovery, and a lossless CST even for syntax errors; malformed encoding and lexical errors still need their output contract.
 
 ### Blocking for the corresponding language forms
 
-5. **Bindings and keyword-like meanings — semantic phase selected:** Binding meanings of `:`, `:=`, and `::=` require a left `@name` operand (DEC-052). `;` sequences expressions rather than terminating parser-recognized statements (DEC-051). Semantic analysis, not the parser, recognizes predefined-identifier meanings (DEC-053). Remaining type/initializer, prototype, and overload meanings belong to Q-009/010 unless they require new structural syntax.
-6. **What delimiter and collection structure is needed?** Specify type/function/template expression grouping, bracket nesting, parameter and multiple-result collections, and brace-delimited bodies where existing generic expression rules do not yet determine the tree. These are structural questions; permitted semantic forms need not be a separate parser grammar.
-7. **What source expressions express namespaces, packages, imports, and the selected object model?** Their remaining source and semantic forms are Q-009/012 questions. Under DEC-053, keyword-like identifiers need no parser recognizer; only additional lexical or structural syntax blocks the corresponding parser component.
+8. **Do selected language forms need additional structural syntax?** Check type/function/template expressions, parameter and result collections, namespaces, packages, imports, and the selected object model against the generic trees (Q-009/010/012/015). Only a missing lexical or structural form blocks its corresponding parser component; semantic interpretations need not be separate parser productions.
 
 ### Can be deferred beyond parsing
 

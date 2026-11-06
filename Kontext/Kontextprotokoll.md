@@ -115,6 +115,12 @@ This log records the material context and evidence behind the current file class
 | SRC-099 | [Language Design](../Language-Design.md) numeric productions and [Wissensstand](./Wissensstand.md) LP-13/14 | Reviewed 2026-11-05 (+01:00) | Existing integer, float, separator, suffix, and malformed-number decisions compared to open numeric-boundary notes | The resulting examples identify gaps to specify; they are not language decisions or lexer-test results. |
 | SRC-100 | User decisions in this conversation | 2026-11-05 23:24 (+01:00) | Incomplete integers and malformed separators are errors; no leading zeros in bases; float suffixes allowed; longest match decides dot runs; asks for floating-point standard options | Does not select the ISO/IEEE edition. |
 | SRC-101 | User decision in this conversation | 2026-11-05 23:46 (+01:00) | Selects option A, IEEE 754-2019 / ISO/IEC 60559:2020, as the floating-point reference | No separate rounding policy, suffix type inventory, or lexical length limit is selected here. |
+| SRC-102 | User request in this conversation | 2026-11-05 23:52 (+01:00) | Requests an updated compilation of questions before creating a parser | Does not select new rules or request implementation. |
+| SRC-103 | [Language Design](../Language-Design.md) and parser-readiness sections of [Wissensstand](./Wissensstand.md) | Reviewed at commit `4b4767b`, 2026-11-05 (+01:00) | Current lexer, operator, tree, error, and semantic-phase decisions | Earlier experiment sources were not re-examined for this request. |
+| SRC-104 | Inline Python 3 binary-precedence probe in this conversation | Executed 2026-11-05 (+01:00) | Checks `a * EMPTY - b` and equal-priority left/right groupings for `EMPTY ! a ++ EMPTY` | Illustrates ordinary binary grouping only; not a project parser or a decision about prefix/postfix binding. |
+| SRC-105 | User clarification in this conversation | 2026-11-06 00:33 (+01:00) | Selects delimiter roles, sequence and list meanings, possible parallel evaluation, and no special treatment of `a * -b` for now | Does not define tree shapes, general prefix/postfix rules, or semantic validity of `EMPTY`. |
+| SRC-106 | User decision in this conversation | 2026-11-06 00:40 (+01:00) | Makes `;` left-associative, gives same-level operators the same associativity, and assigns none where unspecified | Does not change precedence, make reserved `::` an expression, or settle semantic legality. |
+| SRC-107 | Inline Python 3 documentation check in this conversation | Executed 2026-11-06 (+01:00) | Checks 22 precedence rows have one stated associativity and verifies the changed levels | Checks the table only; it is not a parser test. |
 
 ## Entries
 
@@ -1308,3 +1314,50 @@ Assertions also verify the revised dot/arrow shapes `(a . b) -> c` and `a -> (b 
 **Nutzerangabe/beschlossen:** The user selects option A: IEEE 754-2019, identical to ISO/IEC 60559:2020, as the floating-point standard reference.
 
 **Scope:** This pins the cited standard edition for the selected decimal and hexadecimal floating forms. The decision does not select suffix names/types, a separate rounding policy, numeric range/overflow behavior, or lexical significand/exponent length limits.
+
+### KP-079 - Parser-readiness questions recompiled after numeric decisions
+
+- Documented: 2026-11-05 (+01:00)
+- Event date: 2026-11-05 23:52 (+01:00)
+- Capture: contemporaneous compilation
+- Sources: SRC-102, SRC-103, SRC-104
+- Related questions: Q-007/009/012/014/015, LP-23/25
+- Status: Open-question inventory and analysis; no new language decisions.
+
+**Belegt:** DEC-047/057–061 settle the specified numeric suffix and boundary cases, and DEC-062 selects the floating-point standard reference. The current-view statements that still called the edition and raw-backslash behavior open were corrected. The generic parser, minimal insertions, semantic identifier recognition, and parenthesized conditional then-nesting remain as previously selected.
+
+**Ableitung:** Remaining work for affected parser components or the complete target includes delimiter/group trees, unspecified operator associativity and prefix/postfix binding, residual lexical boundaries and limits, dual-tree and source-map contracts, and error outputs/recovery. Selected semantic forms need further syntax only if the generic structure cannot express them. Independent components can be started without settling all of these questions.
+
+**Checked example:** After minimal insertion, `a * -b` gives `a * EMPTY - b`; ordinary binary grouping with the current listed priorities gives `(a * EMPTY) - b`. Whether prefix `-` needs different binding behavior is open. The probe also illustrates alternative equal-priority groupings of `!a++`; it does not implement the language or decide either grouping.
+
+### KP-080 - Delimiters, expression lists, and unary example clarified
+
+- Documented: 2026-11-06 (+01:00)
+- Event date: 2026-11-06 00:33 (+01:00)
+- Capture: contemporaneous user clarification
+- Sources: SRC-105, SRC-104
+- Related questions: Q-007/008/015
+- Status: Decided (DEC-063–065); detailed tree and semantic contracts remain open.
+
+**Nutzerangabe/beschlossen:** `[]` delimit template parameters, `()` is grouping, and `{}` defines blocks/scopes (DEC-063). DEC-011's previously selected square-bracket template arguments are retained. The user states that `;` creates a sequence of expressions and `,` creates a list whose expressions may be calculated in parallel (DEC-064); this does not require parallel execution.
+
+**Nutzerangabe/beschlossen:** For now, do nothing special for `a * -b` (DEC-065). **Ableitung:** Under the ordinary binary-precedence interpretation checked in KP-079, the inserted stream `a * EMPTY - b` groups as `(a * EMPTY) - b`. This does not decide the semantic legality of `EMPTY` there, or general prefix/postfix behavior.
+
+**Offen:** Group node shapes and empty/nested forms, `;` associativity/result, list representation and evaluation/side-effect details, and other operator binding questions remain unspecified.
+
+### KP-081 - Associativity specified by precedence level
+
+- Documented: 2026-11-06 (+01:00)
+- Event date: 2026-11-06 00:40 (+01:00)
+- Capture: contemporaneous user decision
+- Sources: SRC-106, SRC-107
+- Related questions: Q-007/015
+- Status: Decided (DEC-066); operator meanings and remaining binding interactions remain open.
+
+**Nutzerangabe/beschlossen:** `;` is left-associative like `,`. Operators on one precedence level share associativity, and a previously unspecified associativity is none (non-associative). Thus `a; b; c` groups as `(a; b); c`.
+
+**Ableitung:** The previously unspecified `@`, `++`, `--`, `!`, `~`, and `<-` levels are non-associative; `->` was already non-associative. Reserved `::` shares its level's right associativity with `:`, without gaining an expression meaning. Paired delimiters still group syntax rather than introducing a separate associativity choice.
+
+**Checked:** An inline documentation check verifies that all 22 precedence rows state one associativity and that the changed levels match DEC-066. It does not test a parser.
+
+**Offen:** The sequence result, semantic legality, and other prefix/postfix interactions are not decided by this choice.
