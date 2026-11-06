@@ -62,7 +62,9 @@ The reviewer did not execute tests; runtime checks below were rerun by conductor
   `git diff --check`: pass.
 - No dependencies added, no commit performed, Phase 5 not started.
 
-**Next checkpoint:** Await commit/continue confirmation. Before Phase 5 matcher
+**Next checkpoint:** User confirmed commit/continue on 2026-11-06 at 19:59
+(+01:00); Phase 4 committed as `5f43c73`. Phase 5 is at its grammar approval
+gate (KP-100), not implemented. Before Phase 5 matcher
 implementation, obtain agreement on Q-014's exact unified numeric candidate
 grammar/classification boundaries and length policy. Incomplete raw openers
 retain unsupported fallback behavior; recognized raw openers retain intact EOF

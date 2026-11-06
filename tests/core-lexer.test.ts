@@ -208,24 +208,17 @@ describe("core lexer", () => {
       : item.kind === "trivia" ? item.triviaKind : item.kind)).toContain("line-comment");
   });
 
-  it("defers numeric suffixes but supports direct literal scans within them", () => {
+  it("scans numbers and later literals without deferral", () => {
     const result = lex("name 12 + \"text\"");
-    expect(result.status).toBe("deferred");
-    expect(result.items.map((item) => item.kind)).toContain("deferred");
+    expect(result.status).toBe("complete");
     expect(result.items.some((item) => item.kind === "token" && item.spelling === "12"))
-      .toBe(false);
+      .toBe(true);
     expect(result.items.some((item) => item.kind === "token" && item.spelling === "\"text\""))
-      .toBe(false);
+      .toBe(true);
     expect(scanCoreAt(result.source, 5)).toMatchObject({
-      kind: "deferred",
-      surfaceKind: "numeric",
-      range: { unitStart: 5, unitEnd: 6 },
-    });
-    expect(result.items.at(-1)).toMatchObject({
-      kind: "deferred",
-      surfaceKind: "numeric",
-      spelling: "12 + \"text\"",
-      coverage: "unscanned-suffix",
+      kind: "token",
+      tokenKind: "number",
+      range: { unitStart: 5, unitEnd: 7 },
     });
     expect(scanCoreAt(result.source, 10)).toMatchObject({
       kind: "token",
@@ -235,31 +228,30 @@ describe("core lexer", () => {
     });
   });
 
-  it("measures a deferred suffix in translated scalar units after supplementary text", () => {
+  it("measures numeric spans in scalar units after supplementary text", () => {
     const result = lex("𝒜 1 + x");
-    expect(result.items.at(-1)).toMatchObject({
-      kind: "deferred",
-      spelling: "1 + x",
-      range: { unitStart: 2, unitEnd: 7 },
+    expect(result.items[2]).toMatchObject({
+      kind: "token",
+      tokenKind: "number",
+      spelling: "1",
+      range: { unitStart: 2, unitEnd: 3, bytes: { start: 5, end: 6 } },
     });
   });
 
-  it("does not commit a dot operator when it may begin a deferred numeric form", () => {
+  it("recognizes dot-number candidates and touching operand errors", () => {
     const touching = lex("a.5");
-    expect(touching.items.map((item) => item.kind)).toEqual(["token", "deferred"]);
-    expect(touching.items.at(-1)).toMatchObject({
-      kind: "deferred",
-      surfaceKind: "numeric",
-      spelling: ".5",
-      range: { unitStart: 1, unitEnd: 3 },
-      coverage: "unscanned-suffix",
+    expect(touching.items).toHaveLength(1);
+    expect(touching.items[0]).toMatchObject({
+      kind: "token", tokenKind: "error", errorRole: "operand",
+      spelling: "a.5",
+      range: { unitStart: 0, unitEnd: 3 },
     });
 
     const separated = lex("a .5");
     expect(separated.items.map((item) => item.kind)).toEqual([
       "token",
       "trivia",
-      "deferred",
+      "token",
     ]);
   });
 

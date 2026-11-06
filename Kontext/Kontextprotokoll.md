@@ -1889,3 +1889,111 @@ after revisions. The reviewer itself ran no commands.
 and pause for commit/continue confirmation. Phase 5 has not started: Q-014 exact
 numeric candidate grammar/classification boundaries and length policy require
 agreement before matcher implementation. No language rule or parser added.
+
+### KP-100 - Literal phase committed; numeric policy approval requested
+
+- Documentation/event date: 2026-11-06 (+01:00); confirmation at 19:59.
+- Sources: current conversation, "commit that, then continue"; approved Phase 5
+  gate; read-only numeric design research and current design decisions.
+- Related: Q-014, DEC-047/057–061/067/071/077/083/089, KP-099.
+- Status: Phase 4 committed; numeric policy proposed, not selected.
+
+**Nutzerangabe:** Commit Phase 4 and continue. **Belegt:** Phase 4 committed
+as `5f43c73` before further work. The approved plan requires agreement on exact
+numeric candidate boundaries and length policy before matcher code. No code
+was added after the commit.
+
+**Vorschlag:** Local exponent signs and one point/exponent per core, no exponent
+syntax in radix integers; preserve malformed digit/separator extents; repeated
+exponents do not absorb new signs; suffix-shaped tails can remain attached to
+incomplete cores; hex points without binary exponents are malformed candidates;
+no language-level numeric text length cap. Concrete examples and remaining
+production questions are saved in
+[current knowledge](./Wissensstand.md#phase-5-numeric-approval-gate).
+
+**Rationale:** Keep ordinary operators from being swallowed by broad numeric
+recovery while preserving already-selected invalid extents, adjacency errors and
+dot runs. Avoid mistaking JavaScript numeric precision for a language lexical
+limit; numeric representation/range/rounding and suffix meanings remain semantic.
+
+**Open:** User approval of boundary/length policy, exact component productions,
+invalid suffix tails and repeated-hash boundaries. This turn does not silently
+promote research recommendations to language decisions.
+
+**Verification/scope:** Commit succeeded; no compiler behavior changed after
+the previously verified 360-test Phase 4 checkpoint. Only completion/context
+records updated after the commit; these gate notes remain uncommitted.
+Next step: obtain the numeric decisions before implementation.
+
+### KP-101 - Numeric policy approved; remaining productions made explicit
+
+- Documentation/event date: 2026-11-06 20:06 (+01:00).
+- Source: current conversation, user response "approved" to the four policies
+  presented after KP-100.
+- Related: DEC-090, Q-014. Status: policies approved; remaining grammar proposed.
+
+**Nutzerangabe/beschlossen:** Local exponent signs (`1e++2` boundaries), no
+radix exponents (`16#1e+2` boundaries), intact malformed `0x1.2`/`0x#x`
+candidates, and no language-level length cap. Recorded precisely as DEC-090
+in Language Design. The response approves the presented policies, not
+previously unpresented malformed hash/tail behavior.
+
+**Vorschlag:** Finalized a deterministic remaining component/tail/hash proposal
+in [current knowledge](./Wissensstand.md#final-candidate-production-proposal-pending-approval).
+It makes sign handling after invalid tails, suffix underscores, empty radix
+bodies, and extra hashes explicit, retaining candidate-then-validation and
+DEC-083 adjacency. New examples distinguish pending choices from existing
+approved outcomes.
+
+**Scope/verification:** Specification/context update only. No matcher code,
+dependency change, commit or test run. Existing staged gate notes were
+preserved; this turn adds unstaged updates without resetting the index.
+The approved plan still requires exact grammar agreement before implementation.
+Next step: confirm remaining productions, then implement Phase 5 with TDD.
+
+### KP-102 - Remaining numeric grammar approved; Phase 5 implementation starts
+
+- Documentation/event date: 2026-11-06 20:10 (+01:00).
+- Source: current conversation, "approved" in response to remaining boundaries
+  and permissive components/one-suffix-separator proposal.
+- Related: DEC-091, DEC-090, Q-014, KP-101.
+- Status: beschlossen; numeric grammar gate complete.
+
+Recorded the remaining deterministic components, malformed tails, extra-hash
+boundaries and adjacency consequences as DEC-091 in Language Design. The
+user's approval permits test-first Phase 5 implementation, not automatic phase
+advancement or a commit. Existing staged documentation is preserved. Next:
+numeric candidate matching/classification/validation and full lexer recovery,
+then tests/review and the usual commit checkpoint.
+
+### KP-103 - Phase 5 numeric lexer implemented, reviewed and verified
+
+- Documentation/event date: 2026-11-06 (+01:00).
+- Sources: implementation report, read-only Code-Review-subagent result,
+  conductor validation commands and
+  [completion evidence](../plans/compiler-frontend-phase-5-complete.md).
+- Related: DEC-089–091, Q-014, KP-101/102.
+- Status: implemented/verified; awaiting user commit/continue confirmation.
+
+**Belegt:** Unified numeric candidate matching/classification/validation,
+text-preserving `CoreNumber`, touching identifier/number errors and shortest
+fallback recovery are implemented. Numeric deferral API is removed and the
+README/export smoke updated. Numeric meanings, rounding and parser-level
+error collapse remain deferred; no parser added. The numeric grammar approval
+gate is resolved, superseding older current-state claims that it remains open.
+
+**TDD/review evidence:** Implementer reported 62 behavioral failures/two passes
+before implementation and a later exponent regression with one failure/67
+passes before fixing it. Focused green reported as 336 tests. These are
+implementer-reported red runs, not conductor reruns. Static review approved
+with no findings; the reviewer did not execute commands.
+
+**Independent verification:** Conductor ran `npm test` (432 passed in seven
+files), `npm run typecheck`, `npm run smoke:exports` (including build),
+`git diff --check` and `git diff --cached --check`; all passed. Existing
+normalization conformance remains covered by the full suite. No dependency or
+generated-data changes. Staged/unstaged documentation preserved.
+
+**Next:** User checkpoint to commit and/or continue to Phase 6 grouping and
+implicit APPLY/EMPTY elements. No commit made and no Phase 6 implementation
+started. Grammar approval alone does not authorize either action.

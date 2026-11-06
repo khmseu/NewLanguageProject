@@ -16,14 +16,18 @@ assert.equal(processSource(source).text, "\uFFFD");
 assert.equal(normalizeUnicode18("e\u0301", "NFC"), "é");
 const lexicalSource = new SourceInput(new TextEncoder().encode("e\u0301 + 1"));
 const lexical = lexCore(lexicalSource);
-assert.equal(lexical.status, "deferred");
+assert.equal(lexical.status, "complete");
 assert.deepEqual(
   lexical.items.slice(0, 3).map((item) =>
     item.kind === "token" ? [item.tokenKind, item.spelling] : item.triviaKind,
   ),
   [["identifier", "e\u0301"], "whitespace", ["operator", "+"]],
 );
-assert.equal(scanCoreAt(lexical.source, 5).kind, "deferred");
+assert.equal(scanCoreAt(lexical.source, 5).tokenKind, "number");
+const numeric = lexCore(new SourceInput(new TextEncoder().encode("0x1p+2#F64")));
+assert.equal(numeric.items[0].numeric.suffixKey, "f64");
+assert.equal(numeric.items[0].numeric.exponent, "+2");
+assert.deepEqual(numeric.diagnostics, []);
 const literals = lexCore(new SourceInput(new TextEncoder().encode(
   String.raw`'e\u0301' "e\x{301}" ` + '`T"raw\\n"T` "\\q"',
 )));

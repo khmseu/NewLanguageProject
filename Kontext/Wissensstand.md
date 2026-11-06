@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-06 (timezone +01:00); JSDoc committed as `185b5a4`; user authorized continuation and Phase 4 literals are implemented/reviewed with 360 passing tests (KP-099). Phase 4 awaits commit/continue; Phase 5 numeric grammar approval remains open.
+- Last substantive update: 2026-11-06 (timezone +01:00); Phase 5 numeric scanning and lexical recovery implemented, statically reviewed and independently verified: 432 tests, type-check, build/export smoke and whitespace checks pass (KP-103). Awaiting commit/continue confirmation; Phase 4 committed as `5f43c73`.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -383,6 +383,8 @@ The cheapest useful starting slice was assessed as source positions/diagnostics,
 | DEC-087 | Error merging happens after error tokens are created (at least as-if); whitespace, and under DEC-075 comments, no longer separate them. | User-approved for whitespace; extension to comments is an **Ableitung** from DEC-075. | KP-088 |
 | DEC-088 | Spans of implicit/inserted elements and diagnostic positions inside NFC-normalized literals are postponed to implementation, within DEC-036/046. | User-approved. | KP-088 |
 | DEC-089 | Integers and floats, including suffixes, share one unified numeric candidate, then are classified and validated. | User-approved. Exact permissive candidate grammar and validation remain open (Q-014). | KP-089 |
+| DEC-090 | Local exponent signs, no radix exponents, intact malformed `0x1.2`/`0x#x` candidates, no language-level numeric text length limits. | User-approved four policies; exact remaining malformed component/hash boundaries still pending. | KP-101 |
+| DEC-091 | Deterministic permissive numeric components, one suffix separator, extra-hash fallback, and post-candidate touching-run errors. | User-approved; completes the remaining Phase 5 numeric candidate gate with DEC-090. | KP-102 |
 | Q-001 | Establish provenance of the uncertain NewLang root files, archives, backups, and `GenLang/ARCHIVE.zip`. | Open; contents/origins not fully inspected. | KP-001 |
 | Q-002 | Decide whether the next deliverable should be a complete file-by-file manifest or a proposed cleanup/move plan. | Open; not requested yet. | KP-001 |
 | Q-003 | Determine which feature candidates belong in the next attempt, and define the minimum initial slice. | DEC-037 selects the full already-selected language as the first parser's target. Other candidate features and implementation staging remain open; the selection does not authorize implementation. | KP-003, KP-050 |
@@ -396,7 +398,7 @@ The cheapest useful starting slice was assessed as source positions/diagnostics,
 | Q-011 | Specify reference identity/aliasing and field/temporary collection types and operations; define proof criteria and behavior-preserving optimizations for predictable reference lifetimes. | Partially resolved by DEC-015/016/017: reference values have GC-like behavior and predictable lifetimes may be optimized; detailed identity, collection, and optimization semantics remain open. | KP-014, KP-015, KP-016 |
 | Q-012 | Specify class-variable semantics; decide whether local functions are function objects; clarify method/instantiation type roles, packed types, and how NewLang package/import configuration and namespace components integrate with DEC-018 lookup. | Open; DEC-019 adopts the model where notes are explicit but does not resolve questions or underspecified mechanics in those notes. | KP-018, KP-019 |
 | Q-013 | Specify what continuation operations are provided (including full/delimited and one-shot/multi-shot behavior), what control state they capture, interactions with exceptions/coroutines and GC, and which calls qualify as tail calls. | Open; DEC-020 requires proper tail calls and continuations but does not select their full semantics or implementation. | KP-020 |
-| Q-014 | Define remaining lexical candidate grammar, validation boundaries, error-token details, and source-location behavior. | DEC-067/071 select longest permissive candidates plus validation; DEC-077 settles incomplete-prefix and line-ended literal error operands; DEC-078 settles Unicode error units/spans; and DEC-082 limits normalization to token level. DEC-083–085 settle identifier/number adjacency (including `123é`), EOF extents, and fallback runs. DEC-089 selects one unified integer/float candidate, including suffixes, followed by classification and validation; this avoids separate integer/float candidate ties. Exact permissive candidate grammar and any numeric length limits remain open. | KP-025, KP-034, KP-048, KP-069, KP-071, KP-072, KP-077, KP-078, KP-082, KP-083, KP-086, KP-087, KP-088, KP-089 |
+| Q-014 | Define remaining lexical candidate grammar, validation boundaries, error-token details, and source-location behavior. | Lexical grammar gate resolved: DEC-067/071/077/078/082–085 select candidate validation, literal/Unicode recovery, normalization, adjacency and fallback. DEC-089–091 complete unified numeric components, malformed boundaries and no language-level length caps; implemented through Phase 5. Parser-level error classification/collapse and CST span representation remain later implementation work under Q-015, not a numeric grammar approval blocker. | KP-025, KP-034, KP-048, KP-069, KP-071, KP-072, KP-077, KP-078, KP-082, KP-083, KP-086, KP-087, KP-088, KP-089, KP-101, KP-102, KP-103 |
 | Q-015 | Complete the concrete binary CST/source-map/error-result contract. | DEC-069 selects binary operators plus comments without an AST. DEC-072–076 specify groups and generic syntax; DEC-079–081 specify error collapse, a comment-only file as `EMPTY`, and unexpected closers as error tokens. DEC-086–088 specify the binding of operator-classified errors, trivia-independent collapse, and postponement of the span representation; DEC-080/081 were confirmed. Remaining: node/trivia/implicit-node representation as an implementation choice. | KP-025, KP-034, KP-048, KP-050, KP-053, KP-071, KP-080, KP-082, KP-083, KP-085, KP-086, KP-087, KP-088 |
 | Q-016 | Specify tagged raw-string content behavior and remaining delimiter/newline details. | Partially resolved by DEC-026/027/032/035/036: tagged backticks, ASCII tags after source NFC (empty allowed, no fixed limit), multiline content, and normalization of recognized physical and escape-generated line endings to LF are selected; adjacent CRLF is one ending even with mixed origins. Non-universal raw backslashes are literal (DEC-055); raw content cannot contain its own closing sequence (Ableitung from DEC-026/055). | KP-027, KP-028, KP-029, KP-032, KP-040, KP-046, KP-048 |
 
@@ -723,8 +725,8 @@ and initial test-harness configuration do not require artificial failing tests.
      complete CST retention on representative malformed inputs. Run full tests,
      type-check, and build; report actual results and remaining semantic work.
 
-**Remaining approval point:** Q-014's
-numeric candidate grammar/length policy before Phase 5. Unicode data provider,
+**Approval gate resolved:** Q-014's numeric candidate grammar/length policy
+was approved as DEC-090/091 (KP-101/102). Unicode data provider,
 the parser algorithm, CST layouts, and DEC-088 mapping choices can be selected
 in the affected phases with documented rationale and tests, provided approved
 observable behavior is unchanged.
@@ -819,7 +821,8 @@ hooks were added.
 
 - **Implemented/verified:** Phase 4
   [completion evidence](../plans/compiler-frontend-phase-4-complete.md), KP-099.
-  Continuation authorized 2026-11-06 at 19:23 (+01:00); changes are uncommitted.
+  Continuation authorized 2026-11-06 at 19:23 (+01:00); Phase 4 committed as
+  `5f43c73` after the 19:59 commit/continue confirmation (KP-100).
 - [Literal scanner](../src/lexer/literal-scanner.ts) covers characters, ordinary
   strings and tagged raw strings, Unicode18 NFC-before-escapes, scalar checks,
   names/aliases, continuations, newline/EOF recovery and intact Unicode errors.
@@ -838,6 +841,109 @@ hooks were added.
   JSDoc maintained. No dependencies or generated-data changes.
 - **Deferred:** Numeric scanning only; no parser. Q-014 numeric candidate shape
   and length policy must be agreed before Phase 5 code.
+
+### Numeric lexer checkpoint
+
+- **Implemented/verified:** Phase 5 [completion evidence](../plans/compiler-frontend-phase-5-complete.md),
+  KP-103. Numeric scanning, validation, touching identifier/number recovery and
+  shortest unsupported runs now cover the full source; no parser added.
+- [Numeric scanner](../src/lexer/numeric-scanner.ts) preserves numeric components
+  as text in `CoreNumber`, without eager numeric conversion or semantic suffix
+  interpretation. No language-level length caps; base determination is bounded.
+- **API migration:** Numeric `deferred` results/regions and exported deferral
+  types are removed. Consumers should inspect numeric/error items and diagnostics;
+  coverage status is not a success result.
+- **TDD evidence:** Implementer reported 62 behavioral failures/two passes
+  before implementation; an exponent regression failed before its fix
+  (one failure/67 passes). Static review approved without findings; reviewer
+  did not execute commands.
+- **Independently verified:** 432 tests in seven files, type-check,
+  build/public export smoke, unstaged/staged whitespace checks pass.
+  Complete existing Unicode normalization conformance remains in the suite.
+- **Checkpoint:** Awaiting user commit/continue confirmation. Earlier lexer
+  checkpoints describe their phase-time deferrals, now superseded here.
+
+### Phase 5 numeric approval gate
+
+Status: **Approved as DEC-090/091**, KP-101/102. Grammar gate complete;
+Phase 5 implementation authorized and subsequently completed (KP-103).
+Unified candidates, post-match validation, radix/suffix meanings and touching
+identifier/number errors are already selected. The earlier policy exploration
+below includes consequences not individually presented to the user; DEC-090
+records the precise approved scope:
+
+1. At most one point and one exponent per numeric core; an exponent consumes at
+   most one immediately following sign, even if digits are missing. Other signs
+   end the candidate. A radix integer does not recognize exponent syntax.
+   Examples: `1e++2` gives malformed `1e+`, operator `+`, number `2`;
+   `16#1e+2` gives radix integer `16#1e`, `+`, `2`;
+   `36#1p+2` gives radix integer `36#1p`, `+`, `2`.
+2. Keep invalid digits/separators in their candidate and validate afterward;
+   never shorten to a valid prefix. Dot runs retain selected boundaries, then
+   DEC-083 merges touching identifier/number runs into error operands:
+   `1..2` is one error operand; `1...x` remains `1.`, `.`, `.`, `x`.
+   A repeated exponent does not capture another sign: `1e2e+3` gives error
+   operand `1e2e`, then `+`, `3`. `1e2.3` is one adjacency error operand.
+3. Keep a suffix-shaped tail even after an incomplete core: `0x#x` is one
+   malformed candidate. A hex core with a point but no binary exponent,
+   `0x1.2`, is one malformed candidate, not an integer-prefix fallback.
+   First `#` retains DEC-047: radix for unmarked bases 2–36, decimal suffix
+   otherwise, with DEC-058's invalid leading-zero radix attempts kept invalid.
+   Thus `02#10` is invalid, `37#foo` and `1#F64` are decimal suffix forms,
+   and `2#2` is invalid radix digits. No semantic suffix names are selected.
+4. No language-level length cap on significands, exponents, or suffixes.
+   Keep digit text without conversion to JavaScript Number for lexical validity;
+   resource exhaustion is an explicit implementation failure, not truncation,
+   shorter-token fallback, or a numeric range/type decision.
+
+#### Final candidate-production proposal (pending approval)
+
+The following deterministic scanner rules complete the remaining malformed
+boundaries. Approved as DEC-091, not retroactively included in DEC-090.
+The heading retains its historical anchor for existing provenance links.
+
+- Start on an ASCII digit or on `.` followed by an ASCII digit.
+- Decimal/prefixed components consume ASCII alphanumerics and underscores,
+  except their first eligible exponent marker (`e/E` for decimal, `p/P` for
+  hex). Once invalid alphabetic tail text begins, later marker letters do not
+  reopen exponent recognition. At most one point precedes the exponent; no
+  point occurs after it. Exponent components likewise consume ASCII
+  alphanumerics/underscores, but never a second sign or exponent. Binary/octal
+  prefixed and radix integer components do not accept points/exponents.
+- A `#` after a plain decimal base field selects radix under DEC-047/058;
+  underscores in that base field remain for validation. A radix body consumes
+  ASCII alphanumerics/underscores (letters never introduce an exponent).
+  Decimal/hex prefix recognition takes place immediately after initial `0`;
+  later prefix-like text is part of the malformed component.
+- Consume at most one suffix separator after the numeric core (a radix form
+  already used one `#` for its base). The permissive suffix component consumes
+  ASCII alphanumerics/underscores; validate against `[A-Za-z0-9]+` afterward.
+  Empty and underscore-containing suffixes are errors. A further `#` is left
+  for ordinary fallback recovery; do not absorb unlimited hashes.
+- After candidates are identified, apply DEC-083 to touching identifiers and
+  numbers, including malformed numeric candidates: maximal touching runs are
+  one error operand. Unicode XID identifier tails retain original spelling
+  and participate in this rule, not in ASCII numeric/suffix validity.
+- All components can be empty in a candidate after a consumed introducer;
+  require their digits/completeness during validation. No shorter fallback.
+  The initial digit/`.digit` requirement remains mandatory.
+
+Approved boundary consequences (DEC-091):
+
+| Input | Numeric/recovery boundaries before parser error collapse |
+| --- | --- |
+| `1e2e+3` | Error operand `1e2e`, operator `+`, number `3` |
+| `1fooE+2` | Error operand `1fooE`, operator `+`, number `2` |
+| `1e2.3` | Touching `1e2` and `.3` merge to one error operand |
+| `1#F_64` | One malformed suffix candidate, not valid `1#F` plus `_64` |
+| `37#foo#bar` | Numeric `37#foo`, fallback error `#`, identifier `bar` |
+| `16##x` | One malformed radix candidate with empty body and suffix `x` |
+| `16#ff#I32#x` | Numeric `16#ff#I32`, fallback error `#`, identifier `x` |
+
+This makes malformed tails deterministic while preserving the approved
+`1..2` adjacency error and `1...x` operator boundaries. These rules are now
+recorded in Language Design. Source Unicode-error characters remain separate error units,
+not numeric digits or identifier letters.
 
 ### Earlier research and planning evidence
 
@@ -861,12 +967,12 @@ hooks were added.
 
 ## Next steps
 
-1. Await commit/continue confirmation for [Phase 4 literals](../plans/compiler-frontend-phase-4-complete.md). JSDoc maintenance is committed as `185b5a4`; Phase 4 is uncommitted. Maintain [JSDoc instructions](../.github/instructions/jsdoc.instructions.md), including generated documentation through its generator. Before Phase 5 implementation, propose and obtain approval of Q-014's exact numeric candidate grammar and length policy.
-2. Before Phase 5, specify the exact unified numeric candidate grammar and numeric length limits (Q-014); the unified integer/float matching approach is approved in DEC-089. Everything else on the parser-readiness checklist is selected or postponed to implementation. DEC-083–088 settle adjacency, EOF extents, fallback runs, error binding/collapse, and span postponement. DEC-077–082 settle incomplete candidates, Unicode errors, collapse, comment-only files, unexpected closers, and token-level normalization. DEC-072–076 settle group behavior, EOF closer insertion, ordinary prefix/postfix parsing, semantic `::` rejection, comments as lexical whitespace, and universal operator/operand syntax. Retain the earlier selected literal, precedence, insertion, and semantic-identifier decisions. Use the [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
+1. Await user confirmation to commit Phase 5 and/or continue. Read its [completion record](../plans/compiler-frontend-phase-5-complete.md) for TDD, static review, independent verification and public API migration. No commit or Phase 6 start is authorized by the numeric grammar approvals alone. Maintain [JSDoc instructions](../.github/instructions/jsdoc.instructions.md).
+2. After confirmation, implement Phase 6 delimiter grouping and implicit APPLY/EMPTY elements with TDD. Q-014's numeric gate is resolved by DEC-090/091; do not reopen it. Parser error classification/collapse and CST span representation remain later work under Q-015. Follow the [approved plan](../plans/compiler-frontend-plan.md) and [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
 3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
 
 ## Handover
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 
-> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-4-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. KP-099 records Phase 4 literals implemented/reviewed with 360 passing tests/type-check/build/export smoke, uncommitted pending confirmation. JSDoc guidance is committed as `185b5a4`; maintain it and behavioral-red TDD. Only numeric scanning remains deferred; obtain Q-014 grammar/length approval before Phase 5 implementation. No parser has been added.
+> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and KP-101–103. DEC-090/091 resolve the numeric grammar gate. Phase 5 is implemented and statically approved; 432 tests, type-check, build/export smoke and whitespace checks passed independently. Read its completion record and await commit/continue confirmation before Phase 6. Preserve staged/unstaged changes. Maintain JSDoc; no parser has been added.

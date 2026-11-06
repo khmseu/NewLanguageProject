@@ -3,9 +3,8 @@
 This is a strict TypeScript ESM package for the compiler frontend foundation.
 It provides original-byte source input, source decoding and Unicode
 translation, a Unicode-18-pinned core scanner and lossless token/trivia stream,
-diagnostic types, selected character/ordinary-string/tagged-raw literal values,
-and a generic result contract. Parser construction and numeric recognition
-remain deferred.
+diagnostic types, character/ordinary-string/tagged-raw literals, unified numeric
+candidates, and a generic result contract. Parser construction remains deferred.
 
 ## Runtime and tools
 
@@ -59,7 +58,7 @@ operation.
 
 `lexCore(sourceInput)` returns a `CoreLexResult` with ordered `items`, source
 processing output, diagnostics, and a coverage `status`. Core tokens cover
-identifiers, character/string/raw-string literals, the approved source-operator inventory (longest match), and
+identifiers, numeric and character/string/raw-string literals, the approved source-operator inventory (longest match), and
 `()`, `{}`, and `[]` delimiters. Whitespace, line comments, block comments,
 and an initial BOM are explicit trivia items. Comments separate surrounding
 tokens; block comments are non-nested and an unterminated one extends to EOF
@@ -74,16 +73,21 @@ Identifier `spelling`/`translatedText` is translated but unnormalized;
 `XID_Start XID_Continue*` before normalization, and the original source is
 never normalized.
 
-`scanCoreAt(processedSource, unitOffset)` supports composition with later
-scanners. Numeric starts return one-unit `deferred` boundaries,
-not approximated tokens or language errors. `lexCore` stops core scanning at
-such a start, returns the remaining bytes as a deferred item with
-`coverage: "unscanned-suffix"`, and reports `status: "deferred"` (or
-`"deferred-and-unsupported"` if earlier unknown characters occurred). Unknown
-characters are explicit unsupported items with `unrecognized-character`
-diagnostics. `status` reports scanner coverage, not compiler success; inspect
-diagnostics independently. Numeric syntax, parser errors,
-and error collapse are not implemented.
+`scanCoreAt(processedSource, unitOffset)` scans one item, including maximal
+touching identifier/number runs as error operands. `lexCore` scans the whole
+input. Unknown characters are explicit shortest unsupported runs with
+`unrecognized-character` diagnostics; Unicode-error units remain separate.
+`status` reports scanner coverage, not compiler success; inspect diagnostics
+independently. Parser errors and parser-level error collapse are not implemented.
+
+Numeric tokens expose frozen `numeric: CoreNumber` metadata with integer,
+fraction, exponent, and suffix components retained as written; `suffixKey` is
+ASCII lowercase. `base` is bounded, and no numeric value, large power, or
+floating-point rounding is computed. Unmerged malformed candidates retain metadata and
+produce an `invalid-number` diagnostic; touching runs produce a
+`touching-operands` diagnostic. Suffix meanings and numeric type ranges are
+semantic work. `spelling` retains prefixes, markers, and original case after
+global translation, while byte ranges preserve the original source.
 
 ### Literal values and diagnostics (Phase 4)
 

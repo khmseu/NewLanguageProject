@@ -1,6 +1,6 @@
 /**
  * Public frontend entry point: byte-preserving input, source translation,
- * pinned Unicode services, diagnostic contracts, and the partial core lexer.
+ * pinned Unicode services, diagnostic contracts, and the core lexer.
  * Declaration contracts live in the re-exported modules.
  * @module
  */
@@ -38,10 +38,9 @@ export {
   type CoreTokenKind,
   type CoreTrivia,
   type CoreTriviaKind,
-  type DeferredCoreRegion,
-  type DeferredSurfaceKind,
   type UnsupportedCoreRegion,
 } from "./lexer/core-lexer.js";
+export type { CoreNumber } from "./lexer/numeric-scanner.js";
 export type {
   CoreLiteral,
   LiteralDiagnostic,

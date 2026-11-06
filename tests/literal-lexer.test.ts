@@ -385,12 +385,12 @@ describe("DEC-078 intact literal Unicode diagnostics and core integration", () =
     });
   });
 
-  it("scans literals losslessly with BOM, comments and deferred numeric suffix", () => {
+  it("scans literals losslessly with BOM, comments and a following number", () => {
     const text = '\ufeff/*x*/"é"+\'😀\' `""` 123';
     const result = lex(text);
     expect(result.items.filter((item) => item.kind === "token").map((item) => item.tokenKind))
-      .toEqual(["string", "operator", "character", "raw-string"]);
-    expect(result.items.at(-1)).toMatchObject({ kind: "deferred", surfaceKind: "numeric" });
+      .toEqual(["string", "operator", "character", "raw-string", "number"]);
+    expect(result.items.at(-1)).toMatchObject({ kind: "token", tokenKind: "number", spelling: "123" });
     const bytes = encoder.encode(text);
     expect(Uint8Array.from(result.items.flatMap((item) => [...bytes.slice(item.range.bytes.start, item.range.bytes.end)])))
       .toEqual(bytes);
