@@ -52,8 +52,8 @@ The host reports Unicode 17.0; it is not evidence of Unicode 18 conformance.
 No Unicode-dependent compiler behavior is implemented yet.
 
 **Checkpoint:** Planning/support changes were committed as `08c381a`.
-Phase 1 changes remain uncommitted, awaiting user commit/continue confirmation.
-Next is Phase 2, source decoding/Unicode/provenance, only after confirmation.
+The user confirmed commit/continue on 2026-11-06 at 17:36 (+01:00).
+Phase 1 was committed as `5fa5ce9` before starting Phase 2.
 
 **Git commit message:**
 

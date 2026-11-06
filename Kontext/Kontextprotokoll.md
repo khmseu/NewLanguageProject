@@ -141,6 +141,9 @@ This log records the material context and evidence behind the current file class
 | SRC-125 | Current Language Design, relevant current knowledge and KP-088–090, repository inventory | Reviewed 2026-11-06 (+01:00), baseline commit `7da7c1f` | Compiler frontend constraints, remaining numeric grammar question, confirmed TypeScript, and absence of compiler source/manifests/tests or agent guidance | Earlier experiment trees and historical source coverage were not re-examined. |
 | SRC-126 | User approval in this conversation | 2026-11-06 17:05 (+01:00) | "approved. commit changes, then start implementing the plan." | Approves roadmap/toolchain and requests planning commit before implementation; existing per-phase confirmation checkpoints remain. |
 | SRC-127 | Phase 1 implementation/review reports and local verification commands | 2026-11-06 (+01:00) | Test-first foundation implementation, runtime-validation review findings/fixes, 49-test pass, type-check/build/export smoke, Node LTS/Unicode metadata | Foundation only; no Unicode 18 conformance, decoding, lexing, or parsing verified. Node 24 not tested. |
+| SRC-128 | User confirmation in this conversation | 2026-11-06 17:36 (+01:00) | "commit that, then continue" | Authorizes Phase 1 commit and Phase 2 execution, retaining per-phase checkpoints. |
+| SRC-129 | Phase 2 implementation/review reports, source inspection and local checks | 2026-11-06 (+01:00) | Source decoder/translator/provenance, Unicode18 data package, 94-test/type-check/build/export-smoke results, explicit initial TDD evidence gap | Not a lexer/parser or normalization implementation; added coverage is not retrospective behavioral red. |
+| SRC-130 | Official versioned Unicode UCD ReadMe/DerivedAge and installed package metadata | Checked 2026-11-06 (+01:00) | ReadMe states final 18.0.0; DerivedAge lists U+0558 as 18.0; installed `@unicode/unicode-18.0.0` is 2.1.0, MIT | These probes verify provenance/version examples, not exhaustive Unicode conformance. |
 
 ## Entries
 
@@ -1678,3 +1681,50 @@ was implemented. Numeric grammar remains Q-014.
 **Next step:** Phase 1 implementation remains uncommitted at the phase
 checkpoint. Present its completion and Conventional Commit message; await
 commit/continue confirmation before Phase 2.
+
+### KP-094 - Foundation committed; source processing and Unicode data added
+
+- Documentation/event date: 2026-11-06 (+01:00); confirmation at 17:36.
+- Sources: SRC-128–130; related REQ-003, KP-093, DEC-035/036/046/078/082.
+- Status: Phase 1 committed; Phase 2 implemented/verified, uncommitted.
+
+**Nutzerangabe:** The user requested committing the reviewed foundation and
+continuing. **Belegt:** Phase 1 committed as `5fa5ce9` before Phase 2 work.
+
+**Implementation:** Added original-byte UTF-8 maximal-subpart decoding,
+initial BOM handling, one-based physical scalar positions, eligible global
+Unicode escapes with one-pass translation, origin/error metadata, immutable
+units/diagnostics, and translated-unit-to-byte ranges. Invalid UTF-8 and
+non-scalar/malformed escapes retain diagnosed output rather than discarding it.
+Physical lines remain those of original source; translated mixed-origin CRLF
+is preserved for subsequent lexical handling.
+
+**Unicode provenance:** Pinned `@unicode/unicode-18.0.0@2.1.0` (MIT) for XID
+and names/official aliases. The official
+[ReadMe](https://www.unicode.org/Public/18.0.0/ucd/ReadMe.txt) states final
+Unicode 18.0.0 data; [DerivedAge](https://www.unicode.org/Public/18.0.0/ucd/DerivedAge.txt)
+lists U+0558 at 18.0, used in version-specific data tests. The implementer
+also checked property/name and normalization-file headers. No raw UCD files
+were vendored; package licensing and Unicode terms are linked in the README.
+Normalization itself remains deferred; host Unicode 17 was not substituted.
+
+**Review/verification:** Static review identified missing literal-U+FFFD
+coverage. Added that distinction, further malformed UTF-8/escape interactions,
+backslash parity, empty/range boundaries, physical line cases and a Unicode18
+data-based test; clarified README physical versus logical line endings.
+Conductor inspected the source and ran all 94 tests, type-check, build/public
+export smoke, and whitespace checks successfully. Review code/coverage findings
+are resolved. See [completion record](../plans/compiler-frontend-phase-2-complete.md).
+
+**Process exception:** The initial reported red was missing APIs, not an
+assertion against incomplete behavior. Follow-up tests passed immediately and
+are coverage additions, not TDD red evidence. This does not meet the user's
+strict TDD workflow for that initial implementation; it is recorded rather
+than relabeled or retroactively manufactured. Future implementation must
+establish importable contracts and confirm behavioral assertion failures
+before adding behavior.
+
+**Next step:** Await commit/continue confirmation for Phase 2. Phase 3 core
+lexer/trivia has not started; a verified Unicode18 normalization implementation
+is required before normalized identifier values. Q-014 numeric matching
+remains a later approval gate. No language design rules changed.

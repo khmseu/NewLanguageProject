@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-06 (timezone +01:00); planning committed as `08c381a`; Phase 1 foundation implemented, reviewed with fixes, and verified (KP-093). Phase 1 changes await commit/continue confirmation. Earlier experiment sources were not re-reviewed.
+- Last substantive update: 2026-11-06 (timezone +01:00); Phase 1 committed as `5fa5ce9` on user confirmation; Phase 2 source processing and Unicode adapter verified with 94 passing tests (KP-094). Phase 2 awaits commit/continue; missing behavioral-red evidence is recorded explicitly. Earlier experiment sources were not re-reviewed.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -742,8 +742,8 @@ hooks were added.
 - **Approved/implemented:** Phase 1 of the
   [compiler plan](../plans/compiler-frontend-plan.md), with
   [completion evidence](../plans/compiler-frontend-phase-1-complete.md) in KP-093.
-  Planning/support commit: `08c381a`. Phase 1 remains uncommitted pending the
-  user's commit/continue confirmation.
+  Planning/support commit: `08c381a`. Phase 1 committed as `5fa5ce9` following
+  the user's 2026-11-06 17:36 (+01:00) confirmation (KP-094).
 - **API:** [SourceInput](../src/source/source-input.ts) retains exact original
   bytes, defensively copies exposed data, validates immutable half-open ranges,
   and explicitly rejects unsupported runtime inputs/malformed ranges.
@@ -758,6 +758,33 @@ hooks were added.
   no decoding/Unicode/lexer/parser behavior is claimed.
 - **Commands:** See [README](../README.md). Package dependencies are pinned
   and locked; generated outputs and dependencies are ignored.
+
+### Source processing checkpoint
+
+- **Implemented/verified:** Phase 2 of the
+  [approved plan](../plans/compiler-frontend-plan.md), with
+  [completion evidence](../plans/compiler-frontend-phase-2-complete.md) in KP-094.
+  Phase 2 remains uncommitted at the confirmation checkpoint.
+- [Source processing](../src/source/source-processing.ts) performs maximal-subpart
+  UTF-8 decoding and one-pass eligible Unicode escape translation, retaining
+  original byte ranges, physical scalar positions, origin/error metadata,
+  and diagnostics alongside output. Initial BOM is omitted from translated
+  units but its bytes count in offsets. Literal U+FFFD is not itself an error.
+- [Unicode adapter](../src/source/unicode-data.ts) uses pinned
+  `@unicode/unicode-18.0.0@2.1.0` for XID properties and names/aliases. Official
+  Unicode 18 release metadata and a version-18 character age were checked;
+  no host Unicode tables substitute for the pinned data.
+- **Verified:** 94 tests in three files; type-check, build/public export smoke,
+  and whitespace checks pass. Static review findings resolved with added
+  provenance/boundary coverage and README clarification.
+- **TDD limitation:** Initial failures were missing APIs, not behavioral red.
+  Additional tests were green immediately. This phase lacks the required
+  behavioral-red evidence; correctness checks do not erase this process gap.
+  Future slices must demonstrate assertion-level red before implementation.
+- **Still deferred:** Tokenization, normalization using Unicode 18 data,
+  comment/literal/number recognition, parser and CST. Translated adjacent CRLF
+  is preserved for subsequent lexical treatment; diagnostic physical lines
+  depend on the original raw source, not generated breaks.
 
 ### Earlier research and planning evidence
 
@@ -781,7 +808,7 @@ hooks were added.
 
 ## Next steps
 
-1. Await commit/continue confirmation for the reviewed, green [Phase 1 foundation](../plans/compiler-frontend-phase-1-complete.md). Planning/support is committed as `08c381a`; Phase 1 code is not yet committed. After confirmation, start Phase 2 source decoding/Unicode/provenance with TDD and verify Unicode 18 data availability.
+1. Await commit/continue confirmation for [Phase 2 source processing](../plans/compiler-frontend-phase-2-complete.md). Planning/support is committed as `08c381a`; Phase 1 as `5fa5ce9`. On confirmation, commit Phase 2 and start Phase 3 core lexer/trivia, requiring behavioral-red tests and a verified Unicode 18 normalization implementation before normalized identifier values.
 2. Before Phase 5, specify the exact unified numeric candidate grammar and numeric length limits (Q-014); the unified integer/float matching approach is approved in DEC-089. Everything else on the parser-readiness checklist is selected or postponed to implementation. DEC-083–088 settle adjacency, EOF extents, fallback runs, error binding/collapse, and span postponement. DEC-077–082 settle incomplete candidates, Unicode errors, collapse, comment-only files, unexpected closers, and token-level normalization. DEC-072–076 settle group behavior, EOF closer insertion, ordinary prefix/postfix parsing, semantic `::` rejection, comments as lexical whitespace, and universal operator/operand syntax. Retain the earlier selected literal, precedence, insertion, and semantic-identifier decisions. Use the [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
 3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
 
@@ -789,4 +816,4 @@ hooks were added.
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 
-> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-1-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. KP-093 records the green, reviewed Phase 1 foundation (49 tests, type-check/build/export smoke pass), awaiting commit/continue confirmation. Planning is committed as `08c381a`; Phase 2 has not started. Preserve TDD and the generic expression parser/semantic boundary; the host Unicode 17 data does not satisfy pinned Unicode 18. Resolve Q-014 before numeric matcher implementation.
+> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `plans/compiler-frontend-phase-2-complete.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and relevant history. KP-094 records Phase 1 committed as `5fa5ce9` and Phase 2 source processing verified (94 tests/type-check/build/export smoke), awaiting commit/continue confirmation. Phase 2 lacks initial behavioral-red TDD evidence; do not repeat or conceal that gap. Phase 3 has not started; Unicode18 XID/names are pinned, but normalization is not implemented. Retain the generic parser/semantic boundary; resolve Q-014 before numeric matching.
