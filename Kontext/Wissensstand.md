@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-06 (timezone +01:00); Phase 5 numeric scanning and lexical recovery implemented, statically reviewed and independently verified: 432 tests, type-check, build/export smoke and whitespace checks pass (KP-103). Awaiting commit/continue confirmation; Phase 4 committed as `5f43c73`.
+- Last substantive update: 2026-11-06 (timezone +01:00); Phase 5 committed as `e2afc57` on user authorization. Phase 6 structural grouping and implicit insertion implemented and reviewed after revisions: 443 tests, type-check, build/export smoke and whitespace checks pass independently (KP-104). Awaiting Phase 6 commit/continue confirmation.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -860,8 +860,34 @@ hooks were added.
 - **Independently verified:** 432 tests in seven files, type-check,
   build/public export smoke, unstaged/staged whitespace checks pass.
   Complete existing Unicode normalization conformance remains in the suite.
-- **Checkpoint:** Awaiting user commit/continue confirmation. Earlier lexer
-  checkpoints describe their phase-time deferrals, now superseded here.
+- **Checkpoint:** User authorized commit/continue at 21:15 (+01:00);
+  committed as `e2afc57` (KP-104). Earlier lexer checkpoints describe their
+  phase-time deferrals, now superseded here.
+
+### Structural grouping checkpoint
+
+- **Implemented/verified:** Phase 6
+  [completion evidence](../plans/compiler-frontend-phase-6-complete.md), KP-104.
+  [structureCore](../src/parser/grouping.ts) returns
+  [structural CST contracts](../src/cst/cst.ts): independent file/group
+  sequences, recursive delimiter operands and minimal APPLY/EMPTY insertion.
+- Explicit-stack grouping handles 1,500 nested groups in tests. Mismatches
+  remain errors relative to the innermost group; outstanding closers are
+  diagnosed and inserted at EOF. Trivia/source tokens are retained.
+- **DEC-088 implementation choices:** Zero-width byte anchors before the
+  following significant token for leading/between-token insertions; trailing
+  EMPTY at the preceding operator's end. Empty files use EOF; empty groups
+  use the closer's start, or EOF if missing. Missing closers use EOF.
+- **TDD/review:** Eight initial behavioral failures reported against an
+  importable unimplemented skeleton; 11 focused tests green. Review requested
+  root-closer diagnostic accuracy and helper JSDoc correction. Exact-message
+  regression failed before the fix. Conductor inspected both corrections.
+- **Independently verified:** 443 tests in eight files, type-check,
+  build/public export smoke and whitespace check pass.
+- **Limits/checkpoint:** Not a precedence tree or completed parse. Known lexical
+  operand errors retain that role; unresolved errors remain insertion barriers.
+  Final classification/collapse is Phase 8. Phase 6 is uncommitted; await user
+  confirmation before Phase 7.
 
 ### Phase 5 numeric approval gate
 
@@ -967,12 +993,12 @@ not numeric digits or identifier letters.
 
 ## Next steps
 
-1. Await user confirmation to commit Phase 5 and/or continue. Read its [completion record](../plans/compiler-frontend-phase-5-complete.md) for TDD, static review, independent verification and public API migration. No commit or Phase 6 start is authorized by the numeric grammar approvals alone. Maintain [JSDoc instructions](../.github/instructions/jsdoc.instructions.md).
-2. After confirmation, implement Phase 6 delimiter grouping and implicit APPLY/EMPTY elements with TDD. Q-014's numeric gate is resolved by DEC-090/091; do not reopen it. Parser error classification/collapse and CST span representation remain later work under Q-015. Follow the [approved plan](../plans/compiler-frontend-plan.md) and [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
+1. Await user confirmation to commit Phase 6 and/or continue. Read its [completion record](../plans/compiler-frontend-phase-6-complete.md) for TDD, review revisions, verification and synthetic-span choices. Phase 5 is committed as `e2afc57`. Maintain [JSDoc instructions](../.github/instructions/jsdoc.instructions.md).
+2. After confirmation, implement Phase 7 precedence-based binary CST with TDD. Q-014's numeric gate is resolved by DEC-090/091; do not reopen it. Phase 6 chooses structural layouts and synthetic spans under DEC-088; final contextual error classification/collapse and parse-result classification remain Phase 8. Follow the [approved plan](../plans/compiler-frontend-plan.md) and [Language Design checklist](../docs/design-research/Language-Design.md#questions-to-resolve-before-parser-implementation) without reinstating construct-specific parser requirements.
 3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
 
 ## Handover
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 
-> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and KP-101–103. DEC-090/091 resolve the numeric grammar gate. Phase 5 is implemented and statically approved; 432 tests, type-check, build/export smoke and whitespace checks passed independently. Read its completion record and await commit/continue confirmation before Phase 6. Preserve staged/unstaged changes. Maintain JSDoc; no parser has been added.
+> Start prompt: Work in `/bigdata/KAI/projects/NewLanguageProject`. Read `AGENTS.md`, `plans/compiler-frontend-plan.md`, `docs/design-research/Language-Design.md`, `Kontext/Wissensstand.md`, and KP-104. Phase 5 committed as `e2afc57`; Phase 6 grouping/minimal implicit insertion implemented and reviewed after revisions. Independently verified 443 tests, type-check, build/export smoke and whitespace checks. Read the Phase 6 completion record and await commit/continue confirmation before Phase 7. Preserve staged/unstaged changes and complete JSDoc. No precedence tree or final parse-result API yet.

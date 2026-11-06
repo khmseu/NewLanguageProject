@@ -4,7 +4,7 @@ This is a strict TypeScript ESM package for the compiler frontend foundation.
 It provides original-byte source input, source decoding and Unicode
 translation, a Unicode-18-pinned core scanner and lossless token/trivia stream,
 diagnostic types, character/ordinary-string/tagged-raw literals, unified numeric
-candidates, and a generic result contract. Parser construction remains deferred.
+candidates, and an initial structural grouping API.
 
 ## Runtime and tools
 
@@ -78,7 +78,41 @@ touching identifier/number runs as error operands. `lexCore` scans the whole
 input. Unknown characters are explicit shortest unsupported runs with
 `unrecognized-character` diagnostics; Unicode-error units remain separate.
 `status` reports scanner coverage, not compiler success; inspect diagnostics
-independently. Parser errors and parser-level error collapse are not implemented.
+independently. Parser recovery and parser-level error collapse are not implemented.
+
+### Structural grouping API (Phase 6)
+
+`structureCore(lexCore(input))` returns a `CoreStructureResult` with a shallow
+`CstSequence` at file scope and recursively nested `CstGroup` operands for
+`()`, `[]`, and `{}`. Within each scope, recognized operands and explicit
+operators alternate using only the required implicit `APPLY` between adjacent
+operands and `EMPTY` between adjacent operators or at operator boundaries.
+Lexer error entries with an already-declared lexical operand role participate
+as operands; unresolved fallback and unexpected-closer errors remain explicit
+barriers to insertion.
+Groups are outer operands; their interior sequences get independent boundaries.
+Empty and trivia-only files/groups contain one `EMPTY`. Trivia stays as ordered
+entries, and source tokens retain original byte provenance. This structure is
+not yet a precedence tree and must not be presented as a completed parse.
+
+Synthetic `APPLY`/`EMPTY` spans are zero-width original-byte ranges. Their
+anchor is the following significant token's byte start when inserted before
+that token (including between adjacent significant tokens); a trailing `EMPTY`
+uses the preceding operator's byte end. An entirely empty or trivia-only
+file's `EMPTY` uses byte EOF. An empty group's `EMPTY` uses the actual closer's
+byte start, or byte EOF when the closer is missing. Synthetic missing closers
+are zero-width at byte EOF and have no source token or invented bytes. Tests pin
+these choices to DEC-088.
+
+`structureCore` carries all lexer diagnostics forward and adds explicit
+unexpected-closer and missing-closer diagnostics. Errors without an already
+declared lexical operand role remain distinct `CstError` entries with an
+unresolved role; errors are not collapsed or assigned contextual
+operator/operand roles, and the result does not claim successful parsing. This
+phase also does not recover after an unclosed group
+other than inserting expected closers at EOF. Contextual error decisions,
+trivia-independent collapse, precedence parsing, and final compiler-result
+classification remain later work.
 
 Numeric tokens expose frozen `numeric: CoreNumber` metadata with integer,
 fraction, exponent, and suffix components retained as written; `suffixKey` is

@@ -3,6 +3,7 @@ import {
   lexCore,
   normalizeUnicode18,
   scanCoreAt,
+  structureCore,
   SourceInput,
   UNICODE_DATA_VERSION,
   processSource,
@@ -24,6 +25,18 @@ assert.deepEqual(
   [["identifier", "e\u0301"], "whitespace", ["operator", "+"]],
 );
 assert.equal(scanCoreAt(lexical.source, 5).tokenKind, "number");
+const structure = structureCore(lexCore(
+  new SourceInput(new TextEncoder().encode("a b")),
+));
+assert.deepEqual(
+  structure.root.entries.map((entry) =>
+    entry.kind === "trivia" ? undefined
+      : entry.kind === "operand" && entry.operandKind === "token"
+        ? entry.token.spelling
+        : entry.kind === "operator" ? entry.spelling : entry.kind,
+  ).filter((entry) => entry !== undefined),
+  ["a", "APPLY", "b"],
+);
 const numeric = lexCore(new SourceInput(new TextEncoder().encode("0x1p+2#F64")));
 assert.equal(numeric.items[0].numeric.suffixKey, "f64");
 assert.equal(numeric.items[0].numeric.exponent, "+2");

@@ -1997,3 +1997,46 @@ generated-data changes. Staged/unstaged documentation preserved.
 **Next:** User checkpoint to commit and/or continue to Phase 6 grouping and
 implicit APPLY/EMPTY elements. No commit made and no Phase 6 implementation
 started. Grammar approval alone does not authorize either action.
+
+### KP-104 - Phase 5 committed; Phase 6 structural grouping completed
+
+- Event date: 2026-11-06 21:15 (+01:00), user "commit that, then continue".
+- Documentation date: 2026-11-06 (+01:00).
+- Sources: current conversation, commit `e2afc57`, implementation/review
+  reports, independent validation and
+  [Phase 6 completion record](../plans/compiler-frontend-phase-6-complete.md).
+- Status: Phase 5 committed; Phase 6 implemented/verified, uncommitted.
+
+**Nutzerangabe/beschlossen:** Commit reviewed Phase 5 and continue the approved
+plan. Committed its 13 files as `e2afc57`, including the documented numeric
+deferral API removal. Worktree clean immediately after that commit.
+
+**Belegt:** Phase 6 adds `structureCore`, structural CST contracts,
+explicit-stack delimiter grouping and independent minimal APPLY/EMPTY
+insertion. Mismatched closers remain unexpected relative to the innermost
+opener, not ancestor-autoclosing instructions. Outstanding closers are
+diagnosed and inserted at EOF; source entries/trivia remain retained.
+Precedence and final contextual error classification/collapse are deferred,
+not silently approximated. Unresolved errors are explicit insertion barriers.
+
+**Implementation choices under DEC-088:** Synthetic spans are zero-width byte
+anchors. Insertions before tokens use the following significant token's start;
+trailing EMPTY uses the preceding operator's end. Empty/trivia-only file EMPTY
+uses EOF; empty groups use their closer's start or EOF if missing. Inserted
+closers use EOF and contain no original bytes. README and tests pin these rules.
+
+**TDD/review:** Implementer reported eight initial behavioral failures against
+an importable unimplemented skeleton, then 11 focused tests green. Static
+review requested accurate root-unmatched-closer wording and helper JSDoc
+including known-role operand errors. Exact-message regression failed before
+fixing the diagnostic. Conductor inspected both revisions; static reviewer
+did not run tests.
+
+**Independent verification:** `npm test`: 443 passing tests in eight files.
+`npm run typecheck`, `npm run smoke:exports` (includes build) and
+`git diff --check` pass. Tests include 1,500-level nesting, explicit token
+fixtures, all delimiter families, exact anchors and byte reconstruction with
+BOM/global escape spelling. No dependency/generated-data changes.
+
+**Next:** Await user checkpoint for Phase 6 commit and/or Phase 7 continuation.
+No Phase 6 commit and no Phase 7 implementation performed.

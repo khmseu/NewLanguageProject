@@ -56,3 +56,21 @@ export type {
   SourceLocation,
   WarningDiagnostic,
 } from "./diagnostics/diagnostic.js";
+export {
+  type CstApplyOperator,
+  type CstDelimiter,
+  type CstEmptyOperand,
+  type CstEntry,
+  type CstError,
+  type CstExplicitOperator,
+  type CstGroup,
+  type CstOperator,
+  type CstSequence,
+  type CstTokenOperand,
+  type CstTriviaEntry,
+  type CoreStructureDiagnostic,
+  type CoreStructureResult,
+  type GroupingDiagnostic,
+  type GroupingDiagnosticCode,
+} from "./cst/cst.js";
+export { structureCore } from "./parser/grouping.js";
