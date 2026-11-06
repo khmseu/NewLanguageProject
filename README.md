@@ -4,7 +4,7 @@ This is a strict TypeScript ESM package for the compiler frontend foundation.
 It provides original-byte source input, source decoding and Unicode
 translation, a Unicode-18-pinned core scanner and lossless token/trivia stream,
 diagnostic types, character/ordinary-string/tagged-raw literals, unified numeric
-candidates, and an initial structural grouping API.
+candidates, structural grouping, and a precedence-based binary CST parser.
 
 ## Runtime and tools
 
@@ -78,7 +78,8 @@ touching identifier/number runs as error operands. `lexCore` scans the whole
 input. Unknown characters are explicit shortest unsupported runs with
 `unrecognized-character` diagnostics; Unicode-error units remain separate.
 `status` reports scanner coverage, not compiler success; inspect diagnostics
-independently. Parser recovery and parser-level error collapse are not implemented.
+independently. Contextual parser-error recovery and parser-level error collapse
+are not implemented.
 
 ### Structural grouping API (Phase 6)
 
@@ -92,8 +93,7 @@ as operands; unresolved fallback and unexpected-closer errors remain explicit
 barriers to insertion.
 Groups are outer operands; their interior sequences get independent boundaries.
 Empty and trivia-only files/groups contain one `EMPTY`. Trivia stays as ordered
-entries, and source tokens retain original byte provenance. This structure is
-not yet a precedence tree and must not be presented as a completed parse.
+entries, and source tokens retain original byte provenance. This is the lossless structural input to the Phase 7 precedence parser.
 
 Synthetic `APPLY`/`EMPTY` spans are zero-width original-byte ranges. Their
 anchor is the following significant token's byte start when inserted before
@@ -108,11 +108,61 @@ these choices to DEC-088.
 unexpected-closer and missing-closer diagnostics. Errors without an already
 declared lexical operand role remain distinct `CstError` entries with an
 unresolved role; errors are not collapsed or assigned contextual
-operator/operand roles, and the result does not claim successful parsing. This
-phase also does not recover after an unclosed group
-other than inserting expected closers at EOF. Contextual error decisions,
-trivia-independent collapse, precedence parsing, and final compiler-result
-classification remain later work.
+operator/operand roles. This Phase 6 API is structural output, not a parse
+success result.
+
+### Precedence parser API (Phase 7)
+
+`parseSource(new SourceInput(bytes))` runs the core lexer, delimiter grouping,
+implicit `APPLY`/`EMPTY` insertion, and precedence parser. `parseCore(lexCore(input))`
+accepts an existing lexer result. Both return `CstParseResult`:
+
+```ts
+const result = parseSource(new SourceInput(
+  new TextEncoder().encode("a + b * c"),
+));
+// result.status === "complete"
+// result.root.expression is (+ a (* b c))
+```
+
+`root.expression` is a binary `CstExpression` tree with source-token and
+group leaves. Each binary node retains its explicit or synthetic operator,
+left/right children, and a half-open **original-byte** span from the left
+child's start through the right child's end. A `CstParsedGroup` keeps its
+original delimiters and contains an independently parsed scope. Every scope
+also retains its original `CstSequence` in `structure`, including ordered
+comments, whitespace, BOM trivia, and error entries; tree spans may therefore
+cover trivia that is stored in this structural sequence rather than attached
+to a child.
+
+The exported `OPERATOR_PRECEDENCE` table implements all DEC-022 levels and
+DEC-066 associativities; lower numeric priorities bind more tightly. An
+iterative shunting-yard reduction is used instead of recursive operator
+descent, so long operator chains do not consume the call stack. A separate
+post-order stack parses nested groups. Same-level left operators reduce as
+they arrive, right-associative operators remain stacked, and a repeated
+non-associative level receives a `non-associative-operator-chain` error.
+For that rejected chain, the parser retains a deterministic left-reduced
+partial tree; `status` is `"error"`, never `"complete"`.
+
+All operands and operators remain generic. There are no keyword productions,
+unary-specific rules, conditional reassociation, or semantic checks.
+`::` is accepted at `:`'s right-associative level; its reserved status and
+operand legality are semantic work. Prefix/postfix-looking source uses the
+same binary rules and the structure phase's synthetic `EMPTY` nodes, e.g.
+`a * -b` groups as `(a * EMPTY) - b`, not as multiplication by a special
+unary-minus expression.
+
+Malformed input is not reported as successful. Lexer, delimiter, and
+precedence errors set `status` to `"error"` while retaining diagnostics and
+structural source. When a scope contains an unresolved `CstError`, its
+`expression` is `undefined`; the complete explicit `structure.entries`
+remains available as partial output. This phase intentionally does not merge
+errors across trivia, infer contextual error-operator roles, recover tree
+fragments around unresolved entries, or perform the final Phase 8
+byte-to-CST conformance classification. Missing closers are retained as
+zero-width EOF insertions with diagnostics; their enclosing group can still
+have a tree, but the result remains in error status.
 
 Numeric tokens expose frozen `numeric: CoreNumber` metadata with integer,
 fraction, exponent, and suffix components retained as written; `suffixKey` is

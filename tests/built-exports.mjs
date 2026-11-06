@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import {
   lexCore,
+  parseSource,
+  OPERATOR_PRECEDENCE,
   normalizeUnicode18,
   scanCoreAt,
   structureCore,
@@ -11,6 +13,12 @@ import {
 
 const source = new SourceInput(new Uint8Array([0xff]));
 assert.equal(SourceInput.name, "SourceInput");
+assert.equal(typeof parseSource, "function");
+assert.equal(OPERATOR_PRECEDENCE["**"].associativity, "right");
+assert.equal(
+  parseSource(new SourceInput(new TextEncoder().encode("a + b"))).status,
+  "complete",
+);
 assert.deepEqual(source.slice(source.range(0, 1)), new Uint8Array([0xff]));
 assert.equal(UNICODE_DATA_VERSION, "18.0.0");
 assert.equal(processSource(source).text, "\uFFFD");

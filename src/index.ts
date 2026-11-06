@@ -62,9 +62,16 @@ export {
   type CstEmptyOperand,
   type CstEntry,
   type CstError,
+  type CstBinaryExpression,
+  type CstErrorOperand,
+  type CstExpression,
   type CstExplicitOperator,
   type CstGroup,
   type CstOperator,
+  type CstParseDiagnostic,
+  type CstParseResult,
+  type CstParsedGroup,
+  type CstParsedSequence,
   type CstSequence,
   type CstTokenOperand,
   type CstTriviaEntry,
@@ -72,5 +79,14 @@ export {
   type CoreStructureResult,
   type GroupingDiagnostic,
   type GroupingDiagnosticCode,
+  type PrecedenceDiagnostic,
+  type PrecedenceDiagnosticCode,
 } from "./cst/cst.js";
 export { structureCore } from "./parser/grouping.js";
+export {
+  OPERATOR_PRECEDENCE,
+  parseCore,
+  parseSource,
+  type OperatorAssociativity,
+  type OperatorPrecedence,
+} from "./parser/precedence.js";

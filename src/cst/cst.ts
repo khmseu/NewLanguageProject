@@ -173,3 +173,107 @@ export interface CoreStructureResult {
   /** Original lexer diagnostics plus structural delimiter recovery diagnostics. */
   readonly diagnostics: readonly CoreStructureDiagnostic[];
 }
+
+/**
+ * An operator and its two syntactic arguments. The node records binding only;
+ * it does not assign operator meaning or validate argument legality.
+ */
+export interface CstBinaryExpression {
+  /** Identifies a precedence-reduced binary node. */
+  readonly kind: "binary";
+  /** Left child, which may itself be a binary expression or grouped operand. */
+  readonly left: CstExpression;
+  /** Original or inserted operator, preserving token provenance. */
+  readonly operator: CstOperator;
+  /** Right child, which may itself be a binary expression or grouped operand. */
+  readonly right: CstExpression;
+  /** Original-byte extent from the left child through the right child. */
+  readonly span: ByteRange;
+}
+
+/**
+ * A delimiter group in a parsed tree, with its interior parsed independently.
+ * The structural sequence remains available even when its expression is absent.
+ */
+export interface CstParsedGroup {
+  /** Identifies a parenthesized, bracketed or braced operand. */
+  readonly kind: "group-expression";
+  /** Original opener token. */
+  readonly open: CoreToken;
+  /** Source closer or zero-width expected closer inserted at EOF. */
+  readonly close: CstDelimiter;
+  /** Parsed interior; an absent expression preserves malformed structure. */
+  readonly contents: CstParsedSequence;
+  /** Original-byte extent from opener through source/inserted closer. */
+  readonly span: ByteRange;
+}
+
+/**
+ * A lexical error already classified as an operand by the structural phase.
+ * Unresolved errors are deliberately not converted to expression operands.
+ */
+export interface CstErrorOperand {
+  /** Identifies a preserved lexical-error operand. */
+  readonly kind: "error-operand";
+  /** Original error entry, including its lexer token or fallback region. */
+  readonly error: CstError & { readonly errorRole: "operand" };
+  /** Original-byte error extent. */
+  readonly span: ByteRange;
+}
+
+/** Expression leaves and binary reductions produced by the parser. */
+export type CstExpression =
+  | CstTokenOperand
+  | CstEmptyOperand
+  | CstErrorOperand
+  | CstParsedGroup
+  | CstBinaryExpression;
+
+/**
+ * One precedence-parsed file or group scope plus its lossless structural form.
+ * `expression` is undefined when an unresolved error or malformed alternation
+ * prevents a complete tree for that scope.
+ */
+export interface CstParsedSequence {
+  /** Original structural entries, including all trivia and explicit errors. */
+  readonly structure: CstSequence;
+  /** Binary expression tree, or undefined when only explicit partial output exists. */
+  readonly expression: CstExpression | undefined;
+  /** Original-byte extent of this scope. */
+  readonly span: ByteRange;
+}
+
+/** Diagnostic codes produced by precedence parsing. */
+export type PrecedenceDiagnosticCode =
+  | "non-associative-operator-chain"
+  | "unknown-operator-precedence"
+  | "invalid-operator-sequence";
+
+/**
+ * A syntax-level precedence diagnostic, located in original source bytes.
+ * The parser retains its deterministic partial tree when possible.
+ */
+export type PrecedenceDiagnostic<
+  Code extends PrecedenceDiagnosticCode = PrecedenceDiagnosticCode,
+> = ErrorDiagnostic<Code> & {
+  /** Source spelling of the operator relevant to this diagnostic. */
+  readonly operator?: string;
+};
+
+/** Precedence parser diagnostics, including all lexer and grouping errors. */
+export type CstParseDiagnostic =
+  | CoreStructureDiagnostic
+  | PrecedenceDiagnostic;
+
+/**
+ * Precedence parse output. `status: "error"` is used whenever an error
+ * diagnostic exists; trees and structural partial output remain available.
+ */
+export interface CstParseResult {
+  /** Parsed root scope with its full lossless structural sequence. */
+  readonly root: CstParsedSequence;
+  /** Lexer, grouping, and precedence diagnostics in byte order. */
+  readonly diagnostics: readonly CstParseDiagnostic[];
+  /** Error-bearing parses are never marked complete. */
+  readonly status: "complete" | "error";
+}

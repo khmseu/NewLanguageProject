@@ -2040,3 +2040,46 @@ BOM/global escape spelling. No dependency/generated-data changes.
 
 **Next:** Await user checkpoint for Phase 6 commit and/or Phase 7 continuation.
 No Phase 6 commit and no Phase 7 implementation performed.
+
+### KP-105 - Phase 6 committed; Phase 7 precedence-based CST completed
+
+- Event date: 2026-11-06 21:52 (+01:00), user "commit that, then continue".
+- Documentation date: 2026-11-06 (+01:00).
+- Sources: current conversation, commit `6a0e637`, implementation/review
+  reports, independent validation and
+  [Phase 7 completion record](../plans/compiler-frontend-phase-7-complete.md).
+- Status: Phase 6 committed; Phase 7 implemented/verified, uncommitted.
+
+**Nutzerangabe/beschlossen:** Commit reviewed Phase 6 and continue the approved
+plan. Committed its ten files as `6a0e637`; worktree clean immediately after.
+
+**Belegt:** Phase 7 adds `parseSource`, `parseCore`, the full DEC-022/066 table,
+and binary expression/group/scope/result contracts. Operators remain generic;
+there is no special unary grammar, conditional reassociation or semantic
+rejection of `::`. Groups retain independently parsed interiors. Each scope
+retains structural entries including comments/trivia and original-byte spans.
+
+**Implementation choices:** Iterative shunting-yard reduction and explicit
+post-order group traversal avoid call-stack consumption by operator chains or
+group depth. Binary spans cover left-child start to right-child end. Repeated
+non-associative levels receive diagnostics with deterministic left-reduced
+partial trees. Unresolved errors leave their scope's expression undefined,
+retaining structural data; all error diagnostics cause error status.
+Contextual roles/collapse and full frontend conformance remain Phase 8.
+
+**TDD/review:** Implementer reported 31 of 32 behavioral failures against an
+importable skeleton. A later off-by-one expected span was corrected as a
+test-fixture error, not a production bug. Focused green initially 33 tests.
+Static review approved with a minor misleading-title recommendation, now
+corrected. Three parser-level stress tests were added and passed without
+production changes: 1,500 nested groups and 5,000-operator left/right chains,
+with exact iterative depth/count assertions. Final focused suite: 36 tests.
+Reviewer did not execute checks.
+
+**Independent verification:** `npm test`: 479 passing tests in nine files.
+`npm run typecheck`, `npm run smoke:exports` (includes build) and
+`git diff --check` pass. Full normalization conformance remains covered.
+No dependency or generated-data changes.
+
+**Next:** Await user checkpoint for Phase 7 commit and/or Phase 8 continuation.
+No Phase 7 commit and no Phase 8 implementation performed.
