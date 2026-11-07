@@ -147,6 +147,8 @@ This log records the material context and evidence behind the current file class
 | SRC-131 | User confirmation in this conversation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 2026-11-06 18:18 (+01:00)                                         | "commit that, then continue"                                                                                                                                                                                                                                                                                             | Authorizes Phase 2 commit and Phase 3 implementation, retaining phase checkpoints.                                                                                                                                                |
 | SRC-132 | Phase 3 implementation/review reports, inspected code, local verification                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | 2026-11-06 (+01:00)                                               | Core scanner, Unicode18 generated normalization, behavioral-red evidence, 110 tests and type-check/build/export smoke                                                                                                                                                                                                    | Core lexer only; deferred literal/numeric surfaces and later parser behavior not implemented.                                                                                                                                     |
 | SRC-133 | Official Unicode18 normalization files/fixture and checksum-verified generator                                                                                                                                                                                                                                                                                                                                                                                                                                                               | 2026-11-06 (+01:00)                                               | 20,171 normalization rows, five columns each for NFC/NFKC; official hashes and licensing/provenance documented                                                                                                                                                                                                           | Full fixture-row comparisons, not a claim of untested forms NFD/NFKD or host conformance.                                                                                                                                         |
+| SRC-134 | User request and direct reinspection of `/bigdata/KAI/NewLang/IDEAS/OtherStuff.txt`, `/bigdata/KAI/NewLang/IDEAS/newlang.ye`, `/bigdata/KAI/projects/GenLang/docs/language.md`, `/bigdata/KAI/projects/LangLLVM/src/Design: Declarations, Definitions.md`, `/bigdata/KAI/projects/LangLLVM/src/mylang.pegjs`, and selected `/bigdata/KAI/projects/OPPlang/OPPrs/miniopp` sources | 2026-11-07 (+01:00) | Experiment-stated semantic concepts, keyword-like forms, binding markers, and limits relevant to future CST semantics | Selected files only; no exhaustive experiment-tree review, and grammar/operator descriptions do not establish full operational semantics. |
+| SRC-135 | User request and targeted inspection of NewLang `OtherStuff.txt` / `newlang.ye`, GenLang `docs/language.md`, LangLLVM declaration note / `mylang.pegjs`, and OPPrs `miniopp` | 2026-11-07 17:34 (+01:00) | Package/module/class concepts and productions, distinguishing custom design notes from C++/Java-like grammar material | Selected experiment documents only; absence statements are limited to reviewed sources. |
 
 ## Entries
 
@@ -2398,3 +2400,83 @@ construct-specific grammar was introduced.
 **Validation:** All four SVGs parse as XML; local Markdown links resolve; and
 `git diff --check` passes. This documentation-only change does not require
 compiler tests or a build.
+
+### KP-117 - Experiment semantics and keyword survey for CST follow-up
+
+- Event/documentation date: 2026-11-07 (+01:00).
+- Source: SRC-134; current decisions DEC-012, DEC-011, DEC-052/053, DEC-069,
+  DEC-073/074.
+- Status: research inventory only; no new semantic decision or implementation.
+
+**Nutzerangabe:** The next design step will need semantics for CST elements;
+discover and list the semantics or keywords specified by the `langlist`
+experiments.
+
+**Belegt:** NewLang's design notes state a broad object/type model, GC-like
+reference behavior, functions with multiple results, and coroutine transfers;
+its Java-like grammar supplies language-form keywords but does not make all of
+them NewLang semantic commitments. GenLang documents C-style control/declaration
+forms and operator roles, while explicitly treating keyword-like constructs as
+predefined identifiers with special semantics rather than reserved tokens.
+LangLLVM's declaration note describes symbol-table-based binding and proposes
+name-first constant/variable/type markers, templates, and function expression
+and type forms; the next language adopts the binding model, refined by DEC-052.
+OPPrs sources principally specify parser/operator examples and do not provide a
+complete custom-language semantics or keyword list. The LangLLVM PEG's C++
+productions and OPPrs upstream C/calculator examples are not custom language
+semantics.
+
+**Current-design boundary:** DEC-012/053 already select semantic symbol-table
+lookup for keyword-like identifiers; DEC-069 selects a CST-only binary
+operator/operand tree plus comments, without an AST; DEC-073/074 define
+semantic handling for parsed `EMPTY` unary operands and invalid `::`. The
+experiment inventory is evidence, not approval to import other constructs.
+Additional node meanings and evaluation/type/control-flow rules remain to be
+specified. No semantic-analysis implementation is authorized by this survey.
+
+### KP-118 - Survey reframed as candidate semantic ideas
+
+- Event/documentation date: 2026-11-07 (+01:00).
+- Source: user's clarification in this conversation and direct recheck of the
+  experiment notes summarized in SRC-134.
+- Status: clarification of the survey's purpose; no semantic choice made.
+
+**Nutzerangabe:** The survey is not intended to audit which semantics are
+already settled for the current language. Its purpose is to collect ideas for
+semantics that could be used for CST elements.
+
+**Correction:** Reframed the current knowledge section as a source-based idea
+bank, independent of current-language adoption status. It foregrounds candidate
+ideas such as NewLang's value/reference and overload models, GenLang's
+predefined-identifier control forms and operator roles, and LangLLVM's
+symbol-table/binding model, while retaining source limits and distinguishing
+syntax inventories from actual semantic statements. Existing design decisions
+are secondary cross-references, not the survey's organizing question. Further
+discussion is needed to choose which ideas, if any, to adopt.
+
+### KP-119 - Package/module/class syntax survey
+
+- Event/documentation date: 2026-11-07 17:34 (+01:00).
+- Source: SRC-135.
+- Status: source survey for the current design discussion; no new choice.
+
+**Nutzerangabe:** Focus for now on package/module/class syntax and ask what the
+experiments specified.
+
+**Belegt:** NewLang's notes identify modules with classes, packages with module
+collections and exported interfaces, imports with configuration-based package
+mapping, and package/subpackage components in global names. Its grammar defines
+package interface/import, package export, and module declaration file forms;
+the module context is introduced by `package ...;`. The class grammar includes
+modifiers, type parameters, superclass/interfaces, and a body supporting fields,
+methods, nested types, initializers, constructors, and imports. GenLang's
+reviewed spec is C-style procedural and does not specify these declaration
+forms; it does include struct/union/enum types. LangLLVM's declaration note
+does not specify them, while its PEG includes C++ namespace and class grammar
+that is not evidence of its custom-language design. Reviewed OPPrs `miniopp`
+sources focus on expressions and do not provide such declarations.
+
+**Offen:** Whether to adopt NewLang's module/class identity, its package/export
+and import model, any subset of its class grammar, or another organization
+remains undecided. Grammar coverage and the distinct roles of a module, class,
+package, namespace, and compilation unit need separate evaluation.
