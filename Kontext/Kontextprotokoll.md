@@ -2217,3 +2217,72 @@ new fabricated TDD run.
 not inferred approval to implement semantics, runtime or backend. Ask whether
 to plan semantic analysis or prioritize frontend tooling/hardening; these are
 proposals, not selected requirements.
+
+### KP-110 - Simple source-file CLI requested; plan proposed
+
+- Event/documentation date: 2026-11-07 01:14 (+01:00).
+- Source: current conversation, user asks for "a simple cli" to "parse a source
+  file and dump the result"; inspected package/build configuration and guidance.
+- Status: CLI scope user-selected; detailed plan/defaults proposed, not approved.
+
+**Nutzerangabe:** Prioritize a small usable frontend CLI, not semantic analysis.
+Existing `SourceInput` and `parseSource` provide the byte-to-CST implementation.
+No CLI entry or npm parse command exists in the inspected package.
+
+**Vorschlag:** `npm run parse -- path/to/source`, raw-byte input, complete
+pretty-printed JSON parse result on stdout including recovered tree,
+structure/trivia, diagnostics and status. Exit 0 for complete/help, 1 for
+syntax/Unicode errors (still emit result), 2 for usage/I/O failures with stderr
+message. Avoid dependencies and output truncation. Test deep trees explicitly
+so dumping does not undo the parser's stack-safe behavior.
+
+Three incremental TDD phases proposed: argument/help/read errors; parse/dump
+integration; executable npm/build wiring, process tests and README. Every
+phase gets review and commit/continue gate. Await plan approval; no CLI
+implementation, dependency change or validation executed in this planning turn.
+
+**Commit continuity:** Frontend final commit succeeded as `caf4017`. Subsequent
+user-staged Trunk configuration committed as `03870f5`; staged expanded checks
+and project formatting committed as `4d99c34`. These routine commit turns did
+not add compiler behavior. Current worktree was clean before this context update.
+
+### KP-111 - CLI plan approved; first phase authorized
+
+- Event/documentation date: 2026-11-07 01:16 (+01:00).
+- Source: current conversation, user "approve." in response to CLI defaults
+  and three-phase TDD plan.
+- Status: beschlossen; [approved plan](../plans/compiler-cli-plan.md) saved.
+
+User approved one source file, `--help`, complete formatted JSON result output,
+raw-byte reading, no dependencies and exit codes 0 complete/help, 1 parse
+errors with result, 2 usage/read failures. Start Phase 1 argument handling and
+source loading with TDD; retain phase review/commit checkpoints. Deep output
+handling and executable/npm wiring remain Phases 2/3. No commit authorized.
+
+### KP-112 - CLI Phase 1 implemented and reviewed
+
+- Documentation/event date: 2026-11-07 (+01:00).
+- Sources: implementation/static review reports, conductor checks and
+  [completion evidence](../plans/compiler-cli-phase-1-complete.md).
+- Status: implemented/verified, uncommitted; awaiting commit/continue.
+
+**Belegt:** Added `parseCliArguments` with help/file/usage-error variants and
+`readSourceFile` with loaded/read-error variants. One path, standalone `--help`,
+and `--` for leading-hyphen paths; explicit status-2 errors. File reads preserve
+all bytes including malformed UTF-8/BOM; only operational errno-style
+file-read errors become results, unexpected exceptions propagate. No parser
+integration, JSON dump or runnable package command yet, by phase boundaries.
+
+**TDD/review:** Implementer reported 17/18 initial behavioral failures against
+importable skeletons. A later unknown-option-plus-extra-argument case failed
+before refining validation order. Final focused 18 green. Static review
+APPROVED without findings; reviewer did not execute checks.
+
+**Independent checks:** Conductor ran focused tests (18 passed), type-check,
+build/export smoke and whitespace validation; all pass. Implementer additionally
+reported full 559-test green in 11 files and built CLI-module import/read smoke;
+those full-suite/specific smoke checks were not independently rerun. Project-local
+temporary test directories cleaned. No dependencies/package commands added.
+
+**Next:** User checkpoint to commit/continue before Phase 2 parser integration
+and stack-safe complete JSON dumping. Completion is Phase 1 only.

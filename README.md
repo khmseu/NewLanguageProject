@@ -29,6 +29,16 @@ npm run smoke:exports
 `npm run smoke:exports` builds the package and imports it through the package's
 public ESM export map.
 
+## CLI status
+
+Phase 1 adds importable argument/help and raw-byte file-loading support under
+`src/cli/`; it is not yet a runnable command, and there is no `npm run parse`
+script. `--help` must appear alone. Exactly one source path is accepted; unknown
+options are rejected, and a path beginning with `-` must follow `--`. Usage
+and filesystem failures return typed status-2 results with messages for the
+future entry point to write to stderr. Command wiring and parser integration
+remain later phases.
+
 ## Foundation API
 
 `SourceInput` accepts a `Uint8Array` of original UTF-8 source bytes; unsupported
