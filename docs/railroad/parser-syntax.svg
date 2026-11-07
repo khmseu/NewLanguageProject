@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 780" role="img" aria-labelledby="title description">
+  <title id="title">Generic parser syntax railroad diagrams</title>
+  <desc id="description">Syntax productions for generic source scopes, operand forms, recursive delimiter groups, and the alternating expression form produced by recovery.</desc>
+  <style>
+    text { font-family: system-ui, sans-serif; fill: #172033; }
+    .heading { font-size: 25px; font-weight: 700; }
+    .production { font-size: 17px; font-weight: 650; }
+    .node-text { font-size: 16px; }
+    .small { font-size: 14px; fill: #40506a; }
+    .rail { fill: none; stroke: #52647e; stroke-width: 2.5; stroke-linecap: round; }
+    .start { fill: #52647e; }
+    .nonterminal { fill: #eaf1fb; stroke: #52647e; stroke-width: 2; }
+    .terminal { fill: #fff7df; stroke: #92732c; stroke-width: 2; }
+    .frame { fill: #ffffff; stroke: #d7dfeb; stroke-width: 1.5; }
+  </style>
+  <rect x="1" y="1" width="1158" height="778" rx="18" fill="#f7f9fc" stroke="#d7dfeb"/>
+  <text class="heading" x="34" y="44">Generic parser syntax</text>
+  <text class="small" x="34" y="70">This parser has no keyword- or construct-specific productions; names and operators remain generic.</text>
+
+  <rect class="frame" x="22" y="92" width="1116" height="184" rx="12"/>
+  <text class="production" x="42" y="123">SourceScope ::= SourceElement*</text>
+  <text class="small" x="42" y="147">Whitespace and comments are preserved as trivia and ignored when forming this sequence.</text>
+  <circle class="start" cx="75" cy="213" r="5"/>
+  <path class="rail" d="M80 213 H205 M360 213 H455 M455 213 H1020 M455 213 V255 H475 M665 255 H685 V213 H455"/>
+  <rect class="nonterminal" x="205" y="191" width="155" height="44" rx="22"/>
+  <text class="node-text" x="282" y="219" text-anchor="middle">SourceElement</text>
+  <rect class="nonterminal" x="475" y="233" width="190" height="44" rx="22"/>
+  <text class="node-text" x="570" y="261" text-anchor="middle">Operand or Operator</text>
+  <circle class="start" cx="1020" cy="213" r="5"/>
+  <text class="small" x="42" y="266">SourceElement ::= Identifier | Number | Literal | ExplicitOperator | Group | Error</text>
+
+  <rect class="frame" x="22" y="294" width="1116" height="172" rx="12"/>
+  <text class="production" x="42" y="325">Operand ::= Identifier | Number | Literal | Group | EMPTY | ErrorOperand</text>
+  <circle class="start" cx="75" cy="392" r="5"/>
+  <path class="rail" d="M80 392 H170 M170 392 V355 M170 392 V392 M170 392 V429 M170 355 H250 M170 392 H250 M170 429 H250 M430 355 H500 M430 392 H500 M430 429 H500 M500 355 V429 M500 392 H525"/>
+  <rect class="nonterminal" x="250" y="337" width="180" height="36" rx="18"/>
+  <text class="node-text" x="340" y="361" text-anchor="middle">Identifier / Number</text>
+  <rect class="nonterminal" x="250" y="374" width="180" height="36" rx="18"/>
+  <text class="node-text" x="340" y="398" text-anchor="middle">Literal / Group</text>
+  <rect class="nonterminal" x="250" y="411" width="180" height="36" rx="18"/>
+  <text class="node-text" x="340" y="435" text-anchor="middle">EMPTY / ErrorOperand</text>
+  <text class="small" x="555" y="364">A group is one operand in its enclosing scope.</text>
+  <text class="small" x="555" y="394">EMPTY and APPLY are inserted to recover adjacency,</text>
+  <text class="small" x="555" y="424">including empty scopes and missing operands.</text>
+  <text class="small" x="42" y="456">Explicit operators are the lexer’s operator tokens; their full set and precedence are in Language Design, DEC-022/066.</text>
+
+  <rect class="frame" x="22" y="484" width="1116" height="144" rx="12"/>
+  <text class="production" x="42" y="515">Group ::= '(' SourceScope ')' | '[' SourceScope ']' | '{' SourceScope '}'</text>
+  <circle class="start" cx="75" cy="574" r="5"/>
+  <path class="rail" d="M80 574 H165 M165 574 V548 M165 574 V574 M165 574 V600 M165 548 H235 M165 574 H235 M165 600 H235 M295 548 H350 M295 574 H350 M295 600 H350 M455 548 H520 M455 574 H520 M455 600 H520 M580 548 H635 M580 574 H635 M580 600 H635 M635 548 V600 M635 574 H675"/>
+  <rect class="terminal" x="235" y="530" width="60" height="36" rx="9"/>
+  <text class="node-text" x="265" y="554" text-anchor="middle">(</text>
+  <rect class="terminal" x="235" y="556" width="60" height="36" rx="9"/>
+  <text class="node-text" x="265" y="580" text-anchor="middle">[</text>
+  <rect class="terminal" x="235" y="582" width="60" height="36" rx="9"/>
+  <text class="node-text" x="265" y="606" text-anchor="middle">{</text>
+  <rect class="nonterminal" x="350" y="530" width="105" height="36" rx="18"/>
+  <text class="node-text" x="402" y="554" text-anchor="middle">SourceScope</text>
+  <rect class="nonterminal" x="350" y="556" width="105" height="36" rx="18"/>
+  <text class="node-text" x="402" y="580" text-anchor="middle">SourceScope</text>
+  <rect class="nonterminal" x="350" y="582" width="105" height="36" rx="18"/>
+  <text class="node-text" x="402" y="606" text-anchor="middle">SourceScope</text>
+  <rect class="terminal" x="520" y="530" width="60" height="36" rx="9"/>
+  <text class="node-text" x="550" y="554" text-anchor="middle">)</text>
+  <rect class="terminal" x="520" y="556" width="60" height="36" rx="9"/>
+  <text class="node-text" x="550" y="580" text-anchor="middle">]</text>
+  <rect class="terminal" x="520" y="582" width="60" height="36" rx="9"/>
+  <text class="node-text" x="550" y="606" text-anchor="middle">}</text>
+  <text class="small" x="700" y="559">Every group nests a separate scope.</text>
+  <text class="small" x="700" y="586">Closers must match; missing closers are recovered at EOF.</text>
+  <text class="small" x="42" y="619">After structural recovery, each scope has the form below:</text>
+
+  <rect class="frame" x="22" y="646" width="1116" height="118" rx="12"/>
+  <text class="production" x="42" y="677">Expression ::= Operand (Operator Operand)*</text>
+  <circle class="start" cx="75" cy="710" r="5"/>
+  <path class="rail" d="M80 710 H220 M370 710 H465 M465 710 H1020 M465 710 V730 H485 M700 730 H720 V710 H465"/>
+  <rect class="nonterminal" x="220" y="688" width="150" height="44" rx="22"/>
+  <text class="node-text" x="295" y="716" text-anchor="middle">Operand</text>
+  <rect class="nonterminal" x="485" y="708" width="215" height="44" rx="22"/>
+  <text class="node-text" x="592" y="736" text-anchor="middle">Operator Operand</text>
+  <circle class="start" cx="1020" cy="710" r="5"/>
+</svg>

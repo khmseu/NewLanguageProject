@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 1070" role="img" aria-labelledby="title description">
+  <title id="title">Core lexer syntax railroad diagrams</title>
+  <desc id="description">Syntax productions for source items, trivia, identifiers, numeric literals, quoted literals, delimiters, and operators accepted by the implemented core lexer.</desc>
+  <style>
+    text { font-family: system-ui, sans-serif; fill: #172033; }
+    .heading { font-size: 25px; font-weight: 700; }
+    .production { font-size: 17px; font-weight: 650; }
+    .node-text { font-size: 15px; }
+    .small { font-size: 13px; fill: #40506a; }
+    .rail { fill: none; stroke: #52647e; stroke-width: 2.5; stroke-linecap: round; }
+    .start { fill: #52647e; }
+    .nonterminal { fill: #eaf1fb; stroke: #52647e; stroke-width: 2; }
+    .terminal { fill: #fff7df; stroke: #92732c; stroke-width: 2; }
+    .frame { fill: #ffffff; stroke: #d7dfeb; stroke-width: 1.5; }
+  </style>
+  <rect x="1" y="1" width="1158" height="1068" rx="18" fill="#f7f9fc" stroke="#d7dfeb"/>
+  <text class="heading" x="34" y="44">Core lexer syntax</text>
+  <text class="small" x="34" y="70">Gold nodes are literal spellings; blue nodes name lexical categories. Unicode escapes are translated globally before tokenization.</text>
+
+  <rect class="frame" x="22" y="92" width="1116" height="136" rx="12"/>
+  <text class="production" x="42" y="123">Source ::= InitialBOM? Item* EOF</text>
+  <circle class="start" cx="70" cy="177" r="5"/>
+  <path class="rail" d="M75 177 H140 M250 177 H315 M425 177 H505 M615 177 H945 M615 177 V205 H505 V177"/>
+  <rect class="terminal" x="140" y="155" width="110" height="44" rx="9"/>
+  <text class="node-text" x="195" y="182" text-anchor="middle">Initial BOM</text>
+  <path class="rail" d="M140 177 C116 177 116 205 140 205 H250 C274 205 274 177 250 177"/>
+  <rect class="nonterminal" x="315" y="155" width="110" height="44" rx="22"/>
+  <text class="node-text" x="370" y="182" text-anchor="middle">Item*</text>
+  <rect class="terminal" x="945" y="155" width="70" height="44" rx="9"/>
+  <text class="node-text" x="980" y="182" text-anchor="middle">EOF</text>
+  <text class="small" x="42" y="218">Item ::= Trivia | Token | LexicalError</text>
+
+  <rect class="frame" x="22" y="244" width="1116" height="170" rx="12"/>
+  <text class="production" x="42" y="275">Trivia ::= UnicodeWhitespace | LineComment | BlockComment</text>
+  <circle class="start" cx="70" cy="340" r="5"/>
+  <path class="rail" d="M75 340 H165 M165 340 V310 M165 340 V340 M165 340 V370 M165 310 H255 M165 340 H255 M165 370 H255 M415 310 H490 M415 340 H490 M415 370 H490 M490 310 V370 M490 340 H515"/>
+  <rect class="nonterminal" x="255" y="292" width="160" height="36" rx="18"/>
+  <text class="node-text" x="335" y="316" text-anchor="middle">Unicode whitespace</text>
+  <rect class="nonterminal" x="255" y="322" width="160" height="36" rx="18"/>
+  <text class="node-text" x="335" y="346" text-anchor="middle">LineComment</text>
+  <rect class="nonterminal" x="255" y="352" width="160" height="36" rx="18"/>
+  <text class="node-text" x="335" y="376" text-anchor="middle">BlockComment</text>
+  <text class="small" x="545" y="314">LineComment ::= // (non-line-break)* (ends at a hard break or EOF)</text>
+  <text class="small" x="545" y="344">BlockComment ::= /* (any text except first */)* */</text>
+  <text class="small" x="545" y="374">Block comments do not nest; unterminated comments are diagnosed.</text>
+  <text class="small" x="42" y="403">Whitespace uses Unicode 18 White_Space. Comments separate adjacent tokens.</text>
+
+  <rect class="frame" x="22" y="430" width="1116" height="145" rx="12"/>
+  <text class="production" x="42" y="461">Token ::= Identifier | Number | Literal | Operator | Delimiter</text>
+  <circle class="start" cx="70" cy="520" r="5"/>
+  <path class="rail" d="M75 520 H150 M150 520 V485 M150 520 V520 M150 520 V555 M150 485 H235 M150 520 H235 M150 555 H235 M385 485 H455 M385 520 H455 M385 555 H455 M455 485 V555 M455 520 H485"/>
+  <rect class="nonterminal" x="235" y="467" width="150" height="36" rx="18"/>
+  <text class="node-text" x="310" y="491" text-anchor="middle">Identifier</text>
+  <rect class="nonterminal" x="235" y="502" width="150" height="36" rx="18"/>
+  <text class="node-text" x="310" y="526" text-anchor="middle">Number</text>
+  <rect class="nonterminal" x="235" y="537" width="150" height="36" rx="18"/>
+  <text class="node-text" x="310" y="561" text-anchor="middle">Literal / operator / delimiter</text>
+  <text class="small" x="515" y="490">Longest selected candidate is consumed before internal validation.</text>
+  <text class="small" x="515" y="519">Invalid candidates remain error tokens; unsupported input is a fallback error.</text>
+  <text class="small" x="515" y="548">No keyword token category exists.</text>
+
+  <rect class="frame" x="22" y="591" width="1116" height="136" rx="12"/>
+  <text class="production" x="42" y="622">Identifier ::= XID_Start XID_Continue*</text>
+  <circle class="start" cx="70" cy="676" r="5"/>
+  <path class="rail" d="M75 676 H200 M385 676 H495 M495 676 H865 M495 676 V707 H515 M695 707 H715 V676 H495"/>
+  <rect class="nonterminal" x="200" y="654" width="185" height="44" rx="22"/>
+  <text class="node-text" x="292" y="682" text-anchor="middle">XID_Start</text>
+  <rect class="nonterminal" x="515" y="685" width="180" height="44" rx="22"/>
+  <text class="node-text" x="605" y="713" text-anchor="middle">XID_Continue</text>
+  <text class="small" x="885" y="672">Unicode 18</text>
+  <text class="small" x="885" y="696">underscore may continue,</text>
+  <text class="small" x="885" y="716">but not start, a name</text>
+
+  <rect class="frame" x="22" y="743" width="1116" height="160" rx="12"/>
+  <text class="production" x="42" y="774">Number ::= Decimal | PrefixedInteger | RadixInteger | DecimalFloat | HexFloat</text>
+  <circle class="start" cx="70" cy="834" r="5"/>
+  <path class="rail" d="M75 834 H145 M145 834 V790 M145 834 V812 M145 834 V834 M145 834 V856 M145 834 V878 M145 790 H220 M145 812 H220 M145 834 H220 M145 856 H220 M145 878 H220 M410 790 H465 M410 812 H465 M410 834 H465 M410 856 H465 M410 878 H465 M465 790 V878 M465 834 H490"/>
+  <rect class="nonterminal" x="220" y="777" width="190" height="26" rx="13"/>
+  <text class="node-text" x="315" y="796" text-anchor="middle">Decimal integer</text>
+  <rect class="nonterminal" x="220" y="799" width="190" height="26" rx="13"/>
+  <text class="node-text" x="315" y="818" text-anchor="middle">Prefixed integer</text>
+  <rect class="nonterminal" x="220" y="821" width="190" height="26" rx="13"/>
+  <text class="node-text" x="315" y="840" text-anchor="middle">base#radix integer</text>
+  <rect class="nonterminal" x="220" y="843" width="190" height="26" rx="13"/>
+  <text class="node-text" x="315" y="862" text-anchor="middle">Decimal float</text>
+  <rect class="nonterminal" x="220" y="865" width="190" height="26" rx="13"/>
+  <text class="node-text" x="315" y="884" text-anchor="middle">Hexadecimal float</text>
+  <text class="small" x="520" y="799">Floats include decimal forms (1.5, 1e3) and hexadecimal forms (0x1.8p+2).</text>
+  <text class="small" x="520" y="829">A #suffix may follow; suffix is ASCII alphanumeric and nonempty.</text>
+  <text class="small" x="520" y="859">Integers also use 0b / 0o / 0d / 0x prefixes or base#digits (base 2–36).</text>
+  <text class="small" x="520" y="884">Separators and candidate validation: DEC-028/047/089–091.</text>
+
+  <rect class="frame" x="22" y="905" width="1116" height="143" rx="12"/>
+  <text class="production" x="42" y="936">Literal ::= Character | OrdinaryString | TaggedRawString</text>
+  <circle class="start" cx="70" cy="991" r="5"/>
+  <path class="rail" d="M75 991 H155 M155 991 V958 M155 991 V991 M155 991 V1024 M155 958 H240 M155 991 H240 M155 1024 H240 M420 958 H480 M420 991 H480 M420 1024 H480 M480 958 V1024 M480 991 H510"/>
+  <rect class="terminal" x="240" y="940" width="180" height="36" rx="9"/>
+  <text class="node-text" x="330" y="964" text-anchor="middle">'content'</text>
+  <rect class="terminal" x="240" y="973" width="180" height="36" rx="9"/>
+  <text class="node-text" x="330" y="997" text-anchor="middle">"content"</text>
+  <rect class="terminal" x="240" y="1006" width="180" height="36" rx="9"/>
+  <text class="node-text" x="330" y="1030" text-anchor="middle">`TAG"content"TAG`</text>
+  <text class="small" x="540" y="964">Ordinary literals support selected escapes and cannot contain unescaped hard breaks.</text>
+  <text class="small" x="540" y="994">Raw tags use [A-Za-z0-9_]*; raw strings span lines and have no ordinary escapes.</text>
+  <text class="small" x="540" y="1024">The operator set and exact literal rules are specified in Language Design.</text>
+</svg>
