@@ -195,7 +195,9 @@ EOF insertions with diagnostics; their enclosing group still has a tree.
 Pipeline: bytes, then `processSource` (UTF-8 + global escapes, byte provenance),
 `lexCore`, `structureCore` (groups, error collapse/roles, `APPLY`/`EMPTY`) and
 `parseCore` (precedence). `parseSource(input)` is the byte-to-CST entry point and
-`reconstructSource(result, input)` returns the original bytes.
+`reconstructSource(result, input)` returns the original bytes. See the
+[lexer and parser railroad diagrams](docs/railroad-diagrams.md) for a visual
+summary of the generic frontend.
 
 **Error collapse (DEC-079/087).** Within one scope, a maximal run of error units
 (fallback regions, malformed-Unicode error characters, invalid numbers/literals,

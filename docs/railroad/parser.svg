@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 790" role="img" aria-labelledby="title description">
+  <title id="title">Generic grouped-expression parser railroad diagrams</title>
+  <desc id="description">Railroad productions for alternating operand/operator scopes, operand forms, and recursive delimiter groups.</desc>
+  <style>
+    text { font-family: system-ui, sans-serif; fill: #172033; }
+    .heading { font-size: 25px; font-weight: 700; }
+    .production { font-size: 17px; font-weight: 650; }
+    .node-text { font-size: 16px; }
+    .small { font-size: 14px; fill: #40506a; }
+    .rail { fill: none; stroke: #52647e; stroke-width: 2.5; stroke-linecap: round; }
+    .start { fill: #52647e; }
+    .nonterminal { fill: #eaf1fb; stroke: #52647e; stroke-width: 2; }
+    .terminal { fill: #fff7df; stroke: #92732c; stroke-width: 2; }
+    .frame { fill: #ffffff; stroke: #d7dfeb; stroke-width: 1.5; }
+  </style>
+  <rect x="1" y="1" width="1118" height="788" rx="18" fill="#f7f9fc" stroke="#d7dfeb"/>
+  <text class="heading" x="34" y="44">Generic grouped-expression parser</text>
+  <text class="small" x="34" y="70">Blue nodes are parser categories; gold nodes are source delimiters.</text>
+
+  <rect class="frame" x="22" y="92" width="1076" height="206" rx="12"/>
+  <text class="production" x="42" y="123">Scope ::= Operand (Operator Operand)*</text>
+  <circle class="start" cx="75" cy="210" r="5"/>
+  <path class="rail" d="M80 210 H230 M375 210 H465 M465 210 H1030 M465 210 V260 H485 M665 260 H685 V210 H465"/>
+  <rect class="nonterminal" x="230" y="188" width="145" height="44" rx="22"/>
+  <text class="node-text" x="302" y="216" text-anchor="middle">Operand</text>
+  <rect class="nonterminal" x="485" y="238" width="180" height="44" rx="22"/>
+  <text class="node-text" x="575" y="266" text-anchor="middle">Operator Operand</text>
+  <circle class="start" cx="1030" cy="210" r="5"/>
+  <text class="small" x="42" y="286">This alternation is produced by structural recovery before precedence reduction.</text>
+
+  <rect class="frame" x="22" y="316" width="1076" height="205" rx="12"/>
+  <text class="production" x="42" y="347">Operand ::= TokenOperand | ErrorOperand | EMPTY | Group</text>
+  <circle class="start" cx="75" cy="428" r="5"/>
+  <path class="rail" d="M80 428 H180 M180 428 V378 M180 428 V411 M180 428 V445 M180 428 V478 M180 378 H255 M180 411 H255 M180 445 H255 M180 478 H255 M385 378 H465 M385 411 H465 M385 445 H465 M385 478 H465 M465 378 V478 M465 428 H510"/>
+  <rect class="nonterminal" x="255" y="360" width="130" height="36" rx="18"/>
+  <text class="node-text" x="320" y="384" text-anchor="middle">TokenOperand</text>
+  <rect class="nonterminal" x="255" y="393" width="130" height="36" rx="18"/>
+  <text class="node-text" x="320" y="417" text-anchor="middle">ErrorOperand</text>
+  <rect class="terminal" x="255" y="427" width="130" height="36" rx="9"/>
+  <text class="node-text" x="320" y="451" text-anchor="middle">EMPTY</text>
+  <rect class="nonterminal" x="255" y="460" width="130" height="36" rx="18"/>
+  <text class="node-text" x="320" y="484" text-anchor="middle">Group</text>
+  <path class="rail" d="M510 428 H625"/>
+  <circle class="start" cx="625" cy="428" r="5"/>
+  <text class="small" x="650" y="411">Error operands preserve lexical errors;</text>
+  <text class="small" x="650" y="434">group operands contain a separately parsed scope.</text>
+  <text class="small" x="650" y="467">APPLY and EMPTY are inserted only as needed</text>
+  <text class="small" x="650" y="490">to make the significant entries alternate.</text>
+
+  <rect class="frame" x="22" y="539" width="1076" height="218" rx="12"/>
+  <text class="production" x="42" y="570">Group ::= '(' Scope ')' | '[' Scope ']' | '{' Scope '}'</text>
+  <circle class="start" cx="75" cy="659" r="5"/>
+  <path class="rail" d="M80 659 H170 M170 659 V610 M170 659 V659 M170 659 V708 M170 610 H240 M170 659 H240 M170 708 H240 M300 610 H350 M300 659 H350 M300 708 H350 M430 610 H480 M430 659 H480 M430 708 H480 M540 610 H850 M540 659 H850 M540 708 H850 M850 610 V708 M850 659 H930"/>
+  <rect class="terminal" x="240" y="592" width="60" height="36" rx="9"/>
+  <text class="node-text" x="270" y="616" text-anchor="middle">(</text>
+  <rect class="terminal" x="240" y="641" width="60" height="36" rx="9"/>
+  <text class="node-text" x="270" y="665" text-anchor="middle">[</text>
+  <rect class="terminal" x="240" y="690" width="60" height="36" rx="9"/>
+  <text class="node-text" x="270" y="714" text-anchor="middle">{</text>
+  <rect class="nonterminal" x="350" y="592" width="80" height="36" rx="18"/>
+  <text class="node-text" x="390" y="616" text-anchor="middle">Scope</text>
+  <rect class="nonterminal" x="350" y="641" width="80" height="36" rx="18"/>
+  <text class="node-text" x="390" y="665" text-anchor="middle">Scope</text>
+  <rect class="nonterminal" x="350" y="690" width="80" height="36" rx="18"/>
+  <text class="node-text" x="390" y="714" text-anchor="middle">Scope</text>
+  <rect class="terminal" x="480" y="592" width="60" height="36" rx="9"/>
+  <text class="node-text" x="510" y="616" text-anchor="middle">)</text>
+  <rect class="terminal" x="480" y="641" width="60" height="36" rx="9"/>
+  <text class="node-text" x="510" y="665" text-anchor="middle">]</text>
+  <rect class="terminal" x="480" y="690" width="60" height="36" rx="9"/>
+  <text class="node-text" x="510" y="714" text-anchor="middle">}</text>
+  <path class="rail" d="M930 659 H1015"/>
+  <circle class="start" cx="1015" cy="659" r="5"/>
+  <text class="small" x="42" y="744">Groups nest recursively; mismatches are errors and missing closers are inserted at EOF.</text>
+</svg>
