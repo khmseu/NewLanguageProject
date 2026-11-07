@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 1050" role="img" aria-labelledby="title description">
+  <title id="title">Core lexer railroad diagrams</title>
+  <desc id="description">Railroad productions for the source item stream, item alternatives, trivia, token families, and literal forms.</desc>
+  <style>
+    text { font-family: system-ui, sans-serif; fill: #172033; }
+    .heading { font-size: 25px; font-weight: 700; }
+    .production { font-size: 17px; font-weight: 650; }
+    .node-text { font-size: 16px; }
+    .small { font-size: 14px; fill: #40506a; }
+    .rail { fill: none; stroke: #52647e; stroke-width: 2.5; stroke-linecap: round; }
+    .start { fill: #52647e; }
+    .nonterminal { fill: #eaf1fb; stroke: #52647e; stroke-width: 2; }
+    .terminal { fill: #fff7df; stroke: #92732c; stroke-width: 2; }
+    .frame { fill: #ffffff; stroke: #d7dfeb; stroke-width: 1.5; }
+  </style>
+  <rect x="1" y="1" width="1118" height="1048" rx="18" fill="#f7f9fc" stroke="#d7dfeb"/>
+  <text class="heading" x="34" y="44">Core lexer</text>
+  <text class="small" x="34" y="70">Blue nodes are lexical categories; gold nodes are literal spellings or scan boundaries.</text>
+
+  <rect class="frame" x="22" y="88" width="1076" height="150" rx="12"/>
+  <text class="production" x="42" y="119">Input ::= InitialBOM? Item* EOF</text>
+  <circle class="start" cx="70" cy="176" r="5"/>
+  <path class="rail" d="M75 176 H128 M250 176 H324 M448 176 H1002 M448 176 V212 H324 V176"/>
+  <rect class="terminal" x="128" y="154" width="122" height="44" rx="9"/>
+  <text class="node-text" x="189" y="182" text-anchor="middle">Initial BOM</text>
+  <path class="rail" d="M128 176 C104 176 104 212 128 212 H250 C274 212 274 176 250 176"/>
+  <rect class="nonterminal" x="324" y="154" width="124" height="44" rx="22"/>
+  <text class="node-text" x="386" y="182" text-anchor="middle">Item*</text>
+  <rect class="terminal" x="1002" y="154" width="70" height="44" rx="9"/>
+  <text class="node-text" x="1037" y="182" text-anchor="middle">EOF</text>
+  <text class="small" x="42" y="229">Item ::= Trivia | Token | FallbackError; items retain order and original-byte coverage.</text>
+
+  <rect class="frame" x="22" y="252" width="1076" height="150" rx="12"/>
+  <text class="production" x="42" y="283">Item ::= Trivia | Token | FallbackError</text>
+  <circle class="start" cx="75" cy="343" r="5"/>
+  <path class="rail" d="M80 343 H180 M180 343 V310 M180 343 V376 M180 310 H258 M180 343 H258 M180 376 H258 M420 310 H500 M420 343 H500 M420 376 H500 M500 310 V376 M500 343 H520"/>
+  <rect class="nonterminal" x="258" y="292" width="162" height="36" rx="18"/>
+  <text class="node-text" x="339" y="316" text-anchor="middle">Trivia</text>
+  <rect class="nonterminal" x="258" y="325" width="162" height="36" rx="18"/>
+  <text class="node-text" x="339" y="349" text-anchor="middle">Token</text>
+  <rect class="nonterminal" x="258" y="358" width="162" height="36" rx="18"/>
+  <text class="node-text" x="339" y="382" text-anchor="middle">FallbackError</text>
+  <path class="rail" d="M520 343 H625"/>
+  <circle class="start" cx="625" cy="343" r="5"/>
+  <text class="small" x="650" y="337">FallbackError is the smallest unsupported run that permits scanning to resume.</text>
+  <text class="small" x="650" y="360">Malformed recognized candidates are ErrorTokens, not fallback runs.</text>
+
+  <rect class="frame" x="22" y="416" width="1076" height="288" rx="12"/>
+  <text class="production" x="42" y="447">Token ::= Identifier | NumberCandidate | Literal | Operator | Delimiter | ErrorToken</text>
+  <circle class="start" cx="75" cy="558" r="5"/>
+  <path class="rail" d="M80 558 H180 M180 558 V480 M180 558 V512 M180 558 V544 M180 558 V576 M180 558 V608 M180 558 V640 M180 480 H260 M180 512 H260 M180 544 H260 M180 576 H260 M180 608 H260 M180 640 H260 M430 480 H500 M430 512 H500 M430 544 H500 M430 576 H500 M430 608 H500 M430 640 H500 M500 480 V640 M500 558 H520"/>
+  <rect class="nonterminal" x="260" y="462" width="170" height="36" rx="18"/>
+  <text class="node-text" x="345" y="486" text-anchor="middle">Identifier</text>
+  <rect class="nonterminal" x="260" y="494" width="170" height="36" rx="18"/>
+  <text class="node-text" x="345" y="518" text-anchor="middle">NumberCandidate</text>
+  <rect class="nonterminal" x="260" y="526" width="170" height="36" rx="18"/>
+  <text class="node-text" x="345" y="550" text-anchor="middle">Literal</text>
+  <rect class="nonterminal" x="260" y="558" width="170" height="36" rx="18"/>
+  <text class="node-text" x="345" y="582" text-anchor="middle">Operator</text>
+  <rect class="nonterminal" x="260" y="590" width="170" height="36" rx="18"/>
+  <text class="node-text" x="345" y="614" text-anchor="middle">Delimiter</text>
+  <rect class="nonterminal" x="260" y="622" width="170" height="36" rx="18"/>
+  <text class="node-text" x="345" y="646" text-anchor="middle">ErrorToken</text>
+  <text class="production" x="670" y="447">Rule notes</text>
+  <text class="small" x="670" y="486">XID_Start XID_Continue*</text>
+  <text class="small" x="670" y="518">One unified candidate; classify, then validate</text>
+  <text class="small" x="670" y="550">Character, ordinary string, or tagged raw string</text>
+  <text class="small" x="670" y="582">Longest matching selected spelling</text>
+  <text class="small" x="670" y="614">()  []  {}</text>
+  <text class="small" x="670" y="646">Malformed recognized candidate / source error</text>
+  <text class="small" x="42" y="682">ErrorToken preserves the selected candidate; FallbackError covers unsupported input when no candidate begins.</text>
+
+  <rect class="frame" x="22" y="718" width="1076" height="286" rx="12"/>
+  <text class="production" x="42" y="749">Literal ::= Character | OrdinaryString | TaggedRawString</text>
+  <circle class="start" cx="75" cy="853" r="5"/>
+  <path class="rail" d="M80 853 H180 M180 853 V795 M180 853 V853 M180 853 V911 M180 795 H260 M180 853 H260 M180 911 H260 M445 795 H520 M445 853 H520 M445 911 H520 M520 795 V911 M520 853 H550"/>
+  <rect class="terminal" x="260" y="777" width="185" height="36" rx="9"/>
+  <text class="node-text" x="352" y="801" text-anchor="middle">'…'</text>
+  <rect class="terminal" x="260" y="835" width="185" height="36" rx="9"/>
+  <text class="node-text" x="352" y="859" text-anchor="middle">"…"</text>
+  <rect class="terminal" x="260" y="893" width="185" height="36" rx="9"/>
+  <text class="node-text" x="352" y="917" text-anchor="middle">`TAG"…"TAG`</text>
+  <path class="rail" d="M550 853 H660"/>
+  <circle class="start" cx="660" cy="853" r="5"/>
+  <text class="small" x="686" y="834">Ordinary literals cannot cross a hard line break;</text>
+  <text class="small" x="686" y="857">strings may continue with backslash + line ending.</text>
+  <text class="small" x="686" y="889">Raw tags use ASCII letters, digits, or underscore;</text>
+  <text class="small" x="686" y="912">non-universal backslashes are literal.</text>
+  <text class="small" x="42" y="978">Content is NFC-normalized before ordinary escapes; raw strings have no ordinary escapes (DEC-082).</text>
+</svg>

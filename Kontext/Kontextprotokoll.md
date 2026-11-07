@@ -2356,3 +2356,24 @@ simulation is not Windows runtime certification. Permission test conditional
 where root/Windows prevents reliable behavior. No dependencies/parser changes.
 All three CLI phases complete and final records saved; await explicit final
 commit authorization. Further work needs new scope; no Phase 3 commit made.
+
+### KP-115 - Lexer/parser railroad diagrams added
+
+- Event/documentation date: 2026-11-07.
+- Source: user-requested issue #3, approved language design, and the implemented
+  core lexer/parser.
+- Status: documentation-only requirement completed; no language behavior changed.
+
+**Nutzerangabe:** Create railroad diagrams for the lexer and parser and place
+them in the documentation. Recorded as REQ-005 in the current knowledge view.
+
+**Belegt:** Added [the diagram guide](../docs/railroad-diagrams.md) and separate
+accessible SVG railroad diagrams for the core lexer and generic grouped-
+expression parser. The README links to the guide. The diagrams describe the
+implemented core frontend; the approved Language Design remains normative.
+Lexer/parser phases are complete (KP-108); the diagrams do not introduce
+keyword-, construct-, semantic-, AST-, or runtime-specific grammar.
+
+**Validation:** Both SVGs parse as XML; all local Markdown links resolve; and
+`git diff --check` passes. No compiler tests or build were needed for this
+documentation-only change.
