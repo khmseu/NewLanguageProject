@@ -1,5 +1,5 @@
 /**
- * Importable execution support for the not-yet-wired compiler command.
+ * Importable execution support for the compiler source-parse command.
  * @module
  */
 import type { CstParseResult } from "../cst/cst.js";
@@ -20,7 +20,7 @@ export interface CliStreams {
 }
 
 /**
- * Run the internal CLI without exiting the process.
+ * Run the source-parse CLI without exiting the process.
  * @param args Arguments following the executable and command.
  * @param streams Output destinations, which may be asynchronous.
  * @returns 0 for help or a complete parse, 1 for a recovered error parse, or

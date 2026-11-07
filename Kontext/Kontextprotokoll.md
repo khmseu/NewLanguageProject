@@ -2318,3 +2318,41 @@ shared nested structure; documented, not silently truncated.
 
 **Next:** Await Phase 2 commit/continue confirmation before Phase 3 process/npm
 wiring. No Phase 2 commit made.
+
+### KP-114 - CLI Phase 2 committed; runnable command completed
+
+- Event date: 2026-11-07 02:44 (+01:00), user "commit that, then continue".
+- Documentation date: 2026-11-07 (+01:00).
+- Sources: commit `ab821e5`, implementation/static review reports, conductor
+  checks, [Phase 3 evidence](../plans/compiler-cli-phase-3-complete.md) and
+  [overall report](../plans/compiler-cli-complete.md).
+- Status: all CLI phases implemented; final phase uncommitted.
+
+**Belegt:** Phase 2 committed before starting Phase 3. Added actual `parse`
+npm script (quiet build then built entry), awaited Node stream writer and
+entry point with `process.exitCode` rather than forced process exit.
+`npm --silent run parse -- path` yields complete JSON stdout; ordinary npm
+may print its own banner. Built direct command and --help documented.
+Unexpected execution errors are explicit stderr failures.
+
+**TDD/review:** Implementer reported ten behavioral unwired-process failures
+before implementation. Static review requested replacing unshelled npm command
+shim spawning for Windows portability. Tests now invoke Node with validated
+npm-cli.js and standalone discovery; three launcher tests initially failed.
+Actual npm help test added. Conductor inspected revision; review resolved on
+that basis. Reviewer did not execute automated checks.
+
+**Independent validation:** Focused process tests 16 passed; type-check,
+build/export smoke and whitespace pass. Full `npm test -- --maxWorkers=1`:
+591 passed in 13 files. Tests include raw malformed UTF-8 spans, complete
+recovered JSON, argv/path/read errors, awaited stream backpressure/failures
+and output beyond pipe capacity. Implementer reported standalone focused
+run without npm_execpath also passing. A prior default parallel run timed out
+an existing scale assertion; isolated/serial full checks passed, no weakened
+assertions or changed worker configuration.
+
+**Limits/next:** Linux Node26 execution verified; Windows installation-layout
+simulation is not Windows runtime certification. Permission test conditional
+where root/Windows prevents reliable behavior. No dependencies/parser changes.
+All three CLI phases complete and final records saved; await explicit final
+commit authorization. Further work needs new scope; no Phase 3 commit made.

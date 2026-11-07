@@ -48,8 +48,8 @@ and independent checks.
 - Implementer reported full suite 575 passed before test-cost adjustment, plus
   built CLI-helper smoke; full suite not independently rerun.
 
-**Next checkpoint:** Phase 1 committed as `3125545`. Phase 2 uncommitted;
-await commit/continue confirmation before Phase 3 executable/npm wiring.
+**Next checkpoint:** User authorized commit/continue on 2026-11-07 at 02:44
+(+01:00). Phase 2 committed as `ab821e5`; Phase 3 wiring authorized.
 
 **Git commit message:**
 

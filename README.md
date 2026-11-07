@@ -29,22 +29,38 @@ npm run smoke:exports
 `npm run smoke:exports` builds the package and imports it through the package's
 public ESM export map.
 
-## CLI status
+## Parse CLI
 
-Internal CLI support under `src/cli/` accepts arguments, reads original source
-bytes and parses them. `executeCli(args, { stdout, stderr })` is async, awaits
-the supplied text writers, and returns 0 for help or a complete parse, 1 for a
-recovered parse with errors, and 2 for usage or file-read failures. Help and
-the complete two-space formatted JSON parse result go to stdout; usage and read
-errors go to stderr. Writer and unexpected parser failures propagate.
+Run a source file from the repository root:
 
-`--help` must appear alone. Exactly one source path is accepted; unknown options
-are rejected, and a path beginning with `-` must follow `--`. Serialization is
-iterative and streams chunks without truncation. Pretty-print indentation makes
-deep output inherently quadratic in depth, and repeated nested structural and
-parsed references can multiply the output size; time and destination capacity
-still limit feasible inputs. This is not yet a runnable command, and there is
-no `npm run parse` script; process wiring remains Phase 3.
+```sh
+npm run parse -- path/to/source
+npm run parse -- --help
+```
+
+The script builds the TypeScript sources and runs `dist/cli/main.js`. npm prints
+its own script banner during an ordinary `npm run`, so use the silent form for
+machine-readable output or piping:
+
+```sh
+npm --silent run parse -- path/to/source
+```
+
+With `--silent`, stdout contains only the complete two-space formatted JSON
+parse result (including status, CST, structural trivia and diagnostics), or
+help text. Usage and file-read errors go to stderr. Exit status is 0 for help
+or a complete parse, 1 for a recovered parse with errors, and 2 for usage or
+file-read failures. A path beginning with `-` must follow `--`; only one source
+path is accepted. For repeated runs after building, invoke the emitted entry
+directly with `node dist/cli/main.js [--help | [--] path/to/source]`.
+
+The command reads original bytes, awaits writes and honors stream backpressure;
+it does not impose a JSON-output size limit or truncate output. Input, parser
+result and output still require available memory, time and destination
+capacity. Pretty-print indentation makes deeply nested output inherently
+quadratic in depth, and repeated nested structural and parsed references can
+multiply the serialized size. Unexpected execution failures produce a stderr
+diagnostic and a nonzero process status.
 
 ## Foundation API
 

@@ -2,20 +2,20 @@
  * Small, importable argument and help support for the internal compiler CLI.
  */
 
-/** Usage synopsis for the not-yet-wired parse command. */
+/** Usage synopsis for the source-parse command. */
 export const CLI_USAGE = "Usage: parse [--help] [--] <source-file>";
 
 /**
  * Result of interpreting one CLI argument vector.
  *
  * A usage error carries the process-style status code 2 but does not write to
- * stderr; the future command entry point owns stream output.
+ * stderr; the command entry point owns stream output.
  */
 export type CliArgumentResult =
   | {
       /** Help was requested without any additional arguments. */
       readonly kind: "help";
-      /** Text intended for stdout when command wiring is added. */
+      /** Help text intended for stdout. */
       readonly message: string;
       /** Successful process-style status for help. */
       readonly exitCode: 0;
@@ -29,7 +29,7 @@ export type CliArgumentResult =
   | {
       /** Arguments did not match the supported invocation. */
       readonly kind: "usage-error";
-      /** Explanation intended for stderr when command wiring is added. */
+      /** Explanation intended for stderr. */
       readonly message: string;
       /** Usage-failure process status; this function does not exit. */
       readonly exitCode: 2;

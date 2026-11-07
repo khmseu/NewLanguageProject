@@ -16,6 +16,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build": "tsc --project tsconfig.build.json",
+    "parse": "npm run --silent build && node dist/cli/main.js",
     "smoke:exports": "npm run build && node tests/built-exports.mjs"
   },
   "devDependencies": {
