@@ -2377,3 +2377,24 @@ keyword-, construct-, semantic-, AST-, or runtime-specific grammar.
 **Validation:** Both SVGs parse as XML; all local Markdown links resolve; and
 `git diff --check` passes. No compiler tests or build were needed for this
 documentation-only change.
+
+### KP-116 - Syntax diagrams added to railroad documentation
+
+- Event/documentation date: 2026-11-07.
+- Source: user clarification on issue #3, approved language design, and the
+  implemented core lexer/parser.
+- Status: documentation-only clarification; no language behavior changed.
+
+**Nutzerangabe:** “these are nice. keep them. but what i actually wanted was
+diagrams for the syntax accepted by these passes.”
+
+**Belegt:** Kept the existing lexer-item and parser-recovery overview SVGs.
+Added separate syntax SVGs for lexical token forms and the generic parser's
+source scopes, operands, recursive groups, and normalized expression shape.
+Updated the guide to distinguish syntax from pipeline/recovery overviews and to
+refer to the normative approved decisions. No keyword- or
+construct-specific grammar was introduced.
+
+**Validation:** All four SVGs parse as XML; local Markdown links resolve; and
+`git diff --check` passes. This documentation-only change does not require
+compiler tests or a build.
