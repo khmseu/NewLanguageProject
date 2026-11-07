@@ -31,13 +31,20 @@ public ESM export map.
 
 ## CLI status
 
-Phase 1 adds importable argument/help and raw-byte file-loading support under
-`src/cli/`; it is not yet a runnable command, and there is no `npm run parse`
-script. `--help` must appear alone. Exactly one source path is accepted; unknown
-options are rejected, and a path beginning with `-` must follow `--`. Usage
-and filesystem failures return typed status-2 results with messages for the
-future entry point to write to stderr. Command wiring and parser integration
-remain later phases.
+Internal CLI support under `src/cli/` accepts arguments, reads original source
+bytes and parses them. `executeCli(args, { stdout, stderr })` is async, awaits
+the supplied text writers, and returns 0 for help or a complete parse, 1 for a
+recovered parse with errors, and 2 for usage or file-read failures. Help and
+the complete two-space formatted JSON parse result go to stdout; usage and read
+errors go to stderr. Writer and unexpected parser failures propagate.
+
+`--help` must appear alone. Exactly one source path is accepted; unknown options
+are rejected, and a path beginning with `-` must follow `--`. Serialization is
+iterative and streams chunks without truncation. Pretty-print indentation makes
+deep output inherently quadratic in depth, and repeated nested structural and
+parsed references can multiply the output size; time and destination capacity
+still limit feasible inputs. This is not yet a runnable command, and there is
+no `npm run parse` script; process wiring remains Phase 3.
 
 ## Foundation API
 

@@ -2286,3 +2286,35 @@ temporary test directories cleaned. No dependencies/package commands added.
 
 **Next:** User checkpoint to commit/continue before Phase 2 parser integration
 and stack-safe complete JSON dumping. Completion is Phase 1 only.
+
+### KP-113 - CLI Phase 1 committed; Phase 2 parse/JSON integration complete
+
+- Event date: 2026-11-07 02:21 (+01:00), user "commit that, then continue".
+- Documentation date: 2026-11-07 (+01:00).
+- Sources: commit `3125545`, implementation/static review reports, conductor
+  checks and [completion evidence](../plans/compiler-cli-phase-2-complete.md).
+- Status: Phase 1 committed; Phase 2 complete, uncommitted.
+
+User authorized Phase 1 commit/Phase 2 start. Added `executeCli` integrating
+raw-byte file reads and existing parser, correct output streams and 0/1/2
+statuses, plus iterative `writeParseResult`. Complete JSON includes recovered
+trees, trivia and diagnostics; writes are awaited and errors propagate.
+No actual process entry/npm command or new dependencies yet.
+
+**TDD/review:** Implementer reported 14 behavioral skeleton failures before
+implementation; final focused suite 16 green. Static review requested reducing
+an 8,000-level synthetic default test with over 100 MB output. Replaced with
+2,000 levels, exact counts and tail assertions; real 1,200-operand integration
+remains. This changes test cost, not serializer behavior. No claim that final
+default synthetic depth alone exceeds native recursion limits. Implementer
+separately reported native failure and iterative success at depth 8,000.
+
+**Independent checks:** Final 16 focused tests (2.92s), type-check,
+build/export smoke and whitespace pass. Implementer reported full 575 tests
+before test-cost revision and built CLI-helper smoke; not independently rerun.
+Conductor inspected final test revision, resolving static review's only finding.
+Output can inherently grow quadratically with indentation or multiply from
+shared nested structure; documented, not silently truncated.
+
+**Next:** Await Phase 2 commit/continue confirmation before Phase 3 process/npm
+wiring. No Phase 2 commit made.
