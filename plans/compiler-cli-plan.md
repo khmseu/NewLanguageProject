@@ -6,6 +6,7 @@ Dump the complete formatted JSON result, including trees, structural trivia,
 diagnostics and status, without new dependencies.
 
 **Contract**
+
 - Read source as original bytes, never predecode malformed UTF-8.
 - Accept one file path and `--help`; reject invalid invocation explicitly.
 - Exit 0 for complete parsing/help; 1 for parse errors while still dumping the
@@ -15,6 +16,7 @@ diagnostics and status, without new dependencies.
 - No semantic analysis or compiler-language changes.
 
 **Phases**
+
 1. **Phase 1: Arguments and source loading**
    - **Objective:** Testable argument/help handling and byte-preserving file I/O.
    - **Files:** CLI support under `src/cli/`, focused tests, README phase status.

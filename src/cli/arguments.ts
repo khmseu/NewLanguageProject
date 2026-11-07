@@ -92,7 +92,9 @@ export function parseCliArguments(args: readonly string[]): CliArgumentResult {
     );
   }
   if (args.length > 1) {
-    return usageError("Expected exactly one source file; received extra arguments.");
+    return usageError(
+      "Expected exactly one source file; received extra arguments.",
+    );
   }
   if (firstArgument === "") {
     return usageError("The source path must not be empty.");

@@ -77,7 +77,11 @@ function runNpm(args: readonly string[]) {
 function runProcess(
   command: string,
   args: readonly string[],
-): Promise<{ readonly code: number | null; readonly stdout: Buffer; readonly stderr: Buffer }> {
+): Promise<{
+  readonly code: number | null;
+  readonly stdout: Buffer;
+  readonly stderr: Buffer;
+}> {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(command, [...args], {
       cwd: PROJECT_ROOT,
@@ -231,25 +235,23 @@ describe("runnable compiler CLI", () => {
     { name: "missing path", args: [] },
     { name: "unknown option", args: ["--unknown"] },
     { name: "extra path", args: ["one.src", "two.src"] },
-  ])("rejects $name with usage status and stderr", async ({ args }) => {
-    const result = await runBuiltCli(args);
+  ])(
+    "rejects $name with usage status and stderr",
+    async ({ args }) => {
+      const result = await runBuiltCli(args);
 
-    expect(result.code).toBe(2);
-    expect(result.stdout).toHaveLength(0);
-    expect(result.stderr.toString("utf8")).toContain("Usage: parse");
-  }, 15_000);
+      expect(result.code).toBe(2);
+      expect(result.stdout).toHaveLength(0);
+      expect(result.stderr.toString("utf8")).toContain("Usage: parse");
+    },
+    15_000,
+  );
 
   it("parses a path with spaces and Unicode through the npm command cleanly", async () => {
     const sourcePath = join(temporaryDirectory, "來源 with spaces.src");
     await writeFile(sourcePath, "alpha + β");
 
-    const result = await runNpm([
-      "--silent",
-      "run",
-      "parse",
-      "--",
-      sourcePath,
-    ]);
+    const result = await runNpm(["--silent", "run", "parse", "--", sourcePath]);
 
     expect(result.code).toBe(0);
     expect(result.stderr).toHaveLength(0);
@@ -330,9 +332,13 @@ describe("runnable compiler CLI", () => {
     }
   }, 15_000);
 
-  it("reports an unreadable source file as a read failure", async ({ skip }) => {
+  it("reports an unreadable source file as a read failure", async ({
+    skip,
+  }) => {
     if (process.platform === "win32" || process.getuid?.() === 0) {
-      skip("Permission-denied behavior cannot be reliably exercised as root or on Windows.");
+      skip(
+        "Permission-denied behavior cannot be reliably exercised as root or on Windows.",
+      );
     }
 
     const unreadablePath = join(temporaryDirectory, "unreadable.src");
@@ -350,7 +356,10 @@ describe("runnable compiler CLI", () => {
 
   it("drains output larger than a pipe buffer without truncation", async () => {
     const largePath = join(temporaryDirectory, "large.src");
-    await writeFile(largePath, Array.from({ length: 350 }, () => "operand").join(" "));
+    await writeFile(
+      largePath,
+      Array.from({ length: 350 }, () => "operand").join(" "),
+    );
 
     const result = await runBuiltCli([largePath]);
 

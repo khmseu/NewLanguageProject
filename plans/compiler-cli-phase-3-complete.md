@@ -5,6 +5,7 @@ complete JSON stdout, waits for stream completion/backpressure and sets exit
 status without forcing early process exit.
 
 **Files created/changed:**
+
 - [Process entry](../src/cli/main.ts)
 - [Node stream writer](../src/cli/stream-writer.ts)
 - [Argument documentation](../src/cli/arguments.ts)
@@ -14,6 +15,7 @@ status without forcing early process exit.
 - [README](../README.md), context records and completion records.
 
 **Functions/contracts:**
+
 - Package `parse` builds quietly, then runs the emitted entry only on success.
   Normal npm banners remain npm behavior; `npm --silent run parse -- path`
   keeps stdout machine-readable. Direct `node dist/cli/main.js path` reuses
@@ -26,6 +28,7 @@ status without forcing early process exit.
 - No dependencies added; script-only package change needs no lockfile update.
 
 **TDD/review:**
+
 - Implementer reported ten behavioral process-test failures against the unwired
   CLI before implementation, then green.
 - Static review requested cross-platform npm invocation instead of spawning
@@ -45,6 +48,7 @@ status without forcing early process exit.
 verification; static review's npm-launcher portability finding addressed.
 
 **Final verification:**
+
 - Conductor: focused process suite **16 passed**, type-check, build/export smoke
   and whitespace check pass.
 - Conductor full suite: `npm test -- --maxWorkers=1`: **591 passed in 13 files**.

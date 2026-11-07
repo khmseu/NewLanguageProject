@@ -10,9 +10,9 @@ const temporaryDirectories: string[] = [];
 
 afterEach(async () => {
   await Promise.all(
-    temporaryDirectories.splice(0).map((directory) =>
-      rm(directory, { recursive: true, force: true }),
-    ),
+    temporaryDirectories
+      .splice(0)
+      .map((directory) => rm(directory, { recursive: true, force: true })),
   );
 });
 
@@ -69,64 +69,110 @@ describe("importable CLI execution", () => {
 
   // DEC-069/071/075: trivia, recovery, and malformed bytes remain in the result.
   it.each([
-    { name: "valid with comments and escaping", bytes: Buffer.from('alpha /* comment */ + "a\\n"'), status: "complete" },
+    {
+      name: "valid with comments and escaping",
+      bytes: Buffer.from('alpha /* comment */ + "a\\n"'),
+      status: "complete",
+    },
     { name: "empty", bytes: Buffer.from(""), status: "complete" },
-    { name: "nested groups", bytes: Buffer.from("((((((a))))))"), status: "complete" },
-    { name: "recovered syntax", bytes: Buffer.from("(alpha + ]"), status: "error" },
-    { name: "malformed UTF-8", bytes: Uint8Array.of(0x61, 0x20, 0xff, 0x62), status: "error" },
-    { name: "malformed Unicode escape", bytes: Buffer.from("\\u00ZZ"), status: "error" },
-  ])("outputs the exact full parser result for $name", async ({ bytes, status }) => {
-    const path = await sourceFile(bytes);
-    const expected = parseSource(new SourceInput(bytes));
-    const result = await run([path]);
-    expect(expected.status).toBe(status);
-    expect(result.code).toBe(status === "complete" ? 0 : 1);
-    expect(result.stderr).toBe("");
-    expect(result.stdout).toBe(`${JSON.stringify(expected, null, 2)}\n`);
-    const parsed: unknown = JSON.parse(result.stdout);
-    expect(parsed).toEqual(expected);
-    expect(Object.keys(parsed as object)).toEqual(["root", "diagnostics", "status"]);
-    if (expected.status === "error") {
-      expect(expected.diagnostics.length).toBeGreaterThan(0);
-      expect(expected.root.structure.entries.length).toBeGreaterThan(0);
-    }
-  });
+    {
+      name: "nested groups",
+      bytes: Buffer.from("((((((a))))))"),
+      status: "complete",
+    },
+    {
+      name: "recovered syntax",
+      bytes: Buffer.from("(alpha + ]"),
+      status: "error",
+    },
+    {
+      name: "malformed UTF-8",
+      bytes: Uint8Array.of(0x61, 0x20, 0xff, 0x62),
+      status: "error",
+    },
+    {
+      name: "malformed Unicode escape",
+      bytes: Buffer.from("\\u00ZZ"),
+      status: "error",
+    },
+  ])(
+    "outputs the exact full parser result for $name",
+    async ({ bytes, status }) => {
+      const path = await sourceFile(bytes);
+      const expected = parseSource(new SourceInput(bytes));
+      const result = await run([path]);
+      expect(expected.status).toBe(status);
+      expect(result.code).toBe(status === "complete" ? 0 : 1);
+      expect(result.stderr).toBe("");
+      expect(result.stdout).toBe(`${JSON.stringify(expected, null, 2)}\n`);
+      const parsed: unknown = JSON.parse(result.stdout);
+      expect(parsed).toEqual(expected);
+      expect(Object.keys(parsed as object)).toEqual([
+        "root",
+        "diagnostics",
+        "status",
+      ]);
+      if (expected.status === "error") {
+        expect(expected.diagnostics.length).toBeGreaterThan(0);
+        expect(expected.root.structure.entries.length).toBeGreaterThan(0);
+      }
+    },
+  );
 
   it("retains trivia and recovered delimiter diagnostics in the JSON", async () => {
-    const valid = await run([await sourceFile(Buffer.from("a /* kept */ + b"))]);
+    const valid = await run([
+      await sourceFile(Buffer.from("a /* kept */ + b")),
+    ]);
     const parsedValid = JSON.parse(valid.stdout) as CstParseResult;
-    expect(parsedValid.root.structure.entries.some((entry) => entry.kind === "trivia")).toBe(true);
+    expect(
+      parsedValid.root.structure.entries.some(
+        (entry) => entry.kind === "trivia",
+      ),
+    ).toBe(true);
     expect(valid.stdout).toContain("/* kept */");
 
     const invalid = await run([await sourceFile(Buffer.from("(a + ]"))]);
     const parsedInvalid = JSON.parse(invalid.stdout) as CstParseResult;
     expect(parsedInvalid.root.structure.entries[0]?.kind).toBe("group");
-    expect(parsedInvalid.diagnostics.map((diagnostic) => diagnostic.code)).toEqual([
-      "unexpected-closing-delimiter",
-      "missing-closing-delimiter",
-    ]);
+    expect(
+      parsedInvalid.diagnostics.map((diagnostic) => diagnostic.code),
+    ).toEqual(["unexpected-closing-delimiter", "missing-closing-delimiter"]);
     expect(parsedInvalid.root.expression).toBeDefined();
   });
 
   it("propagates destination failures instead of reporting success", async () => {
     const failure = new Error("write failed");
-    await expect(executeCli(["--help"], {
-      stdout: () => { throw failure; },
-      stderr: () => {},
-    })).rejects.toBe(failure);
-    await expect(executeCli([], {
-      stdout: () => {},
-      stderr: async () => { throw failure; },
-    })).rejects.toBe(failure);
+    await expect(
+      executeCli(["--help"], {
+        stdout: () => {
+          throw failure;
+        },
+        stderr: () => {},
+      }),
+    ).rejects.toBe(failure);
+    await expect(
+      executeCli([], {
+        stdout: () => {},
+        stderr: async () => {
+          throw failure;
+        },
+      }),
+    ).rejects.toBe(failure);
     const path = await sourceFile(Buffer.from("a"));
-    await expect(executeCli([path], {
-      stdout: async () => { throw failure; },
-      stderr: () => {},
-    })).rejects.toBe(failure);
+    await expect(
+      executeCli([path], {
+        stdout: async () => {
+          throw failure;
+        },
+        stderr: () => {},
+      }),
+    ).rejects.toBe(failure);
   });
 
   it("streams a real long operator chain without truncation", async () => {
-    const bytes = Buffer.from(Array.from({ length: 1_200 }, () => "a").join("+"));
+    const bytes = Buffer.from(
+      Array.from({ length: 1_200 }, () => "a").join("+"),
+    );
     const path = await sourceFile(bytes);
     let length = 0;
     let tail = "";
@@ -142,7 +188,9 @@ describe("importable CLI execution", () => {
         binaries += combined.split('"kind": "binary"').length - 1;
         matchingTail = combined.slice(-'"kind": "binary"'.length + 1);
       },
-      stderr: () => { throw new Error("unexpected stderr"); },
+      stderr: () => {
+        throw new Error("unexpected stderr");
+      },
     });
     expect(code).toBe(0);
     expect(length).toBeGreaterThan(1_000_000);
@@ -156,12 +204,17 @@ describe("importable CLI execution", () => {
 describe("stack-safe parse-result JSON", () => {
   it("matches native formatting including undefined and escaped strings", async () => {
     const result = {
-      root: { structure: { entries: [undefined, 'quote" slash\\\n', null] }, expression: undefined },
+      root: {
+        structure: { entries: [undefined, 'quote" slash\\\n', null] },
+        expression: undefined,
+      },
       diagnostics: [],
       status: "complete",
     } as unknown as CstParseResult;
     let output = "";
-    await writeParseResult(result, (chunk) => { output += chunk; });
+    await writeParseResult(result, (chunk) => {
+      output += chunk;
+    });
     expect(output).toBe(`${JSON.stringify(result, null, 2)}\n`);
   });
 

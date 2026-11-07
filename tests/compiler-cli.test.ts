@@ -8,9 +8,9 @@ const temporaryDirectories: string[] = [];
 
 afterEach(async () => {
   await Promise.all(
-    temporaryDirectories.splice(0).map((directory) =>
-      rm(directory, { recursive: true, force: true }),
-    ),
+    temporaryDirectories
+      .splice(0)
+      .map((directory) => rm(directory, { recursive: true, force: true })),
   );
 });
 
@@ -150,5 +150,4 @@ describe("source-file loading", () => {
       readSourceFile(undefined as unknown as string),
     ).rejects.toThrow(TypeError);
   });
-
 });

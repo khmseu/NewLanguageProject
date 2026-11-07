@@ -119,7 +119,9 @@ export function writeNodeStream(
       completeIfReady();
     } catch (error) {
       settle(
-        error instanceof Error ? error : new Error(`Output write failed: ${String(error)}`),
+        error instanceof Error
+          ? error
+          : new Error(`Output write failed: ${String(error)}`),
       );
     }
   });

@@ -5,11 +5,13 @@ complete formatted JSON result. Actual process/npm command wiring remains
 Phase 3; no runnable command is advertised yet.
 
 **Files created/changed:**
+
 - [Execution and serializer](../src/cli/execute.ts)
 - [Integration tests](../tests/compiler-cli-execution.test.ts)
 - [README](../README.md), context records and phase completion records.
 
 **Functions/contracts:**
+
 - `executeCli(args, streams)` returns 0 for help/complete parse, 1 for recovered
   parsing with errors, 2 for usage/read failures. It does not force process exit.
 - Help/results go to stdout; usage/read errors go to stderr. Unexpected parser
@@ -26,6 +28,7 @@ Phase 3; no runnable command is advertised yet.
 - No dependencies, package scripts or public library exports changed.
 
 **TDD/review:**
+
 - Implementer reported 14 expected behavioral failures against importable
   incomplete execution/serialization contracts before implementation.
 - Focused final suite: 16 passing tests, covering real files, valid/empty/
@@ -43,6 +46,7 @@ Phase 3; no runnable command is advertised yet.
 and independent checks.
 
 **Validation:**
+
 - Conductor: 16 focused tests pass, type-check, build/public export smoke and
   whitespace checks pass. Final focused run took 2.92 seconds.
 - Implementer reported full suite 575 passed before test-cost adjustment, plus

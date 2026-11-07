@@ -5,12 +5,14 @@ Parser integration and the runnable npm command remain Phases 2 and 3;
 this phase does not advertise an executable CLI.
 
 **Files created/changed:**
+
 - [Argument handling](../src/cli/arguments.ts)
 - [Source loading](../src/cli/source-file.ts)
 - [Tests](../tests/compiler-cli.test.ts)
 - [README](../README.md), approved CLI plan and both context records.
 
 **Functions/contracts:**
+
 - `parseCliArguments`, `CliArgumentResult`, `CLI_USAGE`: help, file selection
   and explicit usage errors with exit code 2, without writing streams or exiting.
 - `readSourceFile`, `SourceFileResult`: original bytes or contextual filesystem
@@ -21,6 +23,7 @@ this phase does not advertise an executable CLI.
 - Help/usage messages are data for the future entry point; no new dependencies.
 
 **TDD evidence:**
+
 - Implementer reported 17 of 18 behavioral failures against importable
   skeletons, then green. A later unknown-option-plus-extra-argument assertion
   failed before refining validation order and then passed.
@@ -32,6 +35,7 @@ this phase does not advertise an executable CLI.
 Reviewer did not execute checks.
 
 **Validation:**
+
 - Conductor: focused suite **18 passed**, type-check, build/public export smoke
   and whitespace check pass.
 - Implementer additionally reported full suite **559 passed** (11 files) and

@@ -126,7 +126,10 @@ function* jsonPieces(result: CstParseResult): Generator<string> {
       const array = Array.isArray(value);
       const container = value as Record<string, unknown> | readonly unknown[];
       const keys = array
-        ? Array.from({ length: (container as readonly unknown[]).length }, (_, index) => String(index))
+        ? Array.from(
+            { length: (container as readonly unknown[]).length },
+            (_, index) => String(index),
+          )
         : Object.keys(container).filter(
             (key) => (container as Record<string, unknown>)[key] !== undefined,
           );
@@ -135,7 +138,13 @@ function* jsonPieces(result: CstParseResult): Generator<string> {
         continue;
       }
       yield array ? "[" : "{";
-      pending.push({ kind: "container", value: container, keys, array, index: 0 });
+      pending.push({
+        kind: "container",
+        value: container,
+        keys,
+        array,
+        index: 0,
+      });
       continue;
     }
 
@@ -149,6 +158,9 @@ function* jsonPieces(result: CstParseResult): Generator<string> {
     yield `${frame.index === 0 ? "" : ","}\n${"  ".repeat(pending.length)}`;
     if (!frame.array) yield `${JSON.stringify(key)}: `;
     frame.index++;
-    pending.push({ kind: "value", value: frame.array && value === undefined ? null : value });
+    pending.push({
+      kind: "value",
+      value: frame.array && value === undefined ? null : value,
+    });
   }
 }

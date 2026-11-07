@@ -25,10 +25,11 @@ async function main(): Promise<void> {
   } catch (error) {
     process.exitCode = 1;
     const detail =
-      error instanceof Error
-        ? (error.stack ?? error.message)
-        : String(error);
-    await writeNodeStream(process.stderr, `Unexpected CLI failure: ${detail}\n`);
+      error instanceof Error ? (error.stack ?? error.message) : String(error);
+    await writeNodeStream(
+      process.stderr,
+      `Unexpected CLI failure: ${detail}\n`,
+    );
   }
 }
 
