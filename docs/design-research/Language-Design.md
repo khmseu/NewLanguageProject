@@ -280,7 +280,7 @@ Error tokens use DEC-068's contextual operand/operator classification; Unicode-e
 
 **Decision DEC-010 — approved:** Unary prefix and postfix operators are represented using an implicit `EMPTY` operand, not separate unary-operator syntax in the tree. A prefix operator has `EMPTY` on its left; a postfix operator has `EMPTY` on its right. This is the tree representation; semantic analysis determines whether the operator is valid in that unary context.
 
-The adopted relative operator priorities and associativities are listed in DEC-022/066. Semantic legality rules for inserted elements remain open (Q-008); operator semantics and remaining binding interactions are tracked in Q-007.
+The adopted relative operator priorities and associativities are listed in DEC-022/066/093. Semantic legality rules for inserted elements remain open (Q-008); operator semantics and remaining binding interactions are tracked in Q-007.
 
 **Decision DEC-063 — approved:** Parentheses `()` group expressions; braces `{}` define blocks (scopes); and square brackets `[]` delimit template parameters. The previously selected square-bracket form for template arguments remains in DEC-011. DEC-072 specifies their shared grouping behavior; concrete CST representation remains open (Q-015).
 
@@ -347,7 +347,7 @@ Consequences: `1e2e+3` gives error operand `1e2e`, `+`, `3`; `1fooE+2` gives err
 
 **Decision DEC-048 — approved clarification of DEC-008/010:** Make the minimal insertions needed to produce an alternating operand/operator sequence: insert `APPLY` between adjacent operands and `EMPTY` between adjacent operators. Do not add construct-specific insertion requirements. The existing `EMPTY` representation of a missing unary operand remains unchanged.
 
-**Decision DEC-049 — approved:** Make `.` bind tighter than `->`, splitting their former shared priority level. Keep `.` left-associative and `->` non-associative; leave both below `APPLY` and above the next operator level.
+**Decision DEC-049 — approved, with the APPLY relationship superseded by DEC-093:** Make `.` bind tighter than `->`, splitting their former shared priority level. Keep `.` left-associative and `->` non-associative. DEC-093 places both above `APPLY`.
 
 **Decision DEC-050 — approved, clarified by DEC-074:** Reserve `::` without assigning it a current expression meaning. Its existing relative placement alongside `:` remains unchanged. It parses as a valid operator with no valid operands; semantic analysis diagnoses its use.
 
@@ -365,14 +365,14 @@ Consequences: `1e2e+3` gives error operand `1e2e`, `+`, `3`; `1fooE+2` gives err
 
 **Decision DEC-021 — approved:** Use GenLang's numeric priority scale as the starting point for the next language. Set `@` to priority 190; keep `.` left-associative; use `^` for XOR and `**` for exponentiation; use `->` for function definition; and set `?` to priority 45. DEC-022 resolves the remaining relative-order conflicts and assigns `**` a priority.
 
-**Decision DEC-022 — approved:** Adopt the following relative precedence for the next language, from tightest to loosest. Each line is a distinct priority level; operators on one line share a level and, under DEC-066, associativity. This uses GenLang's relative ordering to resolve the historical conflicts, with the explicit placements below, and makes `**` right-associative. Delimiters group syntax rather than introducing a separate associativity choice.
+**Decision DEC-022 — approved, with the original APPLY placement superseded by DEC-093:** Adopt the following relative precedence for the next language, from tightest to loosest. Each line is a distinct priority level; operators on one line share a level and, under DEC-066, associativity. This uses GenLang's relative ordering to resolve historical conflicts, with the explicit placements below, and makes `**` right-associative. Delimiters group syntax rather than introducing a separate associativity choice or precedence level.
 
 | Relative level (tightest first) | Operators                                                                          | Associativity / notes                                                                                                            |
 | ------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | Tightest                        | `@`                                                                                | Non-associative; name-declaration operator.                                                                                      |
-|                                 | implicit `APPLY`, `(` `)` `{` `}` `[` `]`                                          | APPLY is left-associative; delimiters group syntax.                                                                              |
 |                                 | `.`                                                                                | Left-associative member access; tighter than `->` (DEC-049).                                                                     |
 |                                 | `->`                                                                               | Function definition/type arrow; non-associative (DEC-037).                                                                       |
+|                                 | implicit `APPLY`                                                                   | Left-associative; between `->` and the prefix/postfix operator level (DEC-093).                                                  |
 |                                 | `++` `--` `!` `~`                                                                  | Non-associative; prefix/postfix forms and semantics remain subject to Q-007.                                                     |
 |                                 | `**`                                                                               | Right-associative exponentiation; one level tighter than `*`.                                                                    |
 |                                 | `*` `/` `%`                                                                        | Left-associative.                                                                                                                |
@@ -392,13 +392,15 @@ Consequences: `1e2e+3` gives error operand `1e2e`, `+`, `3`; `1fooE+2` gives err
 |                                 | `,`                                                                                | Left-associative list operator; expressions may be evaluated in parallel (DEC-064).                                              |
 | Loosest                         | `;`                                                                                | Left-associative expression sequence; left expression is evaluated before the right (DEC-051/064/066).                           |
 
-For a one-operator-per-row index with ordinal binding levels, see [Operator binding](../operator-binding.md). DEC-022/066 above remain normative.
+The delimiters `(` `)` `{` `}` `[` `]` group syntax and have no operator binding level. For a one-operator-per-row index with ordinal binding levels, see [Operator binding](../operator-binding.md).
 
 **Decision DEC-023 — approved:** Place `::` at the same relative precedence level as `:`, and place `:=` and `::=` at the same level as `=`. These are relative placements only; DEC-052 subsequently clarifies their binding-expression interpretation and required left `@name` operand.
 
 `**` occupies the level immediately above `*`; no numeric priorities are part of this table. `::` remains reserved at the level of `:`. The `:=` variable and `::=` type binding operators from DEC-011/052 are placed with `=` in this relative ordering.
 
-The table adopts GenLang's relative order for APPLY versus `.`, bitwise versus comparison operators, and `?` versus assignment/`:`, resolving those historical differences for this design. The placement of reserved `::` and the binding operators is explicitly selected here rather than copied from GenLang. Historical source disagreements remain documented in the project knowledge view. Q-007 tracks operator meanings/forms and remaining binding interactions, not the adopted precedence and associativity table.
+The table adopts GenLang's relative order for bitwise versus comparison operators and `?` versus assignment/`:`, resolving those historical differences for this design. DEC-022 originally placed `APPLY` tighter than `.`, following GenLang; DEC-093 supersedes that placement and puts `APPLY` looser than `->` but tighter than the prefix/postfix level. The placement of reserved `::` and the binding operators is explicitly selected here rather than copied from GenLang. Historical source disagreements remain documented in the project knowledge view. Q-007 tracks operator meanings/forms and remaining binding interactions, not the adopted precedence and associativity table.
+
+**Decision DEC-093 — approved:** Move implicit `APPLY` to a distinct binding level looser than `->` and tighter than the shared `++`, `--`, `!`, `~` level. Keep `APPLY` left-associative. This supersedes DEC-022's original placement of `APPLY` with delimiters above `.`.
 
 ### Conditional precedence check
 

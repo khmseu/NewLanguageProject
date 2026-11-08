@@ -5,6 +5,11 @@ levels and associativities. Trees retain groups and source operators, while
 each scope retains its lossless structural sequence and trivia. No keywords,
 special unary grammar, conditional reassociation or semantic checks were added.
 
+**Follow-up:** DEC-093 subsequently moved implicit `APPLY` below `->` and above
+the prefix/postfix operator level. The precedence table and focused tree-shape
+tests now reflect that change; see [Language Design](../docs/design-research/Language-Design.md)
+and KP-121. The verification counts below are the original Phase 7 results.
+
 **Files created/changed:**
 
 - [Precedence parser and table](../src/parser/precedence.ts)

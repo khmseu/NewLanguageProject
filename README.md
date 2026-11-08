@@ -167,8 +167,9 @@ comments, whitespace, BOM trivia, and error entries; tree spans may therefore
 cover trivia that is stored in this structural sequence rather than attached
 to a child.
 
-The exported `OPERATOR_PRECEDENCE` table implements all DEC-022 levels and
-DEC-066 associativities; lower numeric priorities bind more tightly. An
+The exported `OPERATOR_PRECEDENCE` table implements the 22 approved relative
+precedence levels (DEC-022, as amended by DEC-093) and DEC-066 associativities;
+lower numeric priorities bind more tightly. An
 iterative shunting-yard reduction is used instead of recursive operator
 descent, so long operator chains do not consume the call stack. A separate
 post-order stack parses nested groups. Same-level left operators reduce as

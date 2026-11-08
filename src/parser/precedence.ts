@@ -38,14 +38,14 @@ export interface OperatorPrecedence {
 }
 
 /**
- * Approved DEC-022/066 precedence table, tightest first. `APPLY` denotes the
- * implicit operator inserted by structural grouping, not a source spelling.
+ * Approved DEC-022/066/093 precedence table, tightest first. `APPLY` denotes
+ * the implicit operator inserted by structural grouping, not a source spelling.
  */
 export const OPERATOR_PRECEDENCE = Object.freeze({
   "@": binding(0, "non-associative"),
-  APPLY: binding(1, "left"),
-  ".": binding(2, "left"),
-  "->": binding(3, "non-associative"),
+  ".": binding(1, "left"),
+  "->": binding(2, "non-associative"),
+  APPLY: binding(3, "left"),
   "++": binding(4, "non-associative"),
   "--": binding(4, "non-associative"),
   "!": binding(4, "non-associative"),
@@ -414,7 +414,8 @@ function reduceTop(
 /**
  * Return the approved precedence for a source or inserted operator spelling.
  * @param spelling - Source spelling or the structural `APPLY` name.
- * @returns Binding entry, or undefined if the operator is not in DEC-022.
+ * @returns Binding entry, or undefined if the operator is not in the approved
+ * DEC-022/093 table.
  */
 function precedenceFor(spelling: string): OperatorPrecedence | undefined {
   return (OPERATOR_PRECEDENCE as Readonly<Record<string, OperatorPrecedence>>)[

@@ -41,7 +41,7 @@ forms. Numeric candidates are deliberately matched permissively and validated
 after matching; malformed candidates remain error tokens. See DEC-028/033,
 DEC-047/058–061, and DEC-089–091 for exact numeric constraints. The recognized
 operator spellings and literal escape forms are specified in the normative
-Language Design (DEC-022/025–030, DEC-039–045).
+Language Design (DEC-022/025–030, DEC-039–045, DEC-093).
 
 The explicit operator tokens are `<<=`, `>>=`, `::=`, `++`, `--`, `**`, `<<`,
 `>>`, `<=`, `>=`, `==`, `!=`, `&&`, `||`, `<-`, `->`, `:=`, `+=`, `-=`, `*=`,
@@ -63,7 +63,7 @@ closers are inserted and diagnosed at EOF.
 
 Each delimiter group is an operand whose contents form an independent scope.
 The alternating sequence is then reduced to a binary CST using the approved
-operator precedence and associativity table in DEC-022/066 (also implemented
+operator precedence and associativity table in DEC-022/066/093 (also implemented
 in [`src/parser/precedence.ts`](../src/parser/precedence.ts)). Prefix and
 postfix spellings use the same binary model and implicit `EMPTY`; the parser
 does not check operator meanings, operand legality, or predefined identifiers.
@@ -76,7 +76,7 @@ See DEC-008/048, DEC-063/069/072/073/076, and DEC-092 for the governing choices.
 The parser accepts generic operand/operator syntax rather than named language
 constructs. It inserts only the minimal `APPLY` and `EMPTY` elements needed to
 recover an alternating sequence, then applies the precedence and associativity
-rules in DEC-022/066. The `Expression` production describes that normalized
+rules in DEC-022/066/093. The `Expression` production describes that normalized
 sequence; malformed delimiters and lexical errors are recovered with
 diagnostics, as shown in the retained parser overview. In that production,
 `Operator` is an explicit operator token or an inserted `APPLY`; an

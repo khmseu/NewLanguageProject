@@ -1,29 +1,21 @@
 # Operator binding reference
 
-This reference expands the approved relative precedence in DEC-022 and the
+This reference expands the approved relative precedence in DEC-022/093 and the
 associativity rule in DEC-066 into one row per operator spelling. Binding levels
 are ordinal: **1 is tightest, 22 is loosest**. They are not numeric precedence
-values. Operators at the same level share associativity unless the entry is a
-grouping delimiter, whose associativity is not applicable.
+values. Operators at the same level share associativity.
 
 Rows within a level are ordered by operator spelling (ASCII lexicographic
 order); `APPLY` is the synthetic operator inserted between adjacent operands.
-The delimiter rows are included because they appear at the delimiter/APPLY
-binding level in DEC-022. They group syntax and are not ordinary infix
-operators.
+The delimiters `(` `)` `{` `}` `[` `]` group syntax and are not precedence
+operators, so they have no binding level or associativity.
 
 | Operator | Binding level | Associativity | Notes |
 |---|---:|---|---|
 | `@` | 1 | Non-associative | Name-declaration operator. |
-| `(` | 2 | N/A | Opens a grouping/delimiter scope. |
-| `)` | 2 | N/A | Closes a grouping/delimiter scope. |
-| `APPLY` | 2 | Left | Implicit function application inserted between adjacent operands. |
-| `[` | 2 | N/A | Opens a grouping/delimiter scope; used for template parameters/arguments. |
-| `]` | 2 | N/A | Closes a grouping/delimiter scope. |
-| `{` | 2 | N/A | Opens a grouping/delimiter scope; selected as a block scope. |
-| `}` | 2 | N/A | Closes a grouping/delimiter scope. |
-| `.` | 3 | Left | Member access; tighter than `->` (DEC-049). |
-| `->` | 4 | Non-associative | Function definition/type arrow. |
+| `.` | 2 | Left | Member access; tighter than `->` (DEC-049). |
+| `->` | 3 | Non-associative | Function definition/type arrow; tighter than `APPLY` (DEC-093). |
+| `APPLY` | 4 | Left | Implicit function application inserted between adjacent operands; tighter than the prefix/postfix operator level (DEC-093). |
 | `!` | 5 | Non-associative | Logical-not role in the source inventory; prefix/postfix form legality and meaning remain semantic questions. |
 | `++` | 5 | Non-associative | Increment role; prefix/postfix forms use ordinary parsing, while operand legality and effects remain semantic questions. |
 | `--` | 5 | Non-associative | Decrement role; prefix/postfix forms use ordinary parsing, while operand legality and effects remain semantic questions. |

@@ -42,7 +42,7 @@
   <text class="small" x="555" y="364">A group is one operand in its enclosing scope.</text>
   <text class="small" x="555" y="394">EMPTY and APPLY are inserted to recover adjacency,</text>
   <text class="small" x="555" y="424">including empty scopes and missing operands.</text>
-  <text class="small" x="42" y="456">Explicit operators are the lexer’s operator tokens; their full set and precedence are in Language Design, DEC-022/066.</text>
+  <text class="small" x="42" y="456">Explicit operators are the lexer’s operator tokens; their full set and precedence are in Language Design, DEC-022/066/093.</text>
 
   <rect class="frame" x="22" y="484" width="1116" height="144" rx="12"/>
   <text class="production" x="42" y="515">Group ::= '(' SourceScope ')' | '[' SourceScope ']' | '{' SourceScope '}'</text>

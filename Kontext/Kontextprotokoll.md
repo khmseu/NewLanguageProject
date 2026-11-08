@@ -149,7 +149,8 @@ This log records the material context and evidence behind the current file class
 | SRC-133 | Official Unicode18 normalization files/fixture and checksum-verified generator                                                                                                                                                                                                                                                                                                                                                                                                                                                               | 2026-11-06 (+01:00)                                               | 20,171 normalization rows, five columns each for NFC/NFKC; official hashes and licensing/provenance documented                                                                                                                                                                                                           | Full fixture-row comparisons, not a claim of untested forms NFD/NFKD or host conformance.                                                                                                                                         |
 | SRC-134 | User request and direct reinspection of `/bigdata/KAI/NewLang/IDEAS/OtherStuff.txt`, `/bigdata/KAI/NewLang/IDEAS/newlang.ye`, `/bigdata/KAI/projects/GenLang/docs/language.md`, `/bigdata/KAI/projects/LangLLVM/src/Design: Declarations, Definitions.md`, `/bigdata/KAI/projects/LangLLVM/src/mylang.pegjs`, and selected `/bigdata/KAI/projects/OPPlang/OPPrs/miniopp` sources | 2026-11-07 (+01:00) | Experiment-stated semantic concepts, keyword-like forms, binding markers, and limits relevant to future CST semantics | Selected files only; no exhaustive experiment-tree review, and grammar/operator descriptions do not establish full operational semantics. |
 | SRC-135 | User request and targeted inspection of NewLang `OtherStuff.txt` / `newlang.ye`, GenLang `docs/language.md`, LangLLVM declaration note / `mylang.pegjs`, and OPPrs `miniopp` | 2026-11-07 17:34 (+01:00) | Package/module/class concepts and productions, distinguishing custom design notes from C++/Java-like grammar material | Selected experiment documents only; absence statements are limited to reviewed sources. |
-| SRC-136 | User request and DEC-022/066 in [Language Design](../docs/design-research/Language-Design.md), with semantic qualifications from DEC-049/050/052/056/064/065/073/074 | 2026-11-08 01:19 (+01:00) | Request to publish a per-operator binding-level/associativity/notes table; exact approved precedence and associativity rows | The reference is a reformatted index; DEC-022/066 remain normative and unresolved operator semantics are not decided by this table. |
+| SRC-136 | User request and DEC-022/066 in [Language Design](../docs/design-research/Language-Design.md), with semantic qualifications from DEC-049/050/052/056/064/065/073/074 | 2026-11-08 01:19 (+01:00) | Request to publish a per-operator binding-level/associativity/notes table; exact approved precedence and associativity rows | At publication, DEC-022/066 were normative; DEC-093 later supersedes DEC-022's original APPLY placement. Unresolved operator semantics are not decided by the table. |
+| SRC-137 | User request, precedence implementation/tests, and updated [Language Design](../docs/design-research/Language-Design.md) / [Operator binding](../docs/operator-binding.md) | 2026-11-08 (time not recorded) | Request to move `APPLY` between `!` and `->`, with related documentation, code, and tests updated | “Between” was interpreted in the established tightest-to-loosest direction; no other operator semantics or commit was requested. |
 
 ## Entries
 
@@ -2497,8 +2498,35 @@ level, associativity, and notes columns.
 DEC-022/066 into one row per listed operator and delimiter token. Binding levels
 are ordinal labels, not numeric precedence values. The notes preserve semantic
 qualifications already recorded in the language design; open meanings and
-semantic checks remain open. Linked the reference from Wissensstand. The
-normative source remains DEC-022/066 in Language Design.
+semantic checks remain open. Linked the reference from Wissensstand. At
+publication, the normative source was DEC-022/066 in Language Design; DEC-093
+later supersedes the original APPLY placement in DEC-022.
 
 **Validation:** Documentation-only. `git diff --check` and a row/order audit
 were run; no compiler behavior changed and no tests/build were needed.
+
+### KP-121 - APPLY precedence moved below arrow
+
+- Event date: 2026-11-08; precise user-message time not recorded.
+- Documented: 2026-11-08 (time not recorded).
+- Source: SRC-137.
+- Status: approved design change; implementation and docs updated, targeted
+  verification recorded below; no commit made.
+
+**Nutzerangabe:** “change the binding level of `APPLY`. Move it between `!` and
+`->`. Adjust all docs, the code, and the tests.”
+
+**Belegt:** Read in the table's established tightest-to-loosest direction, this
+places `->` first, implicit `APPLY` next, then the shared `++`, `--`, `!`, `~`
+level. DEC-093 records this change and supersedes DEC-022's original placement
+of `APPLY` with the delimiters above `.`; DEC-049 now says `.` and `->` are
+above `APPLY`. Updated the parser precedence table, its focused conformance
+expectations/tree-shape assertions, Language Design, the per-operator reference,
+and Wissensstand. No AST, semantic analysis, or operator meaning was introduced.
+
+**TDD and verification:** The focused test first failed before implementation
+(4 failures, 33 passes); after the code change, `npm test -- tests/precedence-parser.test.ts`
+passed (37 tests). `npm run typecheck` and `git diff --check` passed. A targeted
+consistency search found the older DEC-022 statements in the dated SRC-136 and
+KP-120 records; both now identify DEC-093 as the later supersession. Current
+design and knowledge views point to DEC-093.

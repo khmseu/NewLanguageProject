@@ -46,9 +46,9 @@ function signature(node: CstExpression): string {
 
 const operatorsFromTightToLoose = [
   "@",
-  "APPLY",
   ".",
   "->",
+  "APPLY",
   "!",
   "**",
   "*",
@@ -75,9 +75,9 @@ const expectedPrecedenceLevels: readonly {
   operators: readonly string[];
 }[] = [
   { priority: 0, associativity: "non-associative", operators: ["@"] },
-  { priority: 1, associativity: "left", operators: ["APPLY"] },
-  { priority: 2, associativity: "left", operators: ["."] },
-  { priority: 3, associativity: "non-associative", operators: ["->"] },
+  { priority: 1, associativity: "left", operators: ["."] },
+  { priority: 2, associativity: "non-associative", operators: ["->"] },
+  { priority: 3, associativity: "left", operators: ["APPLY"] },
   {
     priority: 4,
     associativity: "non-associative",
@@ -133,7 +133,7 @@ function operandsWith(operators: readonly string[]): string {
   return source;
 }
 
-describe("precedence-based binary CST (DEC-021/022/066/068/069/072/073/074/076/088)", () => {
+describe("precedence-based binary CST (DEC-021/022/066/068/069/072/073/074/076/088/093)", () => {
   it("publishes every approved operator, priority, and level associativity", () => {
     const levels = new Map<
       number,
@@ -182,6 +182,15 @@ describe("precedence-based binary CST (DEC-021/022/066/068/069/072/073/074/076/0
       );
     },
   );
+
+  it("binds APPLY between -> and the prefix/postfix operator level", () => {
+    expect(signature(expression(parse("a b -> c")))).toBe(
+      "(APPLY a (-> b c))",
+    );
+    expect(signature(expression(parse("a b ! c")))).toBe(
+      "(! (APPLY a b) c)",
+    );
+  });
 
   it("uses left associativity for ordinary levels and implicit APPLY", () => {
     expect(signature(expression(parse("a - b - c")))).toBe("(- (- a b) c)");
@@ -262,7 +271,7 @@ describe("precedence-based binary CST (DEC-021/022/066/068/069/072/073/074/076/0
       "(:= (@ EMPTY name) value)",
     );
     expect(signature(expression(parse("function(x) -> y")))).toBe(
-      "(-> (APPLY function group(x)) y)",
+      "(APPLY function (-> group(x) y))",
     );
   });
 
