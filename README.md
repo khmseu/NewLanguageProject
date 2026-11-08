@@ -47,6 +47,14 @@ npm --silent run parse -- path/to/source
 npm --silent run parse -- --reduced-json path/to/source
 ```
 
+From the repository root, [parse.sh](./parse.sh) is a short equivalent:
+
+```sh
+./parse.sh --reduced-json path/to/source
+```
+
+It forwards arguments unchanged and preserves the command's exit status.
+
 With `--silent`, stdout contains only the complete two-space formatted JSON
 parse result (including status, CST, structural trivia and diagnostics), or
 help text. Usage and file-read errors go to stderr. Exit status is 0 for help

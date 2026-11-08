@@ -2693,3 +2693,20 @@ synopsis assertion, which was corrected; the new process test uses a
 30-second timeout after its initial 5-second startup timeout. No claim of a
 fully passing process or repository suite is made. Test scratch directories
 were cleaned by the existing harness.
+
+### KP-126 - Short parse command wrapper
+
+- Event/documentation date: 2026-11-09 (+01:00); user request at 00:41.
+- Source: current conversation.
+- Status: implemented and verified; no commit requested.
+
+**Nutzerangabe:** Add a short script to run `npm --silent run parse -- "$@"`.
+
+**Belegt:** Added executable [parse.sh](../parse.sh) using POSIX sh and `exec`
+to forward arguments unchanged and preserve exit status. It runs from the
+repository root without changing the working directory. Updated README usage.
+
+**Verification:** The initial executable-existence check failed before adding
+the wrapper. After creation, `sh -n`, executable-existence, real help (status
+0, clean stdout), and a quoted missing leading-hyphen path after `--` (status
+2, stderr only) passed. No compiler logic changed.
