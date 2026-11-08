@@ -3,7 +3,8 @@
  */
 
 /** Usage synopsis for the source-parse command. */
-export const CLI_USAGE = "Usage: parse [--help] [--] <source-file>";
+export const CLI_USAGE =
+  "Usage: parse [--help] [--reduced-json] [--] <source-file>";
 
 /**
  * Result of interpreting one CLI argument vector.
@@ -25,6 +26,8 @@ export type CliArgumentResult =
       readonly kind: "file";
       /** Path spelling as supplied by the caller; it is not normalized. */
       readonly path: string;
+      /** Present when expression-only JSON was explicitly requested. */
+      readonly reducedJson?: true;
     }
   | {
       /** Arguments did not match the supported invocation. */
@@ -43,6 +46,16 @@ export type CliArgumentResult =
  * @throws This function does not throw for malformed argument vectors.
  */
 export function parseCliArguments(args: readonly string[]): CliArgumentResult {
+  if (args[0] === "--reduced-json") {
+    if (args[1] === "--reduced-json") {
+      return usageError("'--reduced-json' must not be repeated.");
+    }
+    const result = parseCliArguments(args.slice(1));
+    if (result.kind === "help") {
+      return usageError("'--help' must be used alone.");
+    }
+    return result.kind === "file" ? { ...result, reducedJson: true } : result;
+  }
   if (args.length === 1 && args[0] === "--help") {
     return {
       kind: "help",
@@ -53,6 +66,7 @@ export function parseCliArguments(args: readonly string[]): CliArgumentResult {
         "",
         "Options:",
         "  --help  Show this help message.",
+        "  --reduced-json  Print the expression tree without ordinary node metadata.",
         "  --      End option parsing; use it for a path beginning with '-'.",
       ].join("\n"),
       exitCode: 0,

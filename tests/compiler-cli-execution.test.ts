@@ -39,6 +39,99 @@ async function run(args: readonly string[]) {
 }
 
 describe("importable CLI execution", () => {
+  it.each(["", "()", "[]", "{}"])(
+    "represents empty scopes without source metadata: %j",
+    async (source) => {
+      const result = await run([
+        "--reduced-json", await sourceFile(Buffer.from(source)),
+      ]);
+      const empty = { tokenKind: "empty", spelling: "EMPTY" };
+      expect(JSON.parse(result.stdout)).toEqual({
+        root: source === "" ? empty : { delimiter: source[0], expression: empty },
+        diagnostics: [],
+        status: "complete",
+      });
+    },
+  );
+
+  it("preserves complete groups recovered with missing closers", async () => {
+    const bytes = Buffer.from("(a");
+    const result = await run(["--reduced-json", await sourceFile(bytes)]);
+    const expected = parseSource(new SourceInput(bytes));
+    expect(result.code).toBe(1);
+    expect(JSON.parse(result.stdout)).toEqual({
+      root: expected.root.expression,
+      diagnostics: expected.diagnostics,
+      status: "error",
+    });
+  });
+
+  it("reduces operators, tokens, groups and EMPTY to their exact requested fields", async () => {
+    const path = await sourceFile(Buffer.from("f /* omit */ (a + 2);"));
+    const result = await run(["--reduced-json", path]);
+    expect(result.code).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(JSON.parse(result.stdout)).toEqual({
+      root: {
+        left: {
+          left: { tokenKind: "identifier", spelling: "f" },
+          right: {
+            delimiter: "(",
+            expression: {
+              left: { tokenKind: "identifier", spelling: "a" },
+              right: { tokenKind: "number", spelling: "2" },
+              spelling: "+",
+            },
+          },
+          spelling: "APPLY",
+        },
+        right: { tokenKind: "empty", spelling: "EMPTY" },
+        spelling: ";",
+      },
+      diagnostics: [],
+      status: "complete",
+    });
+  });
+
+  it.each(["0x", "a § b", "([a)]", "a -> b -> c"])(
+    "keeps diagnostics and error nodes complete for %s",
+    async (source) => {
+      const bytes = Buffer.from(source);
+      const expected = parseSource(new SourceInput(bytes));
+      const result = await run(["--reduced-json", await sourceFile(bytes)]);
+      expect(result.code).toBe(1);
+      expect(result.stderr).toBe("");
+      const reduced = JSON.parse(result.stdout);
+      expect(reduced.diagnostics).toEqual(expected.diagnostics);
+      expect(reduced.status).toBe("error");
+      const originalErrors: unknown[] = [];
+      const pending = [expected.root.expression];
+      while (pending.length) {
+        const node = pending.pop();
+        if (!node) continue;
+        if (node.kind === "error-operand") originalErrors.push(node);
+        else if (node.kind === "binary") {
+          if (node.operator.operatorKind === "error") originalErrors.push(node);
+          else pending.push(node.left, node.right);
+        } else if (node.kind === "group-expression") {
+          pending.push(node.contents.expression);
+        }
+      }
+      for (const error of originalErrors) {
+        const allObjects: unknown[] = [];
+        const queue: unknown[] = [reduced.root];
+        while (queue.length) {
+          const value = queue.pop();
+          if (value !== null && typeof value === "object") {
+            allObjects.push(value);
+            queue.push(...Object.values(value));
+          }
+        }
+        expect(allObjects).toContainEqual(error);
+      }
+    },
+  );
+
   it("writes standalone help only to stdout", async () => {
     const result = await run(["--help"]);
     expect(result.code).toBe(0);
@@ -202,6 +295,32 @@ describe("importable CLI execution", () => {
 });
 
 describe("stack-safe parse-result JSON", () => {
+  it("streams a deep reduced tree without changing the original CST", async () => {
+    const result = parseSource(new SourceInput(Buffer.from(
+      Array.from({ length: 1_500 }, () => "a").join("+"),
+    )));
+    const originalRoot = result.root.expression;
+    let operators = 0;
+    let matchingTail = "";
+    let tail = "";
+    let chunks = 0;
+    await writeParseResult(result, (chunk) => {
+      chunks++;
+      const combined = matchingTail + chunk;
+      operators += combined.split('"spelling": "+"').length - 1;
+      matchingTail = combined.slice(-'"spelling": "+"'.length + 1);
+      tail = (tail + chunk).slice(-100);
+      expect(chunk).not.toContain('"structure"');
+    }, true);
+    expect(operators).toBe(1_499);
+    expect(chunks).toBeGreaterThan(1);
+    expect(tail).toContain('"status": "complete"');
+    expect(tail.endsWith("}\n")).toBe(true);
+    expect(result.root.expression).toBe(originalRoot);
+    expect(originalRoot?.kind).toBe("binary");
+    expect(result.root.structure.entries.length).toBeGreaterThan(1_500);
+  }, 30_000);
+
   it("matches native formatting including undefined and escaped strings", async () => {
     const result = {
       root: {

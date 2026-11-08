@@ -44,6 +44,7 @@ machine-readable output or piping:
 
 ```sh
 npm --silent run parse -- path/to/source
+npm --silent run parse -- --reduced-json path/to/source
 ```
 
 With `--silent`, stdout contains only the complete two-space formatted JSON
@@ -52,7 +53,22 @@ help text. Usage and file-read errors go to stderr. Exit status is 0 for help
 or a complete parse, 1 for a recovered parse with errors, and 2 for usage or
 file-read failures. A path beginning with `-` must follow `--`; only one source
 path is accepted. For repeated runs after building, invoke the emitted entry
-directly with `node dist/cli/main.js [--help | [--] path/to/source]`.
+directly with `node dist/cli/main.js [--reduced-json] [--] path/to/source`
+or `node dist/cli/main.js --help`.
+
+`--reduced-json` keeps the `{root, diagnostics, status}` envelope, but `root`
+is the expression tree rather than the full parsed scope. Ordinary operators
+have only `left`, `right`, and `spelling` (including implicit `APPLY`); token
+leaves have only `tokenKind` and `spelling`. Groups use
+`{delimiter, expression}`, with `delimiter` holding the opening spelling.
+Implicit `EMPTY` is `{tokenKind: "empty", spelling: "EMPTY"}`. This display
+format omits ordinary trivia, source spans, and duplicated structural sequences;
+it is not lossless. Full JSON remains the default.
+
+Error operands and error-operator binary nodes stay complete, including their
+original descendants. Groups recovered with an inserted closer or an absent
+expression also remain complete. If the root has no expression, its full
+recovery scope is retained. Diagnostics and error exit statuses are unchanged.
 
 The command reads original bytes, awaits writes and honors stream backpressure;
 it does not impose a JSON-output size limit or truncate output. Input, parser

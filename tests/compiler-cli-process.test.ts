@@ -188,10 +188,27 @@ describe("runnable compiler CLI", () => {
 
     expect(result.code).toBe(0);
     expect(result.stdout.toString("utf8")).toMatch(
-      /^Usage: parse \[--help\] \[--\] <source-file>/,
+      /^Usage: parse \[--help\] \[--reduced-json\] \[--\] <source-file>/,
     );
     expect(result.stderr).toHaveLength(0);
   }, 15_000);
+
+  it("supports reduced JSON through the built command", async () => {
+    const path = join(temporaryDirectory, "reduced.src");
+    await writeFile(path, "a b");
+    const result = await runBuiltCli(["--reduced-json", path]);
+    expect(result.code).toBe(0);
+    expect(result.stderr).toHaveLength(0);
+    expect(JSON.parse(result.stdout.toString("utf8"))).toEqual({
+      root: {
+        left: { tokenKind: "identifier", spelling: "a" },
+        right: { tokenKind: "identifier", spelling: "b" },
+        spelling: "APPLY",
+      },
+      diagnostics: [],
+      status: "complete",
+    });
+  }, 30_000);
 
   it("awaits stream backpressure and propagates output errors", async () => {
     let releaseWrite: (() => void) | undefined;
@@ -226,7 +243,7 @@ describe("runnable compiler CLI", () => {
 
     expect(result.code).toBe(0);
     expect(result.stdout.toString("utf8")).toContain(
-      "Usage: parse [--help] [--] <source-file>",
+      "Usage: parse [--help] [--reduced-json] [--] <source-file>",
     );
     expect(result.stderr).toHaveLength(0);
   }, 15_000);

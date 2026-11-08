@@ -2656,3 +2656,40 @@ implementation, network action, or commit is authorized by this turn.
 
 **Persistence:** Updated the specification and current knowledge view.
 Documentation-only; no compiler behavior changed or tests required.
+
+### KP-125 - Opt-in reduced CLI JSON output
+
+- Event/documentation date: 2026-11-08 (+01:00); request at 16:18.
+- Source: current conversation and shape clarification through the user form.
+- Status: implemented and verified within the limits below; no commit requested.
+
+**Nutzerangabe:** Add an option for reduced JSON: operators retain only left,
+right and spelling; tokens only tokenKind and spelling; error nodes remain
+complete. The user selected an envelope `{root, diagnostics, status}`, groups
+as `{delimiter, expression}`, and implicit EMPTY as
+`{tokenKind: "empty", spelling: "EMPTY"}`, omitting duplicate structure/trivia.
+
+**Implementation:** Added `--reduced-json` before the path/option terminator.
+Default full output, diagnostics and exit status are unchanged. Display-only
+projection and serialization are iterative. Error operands, error-operator
+binary nodes and malformed groups with inserted closers or missing expressions
+retain their full original nodes/descendants. Missing root expressions retain
+the complete recovery scope rather than hiding errors. No CST/parser or
+semantic behavior changed; the display format is not lossless.
+
+**TDD:** Initial focused run failed six new cases because the option was
+unknown (34 existing tests passed). The first implementation passed all 40
+argument/execution tests and type-check. Additional empty/group/recovery,
+deep-tree, and built-process coverage was added.
+
+**Final verification:** All 46 argument/execution tests pass, including exact
+shapes, unchanged full JSON, complete error nodes/diagnostics and a 1,500-token
+deep-tree stream without truncation. Type-check, build/public export smoke
+and `git diff --check` pass. The broader CLI run passed 59/63 tests, including
+the new built reduced-output case; four existing process scenarios timed out
+at 15 seconds (npm help, npm Unicode-path parse, empty/recovered process parse,
+and read-error process checks). An earlier run also exposed the old help
+synopsis assertion, which was corrected; the new process test uses a
+30-second timeout after its initial 5-second startup timeout. No claim of a
+fully passing process or repository suite is made. Test scratch directories
+were cleaned by the existing harness.

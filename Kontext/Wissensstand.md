@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-08 (timezone +01:00); user approved SEM-002's package manifests as DEC-094 and requested manifest editing/package downloading tooling as REQ-006 (KP-124). URL/provider-specific retrieval rules are explicitly deferred to tool implementation/testing. No code or network operation changed. SEM-001 and its compatibility review remain KP-122; earlier APPLY verification remains KP-121, committed as `8b828f6`.
+- Last substantive update: 2026-11-08 (timezone +01:00); implemented opt-in `--reduced-json` CLI output (KP-125). The user confirmed the reduced envelope/group/EMPTY shape. All 46 argument/execution tests, type-check, build/export smoke and whitespace checks pass; the broader CLI process run passed 13 tests (including reduced output) but four existing process scenarios timed out at 15 seconds. No parser semantics changed. Package manifests/tooling remain DEC-094/REQ-006 (KP-124), with provider-specific retrieval deferred.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -1133,6 +1133,15 @@ not numeric digits or identifier letters.
 - **Validation:** The SVGs parse as XML, all local Markdown links resolve, and `git diff --check` passes. No compiler behavior changed; see KP-115 and KP-116.
 
 ## Next steps
+
+Reduced-output checkpoint (KP-125): use
+`npm --silent run parse -- --reduced-json path/to/source`. Ordinary operators
+retain only left/right/spelling; tokens retain tokenKind/spelling; groups
+retain delimiter/expression, and EMPTY has tokenKind `empty`. Complete error/
+recovery nodes and diagnostics remain, along with error status. Full output
+is still the default; reduced output is not lossless. The new built-process
+case passed; four existing broader process scenarios hit 15-second limits.
+No commit requested.
 
 1. Await explicit authorization to commit CLI Phase 3 and final records. Read [completion evidence](../plans/compiler-cli-phase-3-complete.md) and [overall report](../plans/compiler-cli-complete.md). Phases 1/2 committed `3125545`/`ab821e5`. All CLI phases implemented; no further phase automatically authorized.
 2. Use `npm run parse -- path/to/source` or `--help`; `npm --silent run parse -- path/to/source` for clean JSON stdout. Direct built entry: `node dist/cli/main.js path`. Raw bytes, complete formatted JSON and recovered diagnostics; exits 0 complete/help, 1 parse errors, 2 usage/read errors. Awaited writes/backpressure, no forced exit/truncation. New process tests use Node/npm-cli.js without shell interpolation; Windows runtime unverified. Independent 591 tests pass with `--maxWorkers=1`; default parallel run had a reported existing scale-test timeout. No dependencies or semantics added.

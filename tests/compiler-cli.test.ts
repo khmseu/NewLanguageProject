@@ -21,6 +21,30 @@ async function createTemporaryDirectory(): Promise<string> {
 }
 
 describe("CLI arguments", () => {
+  it("accepts reduced JSON before a path or the option terminator", () => {
+    for (const args of [
+      ["--reduced-json", "source.lang"],
+      ["--reduced-json", "--", "-source.lang"],
+    ]) {
+      expect(parseCliArguments(args)).toEqual({
+        kind: "file",
+        path: args.at(-1),
+        reducedJson: true,
+      });
+    }
+    expect(parseCliArguments(["--", "--reduced-json"])).toEqual({
+      kind: "file",
+      path: "--reduced-json",
+    });
+    for (const args of [
+      ["--reduced-json"],
+      ["--reduced-json", "--reduced-json", "source.lang"],
+      ["--reduced-json", "--help"],
+    ]) {
+      expect(parseCliArguments(args).kind).toBe("usage-error");
+    }
+  });
+
   it("returns help for a standalone --help argument", () => {
     const result = parseCliArguments(["--help"]);
 

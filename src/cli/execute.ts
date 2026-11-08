@@ -7,13 +7,14 @@ import { parseSource } from "../parser/precedence.js";
 import { SourceInput } from "../source/source-input.js";
 import { parseCliArguments } from "./arguments.js";
 import { readSourceFile } from "./source-file.js";
+import { reduceParseResult } from "./reduced-result.js";
 
 /** A destination which receives text chunks in order. */
 export type CliWriter = (chunk: string) => void | Promise<void>;
 
 /** Independent destinations for normal output and errors. */
 export interface CliStreams {
-  /** Receives help or the complete formatted parse result. */
+  /** Receives help or the selected full/reduced formatted parse result. */
   readonly stdout: CliWriter;
   /** Receives usage and source-file read errors. */
   readonly stderr: CliWriter;
@@ -47,12 +48,12 @@ export async function executeCli(
     return 2;
   }
   const result = parseSource(new SourceInput(file.bytes));
-  await writeParseResult(result, streams.stdout);
+  await writeParseResult(result, streams.stdout, argumentsResult.reducedJson);
   return result.status === "complete" ? 0 : 1;
 }
 
 /**
- * Write a complete formatted JSON parse result, followed by a newline.
+ * Write a full or reduced formatted JSON parse result, followed by a newline.
  *
  * This traverses the plain result's objects and arrays iteratively; repeated
  * references are serialized each time just as with JSON.stringify. Formatting
@@ -61,15 +62,17 @@ export async function executeCli(
  * available time, storage and destination capacity still constrain output.
  * @param result The parse result to serialize.
  * @param write Ordered text destination, awaited between buffered chunks.
+ * @param reducedJson Whether to omit ordinary expression metadata and structure.
  * @returns A promise resolved when all chunks are written.
  * @throws If serialization or writing fails; partial output may already exist.
  */
 export async function writeParseResult(
   result: CstParseResult,
   write: CliWriter,
+  reducedJson = false,
 ): Promise<void> {
   let buffer = "";
-  for (const piece of jsonPieces(result)) {
+  for (const piece of jsonPieces(reducedJson ? reduceParseResult(result) : result)) {
     buffer += piece;
     if (buffer.length >= 16_384) {
       await write(buffer);
@@ -103,11 +106,11 @@ type JsonFrame =
 /**
  * Generate the same two-space JSON formatting as JSON.stringify for the plain
  * JSON-compatible values present in a CstParseResult, including undefined.
- * @param result Parse result to traverse.
+ * @param result Full or reduced parse-result envelope to traverse.
  * @returns An iterator of JSON text fragments in document order.
  * @throws If an unsupported scalar cannot be serialized.
  */
-function* jsonPieces(result: CstParseResult): Generator<string> {
+function* jsonPieces(result: unknown): Generator<string> {
   const pending: JsonFrame[] = [{ kind: "value", value: result }];
   while (pending.length > 0) {
     const frame = pending[pending.length - 1]!;
