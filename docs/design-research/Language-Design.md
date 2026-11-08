@@ -4,6 +4,10 @@
 
 This is the evolving design record for the next language experiment. Approved choices and explicitly labeled open alternatives are recorded here; unresolved feature conflicts remain in [the project knowledge view](../../Kontext/Wissensstand.md). TypeScript is confirmed as the implementation language (DEC-054).
 
+The [tentative semantic specification](#tentative-semantic-specification)
+incorporates SEM-001 from the user's proposal, with a compatibility review.
+Tentative content does not silently replace approved decisions.
+
 ## Identifier normalization
 
 **Decision DEC-006 — approved, partially superseded by DEC-024:** Identifiers are case-sensitive and source spelling is preserved for user interaction. DEC-006 originally selected NFC-normalized equality keys; DEC-024 replaces that key policy with NFKC while retaining an NFC form for interaction.
@@ -486,6 +490,280 @@ This adopts the model at the level described by the notes, not every Java-like c
 **Decision DEC-020 — approved:** The language must support proper tail calls and continuations. Proper tail calls are a semantic guarantee, not merely an optimization: calls in tail position must not require unbounded additional continuation space. The specific continuation facility and operations are not yet selected; in particular, this decision alone does not choose full versus delimited continuations, one-shot versus multi-shot continuations, or a particular `call/cc` interface (Q-013).
 
 This requirement constrains the implementation's control representation and calling convention, but does not select NewLang's bytecode VM or any other backend. The implementation must preserve the GC-like reference behavior in DEC-017 when continuations retain execution state.
+
+## Tentative semantic specification
+
+**Status: tentative, not an approved supersession or implemented semantics.**
+At the user's request on 2026-11-08, the complete contents of
+[OtherStuff.md](../../Proposals/OtherStuff.md) are incorporated below as a
+starting point for semantic analysis (proposal SEM-001; context KP-122).
+Questions and alternatives in the source remain questions, not requirements.
+Where these notes repeat approved DEC-015–019 behavior, that existing approval
+continues to apply; where they conflict, the approved decisions remain in force
+until explicitly superseded. This incorporation does not authorize changing
+the parser or implementing a semantic analyzer.
+
+### SEM-001 — Language Design Notes
+
+* Modules are classes
+* Packages are collections of modules with one or more interfaces exported to the outside
+* Imports reference a configuration file that tells in what directory hierarchy top level identifiers are implemented
+  * any identifier not found is either located via compiler-internal info, or must be local
+* Source-global names start with package-local package names, then possibly some namespace components (which correspond to source subdirs)
+  * Compilation units start with "package &lt;localpkgname&gt;{.namespace};" to give a context, then a sequence of struct defs
+* Class vars are actual instance vars of classes?
+  * then classes must be derived from a base class, and thus have meta classes that are all members of a meta class class
+* as many constructs as possible should be defined as syntactic sugar over a few simpler constructs
+* reference types and non-reference (flat) types
+  * when flat types get out of context, they are automatically desctructed - reference vars get destructed by garbage collection some time after they are no longer reachable
+  * flat type variables always hold the exact declared type, reference type variables a subtype of the declared type
+  * parameterizable types have one class object per parameterization
+* Class objects are instantiated when they are first needed
+
+* Coroutines have constructor arguments, and control flow switching argument/return value lists
+* Functions have argument list and return value list, allowing multi-value returns
+  * do we still want ref parameters, especially given that classes are reference types anyway?
+* Complex constants (arrays, structs, ...) will have a generic syntax, that produces generic types (approximately equivalent to JSON), that can be assigned to compatible types (via constructor or by element - define how).
+  * SHOULD procedures accept a generic blob with an entry per parameter like the above? In fact, should we interpret proc params as an instance of this? (That immediately gives us named parameters.)
+  * What is the runtime behaviour if we get that blob from elsewhere, and have overloaded procs? Or should that only work with constants?
+
+* Local functions implemented as function objects?
+
+* Flat types & type constructors:
+  * Primitive: integer types, float types, character
+  * Constructed: enums (includes bool), subranges, set-of-subranges, array-with-fixed-subrange-index, structs, packed??
+
+* Reference types & type constructors:
+  * Primitive: Object
+  * Constructed: derived classes (includes Class, Metaclass, methods & instantiations), mixins (not derived from Object, not instantiable on their own), all with and without type parameters (includes all sorts of containers)
+
+* Overloading (only for unqualified identifiers)
+  * type parameters count as part of identifier?
+  * local identifier hides all identifiers of same spelling in lexical ancestors
+  * non-hidden identifiers of same spelling, if more than one, must all be callable
+  * for dictionary-style parameters, only matching arguments count
+  * if still more than one, parameters with exact argument types; or if none, parameters convertible to argument types
+  * if not exactly one, give up
+
+* no implicit cast ops (as in constructor-with-one-arg or operator-type), only explicit (maybe keyword cast instead of operator?)
+
+### SEM-001 compatibility review
+
+The following distinguishes actual contradictions from conditional conflicts,
+missing semantic mappings, and compatible extensions. Historical experiment
+ideas in [the idea bank](../../Kontext/Wissensstand.md#candidate-semantic-ideas-from-the-experiments)
+are alternatives, not additional normative requirements.
+
+#### Parser and source-form cases
+
+| ID | Case | Assessment against the current parser specification |
+| --- | --- | --- |
+| SEM-P01 | `package <localpkgname>{.namespace};` | **Notation needs interpretation, not a demonstrated conflict.** The earlier package survey supports reading angle brackets and repeated braces as metanotation; this remains an interpretation of the sketch. Concrete `package P.N;` is generic APPLY/member-access/sequencing syntax, with a trailing EMPTY for `;`. Literal `<localpkgname>` would be comparison operators, and literal `{.namespace}` would be a block with an ordinary dot expression, not a parser-recognized repetition or namespace production (DEC-022/063/072/076/093). |
+| SEM-P02 | Header followed by a sequence of struct definitions | **Missing mapping; conflict if adjacency/newlines are meant to sequence definitions.** Adjacent definition-shaped expressions receive APPLY, not implicit `;`; newlines are whitespace. The trailing `;` in the header can sequence expressions but is not a mandatory statement terminator. Specify separators or how a definition combination represented by APPLY is interpreted (DEC-008/037/048/051/076). |
+| SEM-P03 | Generic JSON-like arrays/struct constants | **Conditional delimiter-role conflict.** The notes do not choose actual JSON syntax. If `{...}` becomes an aggregate literal instead of a scope, or `[...]` an ordinary array literal instead of template syntax, that changes DEC-063/011. Both groups are structurally parsable, but need an explicit semantic rule or supersession. JSON object keys such as `"x": 1` also need a new semantic role for `:`, distinct from its selected binding/conditional roles (DEC-052/072). |
+| SEM-P04 | Struct/type definitions and syntactic sugar | **Missing binding mapping, not an automatic contradiction.** The notes provide no concrete definition syntax. If their sugar introduces bindings, explain how it relates to the approved name-first `@name :`, `@name :=`, `@name ::=` model (DEC-011/052). Elaboration over the existing CST is compatible; adding class/struct-specific parser productions would contradict DEC-076. |
+| SEM-P05 | A possible `cast` keyword | **Conditional keyword conflict.** A predefined identifier `cast` with semantic meaning is compatible. A reserved lexer keyword or parser-recognized cast production would contradict DEC-012/053/076. The note explicitly leaves keyword versus operator syntax open. |
+
+No unconditional lexical or precedence contradiction is established by these
+notes alone. None specifies a replacement operator table, concrete aggregate
+syntax, or a separate keyword-token category.
+
+#### Semantic conflicts and unresolved integration
+
+| ID | Case | Assessment against approved decisions or other proposed meanings |
+| --- | --- | --- |
+| SEM-S01 | Multiple visible same-spelled callables form an overload set | **Direct conflict on the natural automatic-grouping reading.** SEM-001 groups non-hidden same-spelled callables; DEC-018 explicitly says same-name function declarations do not form an overload set and requires a separate explicit overload declaration. Applying the remaining filtering rules only inside an explicitly declared group would reconcile them, but is not stated in SEM-001. |
+| SEM-S02 | Overloading only for unqualified identifiers | **New restriction, not a demonstrated contradiction.** DEC-018 does not select an unqualified-only restriction. Define how a qualified reference to an explicitly declared overload group behaves. This also needs reconciliation with the historical function/operator-overloading idea bank, which does not impose this restriction. |
+| SEM-S03 | Convertible matches versus “no implicit cast ops” | **Internal ambiguity/conditional conflict.** If a match silently invokes a single-argument constructor or conversion operator, it contradicts the final explicit-casts-only note. Safe compatibility without such an operation could be consistent. Also, “parameters convertible to argument types” states the reverse of the usual argument-to-parameter direction; do not silently correct it. DEC-014/018 require a defined safety/compatibility relation before either reading can be adopted. |
+| SEM-S04 | Generic aggregate assigned via constructor or element-wise conversion | **Unchosen alternative.** Define whether this is explicit construction, structural compatibility, or an implicit conversion; the last interpretation may contradict the explicit-casts-only note. Exact flat declared types (DEC-019) do not prohibit constructing a new target-typed value, but do not permit a variable to retain an arbitrary differently typed generic blob. |
+| SEM-S05 | Runtime dictionary arguments select overloaded procedures | **Conditional static-typing conflict.** DEC-013 requires static expression/binding types and DEC-018 a unique compatible candidate. A runtime blob with unknown keys/types cannot by itself justify that static selection. A statically typed record, explicit runtime-dispatch facility with defined result typing, or constants-only policy could reconcile the ideas. The source asks the question; it does not approve dynamic typing or dispatch. Named arguments fit DEC-016's logical parameter collection but still need matching rules. |
+| SEM-S06 | Configuration/import lookup and lexical hiding | **Compatible direction with missing ordering.** Closest-scope hiding agrees with DEC-018. The configuration fallback must specify where predefined, imported, package and local namespaces enter that hierarchy; “not found ... must be local” must not silently bypass an existing closer binding. Type parameters counting as identifier identity remain a question and must be distinguished from lexical identifier spelling/normalization (DEC-007/024). |
+| SEM-S07 | Flat destruction, GC references, escaping function objects, coroutines and continuations | **Lifetime integration gap, not a new contradiction with DEC-019.** Scope-exit flat destruction and GC references already appear in DEC-017/019. DEC-020 also requires proper tail calls and continuations. Define whether suspended/captured scopes remain live, how escaping closures retain flat locals, and when destruction happens after a coroutine return or tail call; do not assume suspension is scope exit or that GC may invalidate captured state. |
+| SEM-S08 | Universal class base/metaclass model versus mixins | **Conditional internal conflict; source still asks a question.** If “classes must be derived from a base class” is generalized to all type constructors or specifically to `Object`, it clashes with the stated non-`Object`, non-instantiable mixins. Restricting it to instantiable classes may be consistent. Class variables, metaclass termination, local functions as objects, reference parameters and packed types are unresolved, not newly approved. |
+
+Modules-as-classes, package interfaces, lazy per-parameterization class objects,
+the flat/reference categories, and multiple argument/result lists otherwise
+agree with DEC-015–019. Coroutines are a possible addition, not a substitute for
+DEC-020's proper tail calls and continuations. No semantic choice was made by
+this review; these cases identify the decisions needed next.
+
+### SEM-002 — Package manifests
+
+**Decision DEC-094 — approved:** The user approved the package-manifest
+proposal on 2026-11-08 (KP-124), following its introduction in KP-123.
+Use `package.json` / `subpackage.json` and the fields, recursive child listing,
+path resolution, sibling case-insensitive uniqueness, and validation rules
+below. Explicitly unresolved details remain open; no implementation is
+authorized by this specification approval. SEM-001's broader notes remain
+intact; this section refines its package configuration topic without changing
+parser syntax, DEC-018's namespace precedence, or DEC-019's module/class model.
+
+#### User-specified package rules
+
+- A package is a collection of source files in a directory. It can contain
+  subpackages in subdirectories.
+- A well-known JSON manifest at the package tree root supplies its canonical
+  URL, all subpackages, the internal names and local filesystem locations of
+  imported non-system packages, and the main export-declaration source file.
+- Canonical URLs may use `file:`. The special string `"."` means the directory
+  in which this manifest was found.
+- Subdirectory names match subpackage names as filesystem semantics allow.
+  Subpackage names must differ when ignoring case, to avoid filesystem trouble.
+- A program's main export-declaration file should export `main`.
+- Each subpackage has a similar manifest in its own root, but no canonical URL
+  and no import list. Its location and imports come from its containing package.
+  Subpackage exports are package-local unless re-exported.
+- Filename/path values use syntax appropriate to the path portion of a `file:`
+  URL, not native platform-specific path spelling.
+
+#### Manifest names and fields
+
+Use **`package.json`** at the package root and **`subpackage.json`** at each
+subpackage root. Distinct names make the two roles explicit. These describe
+source-language packages, not npm packages; no manifest is being added to the
+compiler repository root, whose existing package.json is npm configuration.
+
+| Field | Root package | Subpackage | Meaning |
+| --- | --- | --- | --- |
+| `canonicalUrl` | Required string | Forbidden | Absolute canonical directory URL, or `"."`. It identifies the package; local imports still locate source through `imports`. It is not an instruction to download anything. |
+| `subpackages` | Required string array | Required string array | Immediate child subpackage names; empty array for a leaf. The complete tree is listed recursively by its manifests, not discovered from arbitrary unlisted directories. |
+| `imports` | Required object | Forbidden | Map of internal/local package identifiers to directory paths containing the imported package's `package.json`. Empty object if none; omit system packages. |
+| `exportFile` | Required string | Required string | Path to the main export-declaration source file, relative to this manifest's directory. It is source code, not a list of exported names in JSON. |
+
+Each `subpackages` list is the complete list of immediate children.
+Recursive traversal yields all descendants without repeating the entire tree
+in every ancestor. The earlier flat-root-list alternative in KP-123 is not
+selected by approval of this proposal.
+
+Root example:
+
+```json
+{
+  "canonicalUrl": "https://example.org/packages/demo/",
+  "subpackages": ["text", "math"],
+  "imports": {
+    "collections": "../collections",
+    "graphics": "/opt/language/graphics"
+  },
+  "exportFile": "exports.nl"
+}
+```
+
+Subpackage example, in `text/subpackage.json`:
+
+```json
+{
+  "subpackages": ["format"],
+  "exportFile": "exports.nl"
+}
+```
+
+Leaf example, in `text/format/subpackage.json`:
+
+```json
+{
+  "subpackages": [],
+  "exportFile": "exports.nl"
+}
+```
+
+`exports.nl` is illustrative, not a new decision about source extensions.
+For a local-only root, use `"canonicalUrl": "."`, or an absolute directory URL
+such as `"file:///home/example/demo/"`. The physical tree in the examples is:
+
+```text
+demo/
+  package.json
+  exports.nl
+  text/
+    subpackage.json
+    exports.nl
+    format/
+      subpackage.json
+      exports.nl
+  math/
+    subpackage.json
+    exports.nl
+```
+
+#### Name and path resolution
+
+- Resolve relative import paths against the **root package manifest directory**,
+  never a subpackage directory or the process working directory. Subpackages
+  share this resolved map rather than re-resolving its relative strings.
+- Resolve `exportFile` against the directory of the manifest that contains it.
+  It must be a nonempty relative path to an existing file within that
+  directory tree, not an absolute or escaping path.
+- Use `/` separators and UTF-8 percent encoding for path characters needing
+  escaping: `../shared%20tools` denotes `../shared tools`. These fields contain
+  URL **paths**, not complete `file:` URLs, query strings, or fragments.
+  Literal `?`, `#`, and `%` in filenames use `%3F`, `%23`, and `%25`.
+  Decode escapes once; malformed escapes are errors, not literal fallbacks.
+- Absolute local paths may use `/opt/library` or the file-URL path form
+  `/C:/Libraries/library` on Windows, not `C:\Libraries\library`. UNC authority
+  representation, symlinks, and platform-specific filename limitations still
+  need a precise policy; do not infer them from URL path spelling alone.
+- Each `subpackages` entry is a logical language identifier, not an arbitrary
+  path. Its directory is the corresponding single filename component using
+  the same URL-path escaping when needed. No separators, `.`/`..` traversal,
+  or alternate directory alias is proposed for an entry.
+- Require case-insensitive uniqueness **among siblings**, not across unrelated
+  parents: `text` and `Text` cannot coexist under one parent, while
+  `text/util` and `math/util` may. Language lookup remains case-sensitive
+  (DEC-024); this is a portability constraint on declarations.
+- Propose Unicode 18 full default case folding of NFKC identifier lookup keys
+  for the sibling collision check, independent of host locale. The exact
+  case-insensitive comparison rule still needs approval. Also diagnose any
+  distinct names that the actual filesystem cannot represent distinctly;
+  case folding alone cannot guarantee portability to every filesystem.
+
+#### Exports, validation, and remaining scope
+
+The root's `exportFile` defines its external interface. A subpackage's
+`exportFile` defines its interface inside the enclosing top-level package;
+listing the subpackage does **not** automatically export it outside that
+package. External exposure requires a re-export through the root interface.
+The syntax and transitive behavior of re-export declarations remain open.
+For a program, the user asks that this interface export `main`; its signature,
+program/library classification and whether absence is an error remain open.
+No separate JSON `main` or `exports` field is proposed.
+
+Require explicit diagnostics for malformed JSON, duplicate JSON keys, unknown
+fields, wrong field types, forbidden subpackage fields, duplicate/colliding
+names, missing listed manifests/export files, and unresolved import paths.
+Never silently scan a replacement directory, select a colliding name, or
+substitute a different export file.
+
+Canonical identity equivalence, source-file discovery/extensions, import
+cycles, version selection, system-package discovery, nested subpackage export
+visibility, and filesystem alias/symlink containment remain open. JSON metadata
+does not introduce parser keywords, determine source-level package headers, or
+replace semantic namespace lookup.
+
+#### Manifest editing and package retrieval
+
+**Requirement REQ-006 — approved:** Provide a small tool, or equivalent
+functionality within the compiler, to manipulate package and subpackage JSON
+manifests. Its purpose is to make correct editing easier and prevent manifest
+problems before they occur, rather than relying only on later compiler errors.
+Editing must respect DEC-094's field, name, path and validation rules.
+
+The tool must also support downloading a package from its URL. Merely reading
+a manifest or compiling a package does not imply downloading; retrieval is
+an explicitly supported tool operation. This extends the tooling scope, not
+the local-path meaning of `imports` or the package's export visibility.
+
+**Deferred by the user:** Specify URL/provider-specific retrieval rules when
+implementing and testing the tool. GitHub retrieval may differ from access to
+an SVN repository over SSH; these are examples, not a selected transport
+protocol or exhaustive support list. URL interpretation, revisions, checkout
+layout, authentication, destination handling, and the behavior of `file:` and
+`"."` during retrieval remain undefined until that work. Do not infer a
+universal HTTP download rule from `canonicalUrl`.
+
+Standalone versus compiler-integrated packaging, commands/UI, and detailed
+editing workflow remain open. No tool implementation or network operation is
+requested at this stage.
 
 ## Questions to resolve before parser implementation
 

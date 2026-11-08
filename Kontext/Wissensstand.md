@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-08 (timezone +01:00); DEC-093 moves implicit `APPLY` below `->` and above the prefix/postfix level (KP-121), with implementation and documentation updated. The focused precedence suite passes (37 tests) and `npm run typecheck` passes; see KP-121. The one-operator-per-row reference is [Operator binding](../docs/operator-binding.md). CLI completion verification remains as recorded in KP-114; it was not re-run for this precedence change. Lexer/parser railroad documentation is tracked as REQ-005 and its syntax-diagram clarification is recorded in KP-116.
+- Last substantive update: 2026-11-08 (timezone +01:00); user approved SEM-002's package manifests as DEC-094 and requested manifest editing/package downloading tooling as REQ-006 (KP-124). URL/provider-specific retrieval rules are explicitly deferred to tool implementation/testing. No code or network operation changed. SEM-001 and its compatibility review remain KP-122; earlier APPLY verification remains KP-121, committed as `8b828f6`.
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
@@ -92,6 +92,43 @@ These are source-backed findings, not claims that every planned feature is imple
 The strongest direct language-design evidence is in `NewLang/IDEAS/Implementation.txt`, `NewLang/IDEAS/OtherStuff.txt`, `NewLang/IDEAS/Syntax.txt`, and the GenLang language specification. Parser prototypes in `oppp`, `miniopp`, and `minipratt` demonstrate algorithms, but do not by themselves establish that their expression syntax was intended for any other experiment. See KP-002 for the inspected source set and limits.
 
 ### Candidate semantic ideas from the experiments
+
+**Package narrowing:** The user supplied directory-based package/subpackage
+rules, canonical URL including `"."`, root-owned non-system import locations,
+export-declaration files, package-local subpackage exports, file-URL path
+spelling and case-insensitively distinct subpackage names. These are recorded
+in [SEM-002](../docs/design-research/Language-Design.md#sem-002--package-manifests)
+(KP-123; approved as DEC-094 in KP-124). Names are `package.json` /
+`subpackage.json`; fields are `canonicalUrl`, `subpackages`, `imports`,
+`exportFile`. Lists contain immediate children recursively; path resolution,
+sibling case-insensitive uniqueness and validation are approved. Exact Unicode
+collision comparison and previously identified platform details remain open.
+REQ-006 requires a small manifest editing tool or compiler functionality to
+prevent invalid configuration, plus package downloading from URLs.
+Provider-specific retrieval rules (for example GitHub versus SVN over SSH)
+are deferred until tool implementation/testing; no automatic download or
+tool implementation is authorized now.
+
+**Current proposal:** The user has now requested incorporation of the complete
+[OtherStuff.md](../Proposals/OtherStuff.md) notes as
+[tentative semantic specification SEM-001](../docs/design-research/Language-Design.md#tentative-semantic-specification)
+(KP-122). This is distinct from adopting every item in the historical idea bank.
+The proposal's existing DEC-015–019 overlap retains its approved status; new
+claims and alternatives remain tentative.
+
+**Compatibility review:** SEM-P01–P05 distinguish package metanotation,
+definition sequencing, aggregate delimiter/colon roles, binding sugar, and
+possible cast keywords from actual generic parser behavior. No unconditional
+lexical/precedence conflict was found in the notes as written. SEM-S01 identifies
+the automatic same-name overload-group reading as conflicting with DEC-018's
+explicit groups. SEM-S02–S08 track qualification restrictions, conversion
+direction versus explicit casts, aggregate construction, runtime dictionary
+dispatch versus static typing, namespace fallback, captured flat lifetimes,
+and the base-class/mixin interpretation. Most are conditional conflicts or
+open integration rules, not evidence that already selected semantics are
+inconsistent. See the specification's
+[compatibility review](../docs/design-research/Language-Design.md#sem-001-compatibility-review)
+for case-level evidence and DEC references.
 
 This section is an idea bank for defining meaning for CST elements. It deliberately inventories proposals from the experiments regardless of whether a related decision has since been made for the current language. It is not a comparison against settled decisions or a recommendation to adopt every proposal. Syntax and keyword lists are distinguished from semantics actually described by the source.
 
@@ -1100,9 +1137,15 @@ not numeric digits or identifier letters.
 1. Await explicit authorization to commit CLI Phase 3 and final records. Read [completion evidence](../plans/compiler-cli-phase-3-complete.md) and [overall report](../plans/compiler-cli-complete.md). Phases 1/2 committed `3125545`/`ab821e5`. All CLI phases implemented; no further phase automatically authorized.
 2. Use `npm run parse -- path/to/source` or `--help`; `npm --silent run parse -- path/to/source` for clean JSON stdout. Direct built entry: `node dist/cli/main.js path`. Raw bytes, complete formatted JSON and recovered diagnostics; exits 0 complete/help, 1 parse errors, 2 usage/read errors. Awaited writes/backpressure, no forced exit/truncation. New process tests use Node/npm-cli.js without shell interpolation; Windows runtime unverified. Independent 591 tests pass with `--maxWorkers=1`; default parallel run had a reported existing scale-test timeout. No dependencies or semantics added.
 3. Resolve Q-001 only if exact ownership or cleanup is needed; do not treat this inventory as authorization to relocate experiment files.
-4. The APPLY binding change is recorded as DEC-093/KP-121 and implemented/tested; no commit was made. Package/module/class semantic choices remain open as described in the experiment survey above. Operator priorities and associativity are collected in [Operator binding](../docs/operator-binding.md), with DEC-022/066/093 normative.
+4. The APPLY binding change is recorded as DEC-093/KP-121 and implemented/tested; committed as `8b828f6`. Operator priorities and associativity are collected in [Operator binding](../docs/operator-binding.md), with DEC-022/066/093 normative.
+5. Semantic-analysis specification now starts with tentative SEM-001 (KP-122). Resolve SEM-S01's overload-group contradiction and the conditional/missing mappings SEM-P01–P05 / SEM-S02–S08 before implementing affected semantics. DEC-019 already selects the object model; the new proposal does not undo it or finalize its open package/class details. No analyzer implementation or parser change was authorized by this documentation task.
 
 ## Handover
+
+Current semantic-design checkpoint: read
+[SEM-001 and its compatibility review](../docs/design-research/Language-Design.md#tentative-semantic-specification)
+and KP-122. The full proposal is incorporated tentatively; approved DEC rules
+still govern conflicts, and no semantic analyzer has been implemented.
 
 Read [Language Design](../docs/design-research/Language-Design.md) for approved design choices, this Wissensstand for current evidence and open questions, and the relevant entries in [Kontextprotokoll](./Kontextprotokoll.md) for rationale and provenance. The feature inventory is not a complete language specification; continue resolving open questions before implementation. The four source roots are named in [langlist](../docs/design-research/langlist), whose entries are absolute paths. Treat the file classifications as preliminary and check uncertain items before cleanup.
 

@@ -151,6 +151,7 @@ This log records the material context and evidence behind the current file class
 | SRC-135 | User request and targeted inspection of NewLang `OtherStuff.txt` / `newlang.ye`, GenLang `docs/language.md`, LangLLVM declaration note / `mylang.pegjs`, and OPPrs `miniopp` | 2026-11-07 17:34 (+01:00) | Package/module/class concepts and productions, distinguishing custom design notes from C++/Java-like grammar material | Selected experiment documents only; absence statements are limited to reviewed sources. |
 | SRC-136 | User request and DEC-022/066 in [Language Design](../docs/design-research/Language-Design.md), with semantic qualifications from DEC-049/050/052/056/064/065/073/074 | 2026-11-08 01:19 (+01:00) | Request to publish a per-operator binding-level/associativity/notes table; exact approved precedence and associativity rows | At publication, DEC-022/066 were normative; DEC-093 later supersedes DEC-022's original APPLY placement. Unresolved operator semantics are not decided by the table. |
 | SRC-137 | User request, precedence implementation/tests, and updated [Language Design](../docs/design-research/Language-Design.md) / [Operator binding](../docs/operator-binding.md) | 2026-11-08 (time not recorded) | Request to move `APPLY` between `!` and `->`, with related documentation, code, and tests updated | “Between” was interpreted in the established tightest-to-loosest direction; no other operator semantics or commit was requested. |
+| SRC-138 | User request and [OtherStuff.md](../Proposals/OtherStuff.md), compared with approved [Language Design](../docs/design-research/Language-Design.md), the idea bank, and KP-017/019/020/118/119 | 2026-11-08 13:00 (+01:00) | Complete local proposal; parser contracts and proposed/approved semantics; tentative incorporation and explicit compatibility cases | Not an exhaustive review of every experiment file. Selected source-form probes do not verify semantics or constitute a full regression suite. |
 
 ## Entries
 
@@ -2530,3 +2531,128 @@ passed (37 tests). `npm run typecheck` and `git diff --check` passed. A targeted
 consistency search found the older DEC-022 statements in the dated SRC-136 and
 KP-120 records; both now identify DEC-093 as the later supersession. Current
 design and knowledge views point to DEC-093.
+
+### KP-122 - OtherStuff incorporated as tentative semantic specification
+
+- Event/documentation date: 2026-11-08 (+01:00); user request at 13:00.
+- Source: SRC-138; current conversation is the source for the request.
+- Status: tentative proposal SEM-001 incorporated; compatibility review
+  documented, no semantic implementation or approved-rule supersession.
+
+**Nutzerangabe:** Starting work on semantic analysis, add the contents of
+[OtherStuff.md](../Proposals/OtherStuff.md) as tentative language specification,
+then list conflicts with the current parser specification and other proposed
+semantics.
+
+**Belegt:** Incorporated the complete note content in
+[Language Design](../docs/design-research/Language-Design.md#tentative-semantic-specification)
+as SEM-001, retaining questions, alternatives and source wording. Reviewed
+approved generic CST/keyword/delimiter/binding rules and DEC-013–020, plus the
+existing semantic idea bank and the local package grammar's context header.
+No rules were promoted merely because they appeared in the proposal.
+DEC-019 already selects the notes' object-model core; importing the full notes
+does not reopen that choice or turn its unresolved details into requirements.
+
+**Ableitung / conflicts:** SEM-P01–P05 distinguish package metanotation,
+definition sequencing, JSON-like aggregate roles, definition sugar, and
+possible cast keywords. These are interpretation/mapping issues or conditional
+conflicts, not unconditional lexical/precedence contradictions. SEM-S01's
+natural automatic same-name grouping conflicts with explicit overload groups
+in DEC-018. SEM-S02–S08 distinguish new qualification restrictions, ambiguous
+conversion direction and explicit-casts policy, aggregate construction,
+runtime blob dispatch versus static typing, namespace ordering, lifetime
+interaction with closures/coroutines/continuations, and class-base/mixin
+interpretations. Possible resolutions are proposals only.
+
+**Verification:** `npm run build` succeeded. A local built-parser probe asserted
+complete/error-free parsing and exact CST shapes for `package P.N;`,
+`struct A {}\nstruct B {}`, `[1,2]`, and `{"x":1}`. This confirms generic
+parsing, not semantic legality. A content equality check verified the imported
+notes match the proposal body exactly, and the new specification file links
+resolve. No source/tests were changed or full suite run; documentation
+whitespace (`git diff --check`) and new context/specification link checks passed.
+
+**Related checkpoint:** The user's earlier staged-file commit request produced
+`8b828f6` (`feat(parser)!: move implicit APPLY below arrow`), verified in Git;
+KP-121's “no commit” describes its earlier implementation checkpoint.
+
+**Next:** Resolve the overload-group conflict and conditional/missing mappings
+before implementing affected semantics. No commit requested for this proposal
+incorporation.
+
+### KP-123 - Directory package and JSON manifest proposal narrowed
+
+- Event/documentation date: 2026-11-08 (+01:00); user request at 13:31.
+- Source: current conversation; the following is its durable summary.
+- Status: user-supplied package constraints recorded; naming and additional
+  policies proposed as SEM-002. No implementation, supersession of parser
+  rules, or commit authorized.
+
+**Nutzerangabe:** A package is a collection of source files in a directory with
+subpackages in subdirectories. A well-known root JSON file gives the canonical
+URL (including `file:` or `"."` for the found location), all subpackages,
+internal imported-package names and local paths except system packages, and
+the main export-declaration file. Programs should export `main`. Subpackages
+have similar manifests without canonical URL/imports, inherit root imports,
+and export only inside the package unless re-exported. Directory names follow
+subpackage names as filesystem semantics allow. Names must differ ignoring
+case to avoid filesystem trouble; manifest paths use file-URL path syntax.
+The user asks to flesh this out with manifest and field names.
+
+**Vorschlag:** Added
+[SEM-002](../docs/design-research/Language-Design.md#sem-002--package-manifests):
+`package.json` at the source package root, `subpackage.json` in subpackages;
+`canonicalUrl`, `subpackages`, `imports`, `exportFile`. Root import paths are
+resolved once against the root directory; export paths against their own
+manifest. Examples use relative and absolute URL-style paths, not new source
+extension requirements. No actual JSON files were created; the compiler's npm
+package.json is unrelated.
+
+**Offen / alternatives:** Each manifest listing all immediate children is the
+recommended interpretation, recursively yielding all descendants. A root flat
+list of every descendant remains a possible interpretation of "all"; no
+implementation choice was made. Sibling-only case uniqueness and Unicode 18
+full folding of NFKC keys are proposed, not silently approved. UNC handling,
+symlink/alias containment, source discovery, canonical identity equivalence,
+system packages, cycles/versions, nested re-exports and main signature/
+validation remain open. The proposal deliberately avoids download behavior,
+automatic exports, and another JSON main/exports mechanism.
+
+**Verification:** Documentation-only. All three JSON examples parse and have
+the expected root/subpackage field sets; both new context links resolve to
+the specification and its SEM-002 heading. `git diff --check` passed.
+No compiler tests were run for this proposal and no runtime behavior changed.
+
+### KP-124 - Package manifests approved; editing and retrieval tool required
+
+- Event/documentation date: 2026-11-08 (+01:00); user message at 13:41.
+- Source: current conversation; this entry is its durable summary.
+- Status: DEC-094 approves the package-manifest proposal; REQ-006 adds tooling
+  requirements. URL/provider-specific retrieval design explicitly deferred.
+
+**Nutzerangabe:** "the proposal looks fine." The user also requests a small
+tool or functionality within the compiler to manipulate these JSON files,
+making it easier to prevent problems in the files from occurring. It should
+support downloading packages from their URLs. URL-specific rules may differ
+for GitHub and an SSH-accessible SVN repository; specifying those rules can
+wait until the tool is actually implemented and tested.
+
+**Beschlossen:** SEM-002 is now approved as DEC-094, including manifest/field
+names, immediate-child recursive listing, path bases, sibling case uniqueness,
+export visibility and validation. This replaces KP-123's proposal status, not
+its historical record. Previously explicit open details, including the exact
+Unicode collision comparison and filesystem limitations, remain open.
+
+**Motivation / REQ-006:** The editing facility should prevent configuration
+errors at authoring time. Record package retrieval as a supported tool operation,
+not a side effect of manifest loading or compilation. Standalone versus
+compiler-integrated delivery remains open.
+
+**Offen / deferred:** Provider/URL interpretation and retrieval protocols,
+revision selection, checkout layout, authentication, destinations, and local
+`file:`/`"."` retrieval behavior will be specified during implementation and
+testing. No provider adapter, HTTP-only assumption, command interface,
+implementation, network action, or commit is authorized by this turn.
+
+**Persistence:** Updated the specification and current knowledge view.
+Documentation-only; no compiler behavior changed or tests required.
