@@ -149,6 +149,7 @@ This log records the material context and evidence behind the current file class
 | SRC-133 | Official Unicode18 normalization files/fixture and checksum-verified generator                                                                                                                                                                                                                                                                                                                                                                                                                                                               | 2026-11-06 (+01:00)                                               | 20,171 normalization rows, five columns each for NFC/NFKC; official hashes and licensing/provenance documented                                                                                                                                                                                                           | Full fixture-row comparisons, not a claim of untested forms NFD/NFKD or host conformance.                                                                                                                                         |
 | SRC-134 | User request and direct reinspection of `/bigdata/KAI/NewLang/IDEAS/OtherStuff.txt`, `/bigdata/KAI/NewLang/IDEAS/newlang.ye`, `/bigdata/KAI/projects/GenLang/docs/language.md`, `/bigdata/KAI/projects/LangLLVM/src/Design: Declarations, Definitions.md`, `/bigdata/KAI/projects/LangLLVM/src/mylang.pegjs`, and selected `/bigdata/KAI/projects/OPPlang/OPPrs/miniopp` sources | 2026-11-07 (+01:00) | Experiment-stated semantic concepts, keyword-like forms, binding markers, and limits relevant to future CST semantics | Selected files only; no exhaustive experiment-tree review, and grammar/operator descriptions do not establish full operational semantics. |
 | SRC-135 | User request and targeted inspection of NewLang `OtherStuff.txt` / `newlang.ye`, GenLang `docs/language.md`, LangLLVM declaration note / `mylang.pegjs`, and OPPrs `miniopp` | 2026-11-07 17:34 (+01:00) | Package/module/class concepts and productions, distinguishing custom design notes from C++/Java-like grammar material | Selected experiment documents only; absence statements are limited to reviewed sources. |
+| SRC-136 | User request and DEC-022/066 in [Language Design](../docs/design-research/Language-Design.md), with semantic qualifications from DEC-049/050/052/056/064/065/073/074 | 2026-11-08 01:19 (+01:00) | Request to publish a per-operator binding-level/associativity/notes table; exact approved precedence and associativity rows | The reference is a reformatted index; DEC-022/066 remain normative and unresolved operator semantics are not decided by this table. |
 
 ## Entries
 
@@ -2480,3 +2481,24 @@ sources focus on expressions and do not provide such declarations.
 and import model, any subset of its class grammar, or another organization
 remains undecided. Grammar coverage and the distinct roles of a module, class,
 package, namespace, and compilation unit need separate evaluation.
+
+### KP-120 - Operator binding table published
+
+- Event/documentation date: 2026-11-08 01:19 (+01:00).
+- Source: SRC-136.
+- Status: documentation index; no language behavior or precedence decision
+  changed.
+
+**Nutzerangabe:** Create a `docs/` table of all operators, sorted from tightest
+to loosest and alphabetically within equal binding, with operator, binding
+level, associativity, and notes columns.
+
+**Belegt:** Added [Operator binding](../docs/operator-binding.md), expanding
+DEC-022/066 into one row per listed operator and delimiter token. Binding levels
+are ordinal labels, not numeric precedence values. The notes preserve semantic
+qualifications already recorded in the language design; open meanings and
+semantic checks remain open. Linked the reference from Wissensstand. The
+normative source remains DEC-022/066 in Language Design.
+
+**Validation:** Documentation-only. `git diff --check` and a row/order audit
+were run; no compiler behavior changed and no tests/build were needed.

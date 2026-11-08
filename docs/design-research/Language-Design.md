@@ -392,6 +392,8 @@ Consequences: `1e2e+3` gives error operand `1e2e`, `+`, `3`; `1fooE+2` gives err
 |                                 | `,`                                                                                | Left-associative list operator; expressions may be evaluated in parallel (DEC-064).                                              |
 | Loosest                         | `;`                                                                                | Left-associative expression sequence; left expression is evaluated before the right (DEC-051/064/066).                           |
 
+For a one-operator-per-row index with ordinal binding levels, see [Operator binding](../operator-binding.md). DEC-022/066 above remain normative.
+
 **Decision DEC-023 — approved:** Place `::` at the same relative precedence level as `:`, and place `:=` and `::=` at the same level as `=`. These are relative placements only; DEC-052 subsequently clarifies their binding-expression interpretation and required left `@name` operand.
 
 `**` occupies the level immediately above `*`; no numeric priorities are part of this table. `::` remains reserved at the level of `:`. The `:=` variable and `::=` type binding operators from DEC-011/052 are placed with `=` in this relative ordering.
