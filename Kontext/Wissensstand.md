@@ -4,10 +4,25 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-09 (timezone +01:00); added executable [parse.sh](../parse.sh), forwarding arguments to `npm --silent run parse --` from the repository root (KP-126). Shell syntax, real help, quoted path/option forwarding and exit status checks pass. Earlier reduced JSON verification remains KP-125; package manifests/tooling remain DEC-094/REQ-006 (KP-124). No parser semantics changed.
+- Last substantive update: 2026-11-10 (timezone +01:00); DEC-095 specifies TypeScript-like prefix spread `...`, non-associative at a dedicated level between assignment and comma (KP-129). User explicitly selected specification/operator documentation only: lexer/parser support is not implemented. Legal expansion contexts and runtime/type details remain open. SEM-003 adaptation remains KP-128; full grammar compatibility assessment remains KP-127. Earlier wrapper/reduced JSON verification remains KP-126/KP-125; package manifests/tooling remain DEC-094/REQ-006 (KP-124).
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
+
+- Rest-parameter direction (KP-130): reuse prefix `...` over a whole name-first
+  parameter binding, e.g. `...@args : T` has proposed future shape
+  `(... EMPTY (: (@ EMPTY args) T))`. Parameter-context elaboration would mark
+  the binding as rest; argument-context elaboration spreads a value. This is
+  tentative, not implemented; collected/element type, defaults and position/count
+  restrictions remain open.
+
+- Current semantic-specification step (KP-128): [SEM-003](../docs/design-research/Language-Design.md#sem-003--first-cst-compatible-adaptation-of-the-proposal-grammar)
+  maps previous grammar productions to tentative CST-compatible forms and their
+  predefined identifiers/operators. It uses name-first bindings, square templates,
+  bounded semicolon elements and braced control forms without changing precedence.
+  Seventeen representative forms pass exact CST/status/diagnostic assertions.
+  This is a requested tentative adaptation, not implemented semantic recognition;
+  unsupported/conflicting productions and remaining semantic choices stay deferred.
 
 This is a first-pass classification, not a provenance audit or a decision to move/delete experiment files. The directories listed in `langlist` are outside this workspace. They were read for this task; no source files were changed.
 
