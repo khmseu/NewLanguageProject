@@ -172,1677 +172,3024 @@ try-with-resources. See its deferred-production list for the full boundaries.
 
 ## Production inventory
 
-### Package, declaration, and value-type proposal — O
+The entries below follow the exact order of production definitions in [`newlang.ye`](../Proposals/newlang.ye). Every occurrence is listed separately, including duplicate names, with its source RHS and an explicit provisional disposition. For each **M** entry, the linked EBNF is the accepted model-level outline only; for **O** and **J**, the note states why the proposal rule is not accepted. See the SEM-003 crosswalk above for tentative adaptations, which do not change these dispositions.
 
-The concrete package, import/export, declaration, and type spellings here are
-not settled language syntax. In particular, a trailing semicolon is not
-generally a required declaration terminator (DEC-051), and the name-first
-binding forms in DEC-011 are not represented by these declaration rules.
+### 1. `CompilationUnit` — O
 
-- **O — `CompilationUnit`** ([source](../Proposals/newlang.ye#L4))
-  ```text
-  CompilationUnit
-  :	'=I=' PackageImportsFile
-  |	'=E=' PackageExportsFile
-  |	'=M=' ModuleDeclarationFile
-  ;
-  ```
-- **O / D — `PackageName`** ([source](../Proposals/newlang.ye#L10))
-  ```text
-  PackageName
-  :	Identifier
-  ;
-  ```
-- **O — `SubPackageName`** ([source](../Proposals/newlang.ye#L14))
-  ```text
-  SubPackageName
-  :	Identifier
-  ;
-  ```
-- **O — `PackageInterfaceFile`** ([source](../Proposals/newlang.ye#L20))
-  ```text
-  PackageInterfaceFile
-  :	'package' PackageName { RemotePackageDef }
-  ;
-  ```
-- **O — `RemotePackageDef`** ([source](../Proposals/newlang.ye#L24))
-  ```text
-  RemotePackageDef
-  :	Identifier Literal
-  ;
-  ```
-- **O — `PackageExportsFile`** ([source](../Proposals/newlang.ye#L30))
-  ```text
-  PackageExportsFile
-  :	'package' PackageName 'exports' ModuleName { ',' ModuleName } ';'
-  ;
-  ```
-- **O — `ModuleName`** ([source](../Proposals/newlang.ye#L34))
-  ```text
-  ModuleName
-  :	{ SubPackageName '.' } Identifier
-  ;
-  ```
-- **O — `ModuleDeclarationFile`** ([source](../Proposals/newlang.ye#L41))
-  ```text
-  ModuleDeclarationFile
-  :	ContextDeclaration { StructDeclaration }
-  ;
-  ```
-- **O — `ContextDeclaration`** ([source](../Proposals/newlang.ye#L45))
-  ```text
-  ContextDeclaration
-  :	'package' PackageName { '.' SubPackageName } ';'
-  ;
-  ```
-- **O — `Declaration`** ([source](../Proposals/newlang.ye#L51))
-  ```text
-  Declaration
-  :	{ Modifier } BasicDeclaration
-  ;
-  ```
-- **O — `Modifier`** ([source](../Proposals/newlang.ye#L55))
-  ```text
-  Modifier
-  :	'abstract'
-  |	'default'
-  |	'final'
-  |	'native'
-  |	'private'
-  |	'protected'
-  |	'public'
-  |	'static'
-  |	'strictfp'
-  |	'synchronized'
-  |	'transient'
-  |	'volatile'
-  ;
-  ```
-- **O — `BasicDeclaration`** ([source](../Proposals/newlang.ye#L70))
-  ```text
-  BasicDeclaration
-  :	ImportDeclaration
-  |	FieldOrConstantDeclaration
-  |	TypeDeclaration
-  ;
-  ```
-- **O — `ImportDeclaration`** ([source](../Proposals/newlang.ye#L76))
-  ```text
-  ImportDeclaration
-  :	'import' Name ';'
-  ;
-  ```
-- **O — `Name`** ([source](../Proposals/newlang.ye#L80))
-  ```text
-  Name
-  :	PackageName { '.' Identifier }
-  ;
-  ```
-- **O — `FieldOrConstantDeclaration`** ([source](../Proposals/newlang.ye#L84))
-  ```text
-  FieldOrConstantDeclaration
-  :	[ TypeParameters ] Type VariableDeclaratorList ';'
-  ;
-  ```
-- **O / D — `VariableDeclaratorList`** ([source](../Proposals/newlang.ye#L88))
-  ```text
-  VariableDeclaratorList
-  :	VariableDeclarator { ',' VariableDeclarator }
-  ;
-  ```
-- **O / D — `VariableDeclarator`** ([source](../Proposals/newlang.ye#L92))
-  ```text
-  VariableDeclarator
-  :	Identifier [ '=' Expression ]
-  ;
-  ```
-- **O — `TypeDeclaration`** ([source](../Proposals/newlang.ye#L96))
-  ```text
-  TypeDeclaration
-  :	'typedef' [ TypeParameters ] Type Identifier ';'
-  ;
-  ```
-- **O / D — `Type`** ([source](../Proposals/newlang.ye#L102))
-  ```text
-  Type
-  :	BasicType [ TypeArguments ]
-  ;
-  ```
-- **O — `BasicType`** ([source](../Proposals/newlang.ye#L106))
-  ```text
-  BasicType
-  :	Name
-  |	ValueTypeDeclaration
-  |	ReferenceTypeDeclaration
-  ;
-  ```
-- **O — `ValueTypeDeclaration`** ([source](../Proposals/newlang.ye#L112))
-  ```text
-  ValueTypeDeclaration
-  :	OrdinalTypeDeclaration
-  |	ComposedTypeDeclaration
-  ;
-  ```
-- **O — `OrdinalTypeDeclaration`** ([source](../Proposals/newlang.ye#L117))
-  ```text
-  OrdinalTypeDeclaration
-  :	EnumDeclaration
-  |	SubrangeDeclaration
-  ;
-  ```
-- **O — `ComposedTypeDeclaration`** ([source](../Proposals/newlang.ye#L122))
-  ```text
-  ComposedTypeDeclaration
-  :	SetDeclaration
-  |	ArrayDeclaration
-  |	StructDeclaration
-  ;
-  ```
-- **O — `ReferenceTypeDeclaration`** ([source](../Proposals/newlang.ye#L128))
-  ```text
-  ReferenceTypeDeclaration
-  :	ClassDeclaration
-  |	MixInDeclaration
-  ;
-  ```
-- **O / D — `EnumDeclaration`** ([source](../Proposals/newlang.ye#L135))
-  ```text
-  EnumDeclaration
-  :	'enum' [ Derivation ] '{' [ EnumDeclaratorList [ ';' [ DeclarationList ] ] ] '}'
-  ;
-  ```
-- **O — `EnumDeclaratorList`** ([source](../Proposals/newlang.ye#L139))
-  ```text
-  EnumDeclaratorList
-  :	EnumDeclarator { ',' EnumDeclarator }
-  ;
-  ```
-- **O — `EnumDeclarator`** ([source](../Proposals/newlang.ye#L143))
-  ```text
-  EnumDeclarator
-  :	Identifier [ '=' Expression ]
-  ;
-  ```
-- **O — `SubrangeDeclaration`** ([source](../Proposals/newlang.ye#L147))
-  ```text
-  SubrangeDeclaration
-  :	'range' [ Derivation ] '{' Expression '...' Expression [ ';' [ DeclarationList ] ] '}'
-  ;
-  ```
-- **O — `SetDeclaration`** ([source](../Proposals/newlang.ye#L151))
-  ```text
-  SetDeclaration
-  :	'set' [ Derivation ] '{' Type [ ';' [ DeclarationList ] ] '}'
-  ;
-  ```
-- **O — `ArrayDeclaration`** ([source](../Proposals/newlang.ye#L155))
-  ```text
-  ArrayDeclaration
-  :	'array' [ Derivation ] '{' Lambda [ ';' [ DeclarationList ] ] '}'
-  ;
-  ```
-- **O — `StructDeclaration`** ([source](../Proposals/newlang.ye#L159))
-  ```text
-  StructDeclaration
-  :	'struct' [ Derivation ] '{' [ DeclarationList ] '}'
-  ;
-  ```
-- **O — `DeclarationList`** ([source](../Proposals/newlang.ye#L163))
-  ```text
-  DeclarationList
-  :	Declaration { Declaration }
-  ;
-  ```
+[Original production in `newlang.ye` (line 4)](../Proposals/newlang.ye#L4).
 
-### Class-model outline — M
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
 
-These productions correspond to the provisionally accepted class-model
-concepts. They are links to the source proposal, not acceptance of its exact
-Java-derived RHS or of the unresolved helper rules listed next.
+```text
+CompilationUnit
+:	'=I=' PackageImportsFile
+|	'=E=' PackageExportsFile
+|	'=M=' ModuleDeclarationFile
+;
+```
 
-- **M — `ClassDeclaration`** ([source](../Proposals/newlang.ye#L169))
-  ```text
-  ClassDeclaration
-  :	NormalClassDeclaration
-  |	EnumDeclaration
-  ;
-  ```
-- **M — `NormalClassDeclaration`** ([source](../Proposals/newlang.ye#L174))
-  ```text
-  NormalClassDeclaration
-  :	{ ClassModifier } 'class' Identifier [ TypeParameters ] [ Superclass ] [ Superinterfaces ] ClassBody
-  ;
-  ```
-- **M — `Superclass`** ([source](../Proposals/newlang.ye#L197))
-  ```text
-  Superclass
-  :	'extends' ClassType
-  ;
-  ```
-- **M — `Superinterfaces`** ([source](../Proposals/newlang.ye#L201))
-  ```text
-  Superinterfaces
-  :	'implements' InterfaceTypeList
-  ;
-  ```
-- **M — `ClassBody`** ([source](../Proposals/newlang.ye#L209))
-  ```text
-  ClassBody
-  :	'{' { ClassBodyDeclaration } '}'
-  ;
-  ```
-- **M — `ClassBodyDeclaration`** ([source](../Proposals/newlang.ye#L213))
-  ```text
-  ClassBodyDeclaration
-  :	ClassMemberDeclaration
-  |	InstanceInitializer
-  |	StaticInitializer
-  |	ConstructorDeclaration
-  |	ImportDeclaration
-  ;
-  ```
-- **M — `ClassMemberDeclaration`** ([source](../Proposals/newlang.ye#L221))
-  ```text
-  ClassMemberDeclaration
-  :	FieldDeclaration
-  |	MethodDeclaration
-  |	ClassDeclaration
-  |	InterfaceDeclaration
-  |	';'
-  ;
-  ```
-- **M — `FieldDeclaration`** ([source](../Proposals/newlang.ye#L229))
-  ```text
-  FieldDeclaration
-  :	{ FieldModifier } UnannType VariableDeclaratorList ';'
-  ;
-  ```
-- **M — `MethodDeclaration`** ([source](../Proposals/newlang.ye#L301))
-  ```text
-  MethodDeclaration
-  :	{ MethodModifier } MethodHeader MethodBody
-  ;
-  ```
-- **M — `ConstructorDeclaration`** ([source](../Proposals/newlang.ye#L386))
-  ```text
-  ConstructorDeclaration
-  :	{ ConstructorModifier } ConstructorDeclarator [ Throws ] ConstructorBody
-  ;
-  ```
-- **M — `InterfaceDeclaration`** ([source](../Proposals/newlang.ye#L438))
-  ```text
-  InterfaceDeclaration
-  :	NormalInterfaceDeclaration
-  |	AnnotationTypeDeclaration
-  ;
-  ```
-- **M — `NormalInterfaceDeclaration`** ([source](../Proposals/newlang.ye#L443))
-  ```text
-  NormalInterfaceDeclaration
-  :	{ InterfaceModifier } 'interface' Identifier [ TypeParameters ] [ ExtendsInterfaces ] InterfaceBody
-  ;
-  ```
-- **M — `InterfaceBody`** ([source](../Proposals/newlang.ye#L461))
-  ```text
-  InterfaceBody
-  :	'{' { InterfaceMemberDeclaration } '}'
-  ;
-  ```
-- **M — `InterfaceMemberDeclaration`** ([source](../Proposals/newlang.ye#L465))
-  ```text
-  InterfaceMemberDeclaration
-  :	ConstantDeclaration
-  |	InterfaceMethodDeclaration
-  |	ClassDeclaration
-  |	InterfaceDeclaration
-  |	';'
-  ;
-  ```
+### 2. `PackageName` — O / D
 
-### Class and member details — O
+[Original production in `newlang.ye` (line 10)](../Proposals/newlang.ye#L10).
 
-These support the class outline, but DEC-019 does not settle their exact
-syntax, permitted alternatives, or detailed member forms. The angle-bracket
-template spelling also conflicts with the selected square-bracket spelling.
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
 
-- **O — `ClassModifier`** ([source](../Proposals/newlang.ye#L178))
-  ```text
-  ClassModifier
-  :	Annotation
-  |	'public'
-  |	'protected'
-  |	'private'
-  |	'abstract'
-  |	'static'
-  |	'final'
-  |	'strictfp'
-  ;
-  ```
-- **O — `TypeParameters`** ([source](../Proposals/newlang.ye#L189))
-  ```text
-  TypeParameters
-  :	'<' TypeParameterList '>'
-  ;
-  ```
-- **O — `TypeParameterList`** ([source](../Proposals/newlang.ye#L193))
-  ```text
-  TypeParameterList
-  :	TypeParameter { ',' TypeParameter }
-  ;
-  ```
-- **O — `InterfaceTypeList`** ([source](../Proposals/newlang.ye#L205))
-  ```text
-  InterfaceTypeList
-  :	InterfaceType { ',' InterfaceType }
-  ;
-  ```
-- **O — `FieldModifier`** ([source](../Proposals/newlang.ye#L233))
-  ```text
-  FieldModifier
-  :	Annotation
-  |	'public'
-  |	'protected'
-  |	'private'
-  |	'static'
-  |	'final'
-  |	'transient'
-  |	'volatile'
-  ;
-  ```
-- **O / D — `VariableDeclaratorList`** ([source](../Proposals/newlang.ye#L244))
-  ```text
-  VariableDeclaratorList
-  :	VariableDeclarator { ',' VariableDeclarator }
-  ;
-  ```
-- **O / D — `VariableDeclarator`** ([source](../Proposals/newlang.ye#L248))
-  ```text
-  VariableDeclarator
-  :	VariableDeclaratorId [ '=' VariableInitializer ]
-  ;
-  ```
-- **O — `VariableDeclaratorId`** ([source](../Proposals/newlang.ye#L252))
-  ```text
-  VariableDeclaratorId
-  :	Identifier [ Dims ]
-  ;
-  ```
-- **O — `VariableInitializer`** ([source](../Proposals/newlang.ye#L256))
-  ```text
-  VariableInitializer
-  :	Expression
-  |	ArrayInitializer
-  ;
-  ```
-- **O — `UnannType`** ([source](../Proposals/newlang.ye#L261))
-  ```text
-  UnannType
-  :	UnannPrimitiveType
-  |	UnannReferenceType
-  ;
-  ```
-- **O — `UnannPrimitiveType`** ([source](../Proposals/newlang.ye#L266))
-  ```text
-  UnannPrimitiveType
-  :	NumericType
-  |	'boolean'
-  ;
-  ```
-- **O — `UnannReferenceType`** ([source](../Proposals/newlang.ye#L271))
-  ```text
-  UnannReferenceType
-  :	UnannClassOrInterfaceType
-  |	UnannTypeVariable
-  |	UnannArrayType
-  ;
-  ```
-- **O — `UnannClassOrInterfaceType`** ([source](../Proposals/newlang.ye#L277))
-  ```text
-  UnannClassOrInterfaceType
-  :	UnannClassType
-  |	UnannInterfaceType
-  ;
-  ```
-- **O — `UnannClassType`** ([source](../Proposals/newlang.ye#L282))
-  ```text
-  UnannClassType
-  :	Identifier [ TypeArguments ]
-  |	UnannClassOrInterfaceType '.' { Annotation } Identifier [ TypeArguments ]
-  ;
-  ```
-- **O — `UnannInterfaceType`** ([source](../Proposals/newlang.ye#L287))
-  ```text
-  UnannInterfaceType
-  :	UnannClassType
-  ;
-  ```
-- **O — `UnannTypeVariable`** ([source](../Proposals/newlang.ye#L291))
-  ```text
-  UnannTypeVariable
-  :	Identifier
-  ;
-  ```
-- **O — `UnannArrayType`** ([source](../Proposals/newlang.ye#L295))
-  ```text
-  UnannArrayType
-  :	UnannPrimitiveType Dims
-  |	UnannClassOrInterfaceType Dims
-  |	UnannTypeVariable Dims
-  ;
-  ```
-- **O — `MethodModifier`** ([source](../Proposals/newlang.ye#L305))
-  ```text
-  MethodModifier
-  :	Annotation
-  |	'public'
-  |	'protected'
-  |	'private'
-  |	'abstract'
-  |	'static'
-  |	'final'
-  |	'synchronized'
-  |	'native'
-  |	'strictfp'
-  ;
-  ```
-- **O — `MethodHeader`** ([source](../Proposals/newlang.ye#L318))
-  ```text
-  MethodHeader
-  :	Result MethodDeclarator [ Throws ]
-  |	TypeParameters { Annotation } Result MethodDeclarator [ Throws ]
-  ;
-  ```
-- **O — `Result`** ([source](../Proposals/newlang.ye#L323))
-  ```text
-  Result
-  :	UnannType
-  |	'void'
-  ;
-  ```
-- **O — `MethodDeclarator`** ([source](../Proposals/newlang.ye#L328))
-  ```text
-  MethodDeclarator
-  :	Identifier '(' [ FormalParameterList ] ')' [ Dims ]
-  ;
-  ```
-- **O — `FormalParameterList`** ([source](../Proposals/newlang.ye#L332))
-  ```text
-  FormalParameterList
-  :	FormalParameters ',' LastFormalParameter
-  |	LastFormalParameter
-  ;
-  ```
-- **O — `FormalParameters`** ([source](../Proposals/newlang.ye#L337))
-  ```text
-  FormalParameters
-  :	FormalParameter { ',' FormalParameter }
-  |	ReceiverParameter { ',' FormalParameter }
-  ;
-  ```
-- **O — `FormalParameter`** ([source](../Proposals/newlang.ye#L342))
-  ```text
-  FormalParameter
-  :	{ VariableModifier } UnannType VariableDeclaratorId
-  ;
-  ```
-- **O — `VariableModifier`** ([source](../Proposals/newlang.ye#L346))
-  ```text
-  VariableModifier
-  :	Annotation
-  |	'final'
-  ;
-  ```
-- **O — `LastFormalParameter`** ([source](../Proposals/newlang.ye#L351))
-  ```text
-  LastFormalParameter
-  :	{ VariableModifier } UnannType { Annotation } '...' VariableDeclaratorId
-  |	FormalParameter
-  ;
-  ```
-- **O — `ReceiverParameter`** ([source](../Proposals/newlang.ye#L356))
-  ```text
-  ReceiverParameter
-  :	{ Annotation } UnannType [ Identifier '.' ] 'this'
-  ;
-  ```
-- **O — `Throws`** ([source](../Proposals/newlang.ye#L360))
-  ```text
-  Throws
-  :	'throws' ExceptionTypeList
-  ;
-  ```
-- **O — `ExceptionTypeList`** ([source](../Proposals/newlang.ye#L364))
-  ```text
-  ExceptionTypeList
-  :	ExceptionType { ',' ExceptionType }
-  ;
-  ```
-- **O — `ExceptionType`** ([source](../Proposals/newlang.ye#L368))
-  ```text
-  ExceptionType
-  :	ClassType
-  |	TypeVariable
-  ;
-  ```
-- **O — `MethodBody`** ([source](../Proposals/newlang.ye#L373))
-  ```text
-  MethodBody
-  :	Block
-  |	';'
-  ;
-  ```
-- **O — `InstanceInitializer`** ([source](../Proposals/newlang.ye#L378))
-  ```text
-  InstanceInitializer
-  :	Block
-  ;
-  ```
-- **O — `StaticInitializer`** ([source](../Proposals/newlang.ye#L382))
-  ```text
-  StaticInitializer
-  :	'static' Block
-  ;
-  ```
-- **O — `ConstructorModifier`** ([source](../Proposals/newlang.ye#L390))
-  ```text
-  ConstructorModifier
-  :	Annotation
-  |	'public'
-  |	'protected'
-  |	'private'
-  ;
-  ```
-- **O — `ConstructorDeclarator`** ([source](../Proposals/newlang.ye#L397))
-  ```text
-  ConstructorDeclarator
-  :	[ TypeParameters ] SimpleTypeName '(' [ FormalParameterList ] ')'
-  ;
-  ```
-- **O — `ConstructorBody`** ([source](../Proposals/newlang.ye#L401))
-  ```text
-  ConstructorBody
-  :	'{' [ ExplicitConstructorInvocation ] [ BlockStatements ] '}'
-  ;
-  ```
-- **O — `ExplicitConstructorInvocation`** ([source](../Proposals/newlang.ye#L405))
-  ```text
-  ExplicitConstructorInvocation
-  :	[ TypeArguments ] 'this' '(' [ ArgumentList ] ')' ';'
-  |	[ TypeArguments ] 'super' '(' [ ArgumentList ] ')' ';'
-  |	ExpressionName '.' [ TypeArguments ] 'super' '(' [ ArgumentList ] ')' ';'
-  |	Primary '.' [ TypeArguments ] 'super' '(' [ ArgumentList ] ')' ';'
-  ;
-  ```
-- **O — `InterfaceModifier`** ([source](../Proposals/newlang.ye#L447))
-  ```text
-  InterfaceModifier
-  :	Annotation
-  |	'public'
-  |	'protected'
-  |	'private'
-  |	'abstract'
-  |	'static'
-  |	'strictfp'
-  ;
-  ```
-- **O — `ExtendsInterfaces`** ([source](../Proposals/newlang.ye#L457))
-  ```text
-  ExtendsInterfaces
-  :	'extends' InterfaceTypeList
-  ;
-  ```
+```text
+PackageName
+:	Identifier
+;
+```
 
-### Java-like productions not adopted — J
+### 3. `SubPackageName` — O
 
-The following are Java-like grammar material rather than selected NewLang
-requirements. DEC-019 explicitly does not adopt every Java-like construct;
-DEC-076 also means these are not additional parser productions.
+[Original production in `newlang.ye` (line 14)](../Proposals/newlang.ye#L14).
 
-- **J / D — `EnumDeclaration`** ([source](../Proposals/newlang.ye#L412))
-  ```text
-  EnumDeclaration
-  :	{ ClassModifier } 'enum' Identifier [ Superinterfaces ] EnumBody
-  ;
-  ```
-- **J — `EnumBody`** ([source](../Proposals/newlang.ye#L416))
-  ```text
-  EnumBody
-  :	'{' [ EnumConstantList ] [ ',' ] [ EnumBodyDeclarations ] '}'
-  ;
-  ```
-- **J — `EnumConstantList`** ([source](../Proposals/newlang.ye#L420))
-  ```text
-  EnumConstantList
-  :	EnumConstant { ',' EnumConstant }
-  ;
-  ```
-- **J — `EnumConstant`** ([source](../Proposals/newlang.ye#L424))
-  ```text
-  EnumConstant
-  :	{ EnumConstantModifier } Identifier [ '(' [ ArgumentList ] ')' ] [ ClassBody ]
-  ;
-  ```
-- **J — `EnumConstantModifier`** ([source](../Proposals/newlang.ye#L428))
-  ```text
-  EnumConstantModifier
-  :	Annotation
-  ;
-  ```
-- **J — `EnumBodyDeclarations`** ([source](../Proposals/newlang.ye#L432))
-  ```text
-  EnumBodyDeclarations
-  :	';' { ClassBodyDeclaration }
-  ;
-  ```
-- **J — `ConstantDeclaration`** ([source](../Proposals/newlang.ye#L473))
-  ```text
-  ConstantDeclaration
-  :	{ ConstantModifier } UnannType VariableDeclaratorList ';'
-  ;
-  ```
-- **J — `ConstantModifier`** ([source](../Proposals/newlang.ye#L477))
-  ```text
-  ConstantModifier
-  :	Annotation
-  |	'public'
-  |	'static'
-  |	'final'
-  ;
-  ```
-- **J — `InterfaceMethodDeclaration`** ([source](../Proposals/newlang.ye#L484))
-  ```text
-  InterfaceMethodDeclaration
-  :	{ InterfaceMethodModifier } MethodHeader MethodBody
-  ;
-  ```
-- **J — `InterfaceMethodModifier`** ([source](../Proposals/newlang.ye#L488))
-  ```text
-  InterfaceMethodModifier
-  :	Annotation
-  |	'public'
-  |	'abstract'
-  |	'default'
-  |	'static'
-  |	'strictfp'
-  ;
-  ```
-- **J — `AnnotationTypeDeclaration`** ([source](../Proposals/newlang.ye#L497))
-  ```text
-  AnnotationTypeDeclaration
-  :	{ InterfaceModifier } '@' 'interface' Identifier AnnotationTypeBody
-  ;
-  ```
-- **J — `AnnotationTypeBody`** ([source](../Proposals/newlang.ye#L501))
-  ```text
-  AnnotationTypeBody
-  :	'{' { AnnotationTypeMemberDeclaration } '}'
-  ;
-  ```
-- **J — `AnnotationTypeMemberDeclaration`** ([source](../Proposals/newlang.ye#L505))
-  ```text
-  AnnotationTypeMemberDeclaration
-  :	AnnotationTypeElementDeclaration
-  |	ConstantDeclaration
-  |	ClassDeclaration
-  |	InterfaceDeclaration
-  |	';'
-  ;
-  ```
-- **J — `AnnotationTypeElementDeclaration`** ([source](../Proposals/newlang.ye#L513))
-  ```text
-  AnnotationTypeElementDeclaration
-  :	{ AnnotationTypeElementModifier } UnannType Identifier '(' ')' [ Dims ] [ DefaultValue ] ';'
-  ;
-  ```
-- **J — `AnnotationTypeElementModifier`** ([source](../Proposals/newlang.ye#L517))
-  ```text
-  AnnotationTypeElementModifier
-  :	Annotation
-  |	'public'
-  |	'abstract'
-  ;
-  ```
-- **J — `DefaultValue`** ([source](../Proposals/newlang.ye#L523))
-  ```text
-  DefaultValue
-  :	'default' ElementValue
-  ;
-  ```
-- **J — `Annotation`** ([source](../Proposals/newlang.ye#L527))
-  ```text
-  Annotation
-  :	NormalAnnotation
-  |	MarkerAnnotation
-  |	SingleElementAnnotation
-  ;
-  ```
-- **J — `NormalAnnotation`** ([source](../Proposals/newlang.ye#L533))
-  ```text
-  NormalAnnotation
-  :	'@' TypeName '(' [ ElementValuePairList ] ')'
-  ;
-  ```
-- **J — `ElementValuePairList`** ([source](../Proposals/newlang.ye#L537))
-  ```text
-  ElementValuePairList
-  :	ElementValuePair { ',' ElementValuePair }
-  ;
-  ```
-- **J — `ElementValuePair`** ([source](../Proposals/newlang.ye#L541))
-  ```text
-  ElementValuePair
-  :	Identifier '=' ElementValue
-  ;
-  ```
-- **J — `ElementValue`** ([source](../Proposals/newlang.ye#L545))
-  ```text
-  ElementValue
-  :	ConditionalExpression
-  |	ElementValueArrayInitializer
-  |	Annotation
-  ;
-  ```
-- **J — `ElementValueArrayInitializer`** ([source](../Proposals/newlang.ye#L551))
-  ```text
-  ElementValueArrayInitializer
-  :	'{' [ ElementValueList ] [ ',' ] '}'
-  ;
-  ```
-- **J — `ElementValueList`** ([source](../Proposals/newlang.ye#L555))
-  ```text
-  ElementValueList
-  :	ElementValue { ',' ElementValue }
-  ;
-  ```
-- **J — `MarkerAnnotation`** ([source](../Proposals/newlang.ye#L559))
-  ```text
-  MarkerAnnotation
-  :	'@' TypeName
-  ;
-  ```
-- **J — `SingleElementAnnotation`** ([source](../Proposals/newlang.ye#L563))
-  ```text
-  SingleElementAnnotation
-  :	'@' TypeName '(' ElementValue ')'
-  ;
-  ```
-- **J — `ArrayInitializer`** ([source](../Proposals/newlang.ye#L569))
-  ```text
-  ArrayInitializer
-  :	{ [ VariableInitializerList ] [ ',' ] }
-  ;
-  ```
-- **J — `VariableInitializerList`** ([source](../Proposals/newlang.ye#L573))
-  ```text
-  VariableInitializerList
-  :	VariableInitializer { ',' VariableInitializer }
-  ;
-  ```
-- **J — `Block`** ([source](../Proposals/newlang.ye#L579))
-  ```text
-  Block
-  :	'{' [ BlockStatements ] '}'
-  ;
-  ```
-- **J — `BlockStatements`** ([source](../Proposals/newlang.ye#L583))
-  ```text
-  BlockStatements
-  :	BlockStatement { BlockStatement }
-  ;
-  ```
-- **J — `BlockStatement`** ([source](../Proposals/newlang.ye#L587))
-  ```text
-  BlockStatement
-  :	LocalVariableDeclarationStatement
-  |	ClassDeclaration
-  |	Statement
-  ;
-  ```
-- **J — `LocalVariableDeclarationStatement`** ([source](../Proposals/newlang.ye#L593))
-  ```text
-  LocalVariableDeclarationStatement
-  :	LocalVariableDeclaration ';'
-  ;
-  ```
-- **J — `LocalVariableDeclaration`** ([source](../Proposals/newlang.ye#L597))
-  ```text
-  LocalVariableDeclaration
-  :	{ VariableModifier } UnannType VariableDeclaratorList
-  ;
-  ```
-- **J — `Statement`** ([source](../Proposals/newlang.ye#L601))
-  ```text
-  Statement
-  :	StatementWithoutTrailingSubstatement
-  |	LabeledStatement
-  |	IfThenStatement
-  |	IfThenElseStatement
-  |	WhileStatement
-  |	ForStatement
-  ;
-  ```
-- **J — `StatementNoShortIf`** ([source](../Proposals/newlang.ye#L610))
-  ```text
-  StatementNoShortIf
-  :	StatementWithoutTrailingSubstatement
-  |	LabeledStatementNoShortIf
-  |	IfThenElseStatementNoShortIf
-  |	WhileStatementNoShortIf
-  |	ForStatementNoShortIf
-  ;
-  ```
-- **J — `StatementWithoutTrailingSubstatement`** ([source](../Proposals/newlang.ye#L618))
-  ```text
-  StatementWithoutTrailingSubstatement
-  :	Block
-  |	EmptyStatement
-  |	ExpressionStatement
-  |	AssertStatement
-  |	SwitchStatement
-  |	DoStatement
-  |	BreakStatement
-  |	ContinueStatement
-  |	ReturnStatement
-  |	SynchronizedStatement
-  |	ThrowStatement
-  |	TryStatement
-  ;
-  ```
-- **J — `EmptyStatement`** ([source](../Proposals/newlang.ye#L633))
-  ```text
-  EmptyStatement
-  :	';'
-  ;
-  ```
-- **J — `LabeledStatement`** ([source](../Proposals/newlang.ye#L637))
-  ```text
-  LabeledStatement
-  :	Identifier ':' Statement
-  ;
-  ```
-- **J — `LabeledStatementNoShortIf`** ([source](../Proposals/newlang.ye#L641))
-  ```text
-  LabeledStatementNoShortIf
-  :	Identifier ':' StatementNoShortIf
-  ;
-  ```
-- **J — `ExpressionStatement`** ([source](../Proposals/newlang.ye#L645))
-  ```text
-  ExpressionStatement
-  :	StatementExpression ';'
-  ;
-  ```
-- **J — `StatementExpression`** ([source](../Proposals/newlang.ye#L649))
-  ```text
-  StatementExpression
-  :	Assignment
-  |	PreIncrementExpression
-  |	PreDecrementExpression
-  |	PostIncrementExpression
-  |	PostDecrementExpression
-  |	MethodInvocation
-  |	ClassInstanceCreationExpression
-  ;
-  ```
-- **J — `IfThenStatement`** ([source](../Proposals/newlang.ye#L659))
-  ```text
-  IfThenStatement
-  :	'if' '(' Expression ')' Statement
-  ;
-  ```
-- **J — `IfThenElseStatement`** ([source](../Proposals/newlang.ye#L663))
-  ```text
-  IfThenElseStatement
-  :	'if' '(' Expression ')' StatementNoShortIf 'else' Statement
-  ;
-  ```
-- **J — `IfThenElseStatementNoShortIf`** ([source](../Proposals/newlang.ye#L667))
-  ```text
-  IfThenElseStatementNoShortIf
-  :	'if' '(' Expression ')' StatementNoShortIf 'else' StatementNoShortIf
-  ;
-  ```
-- **J — `AssertStatement`** ([source](../Proposals/newlang.ye#L671))
-  ```text
-  AssertStatement
-  :	'assert' Expression ';'
-  |	'assert' Expression ':' Expression ';'
-  ;
-  ```
-- **J — `SwitchStatement`** ([source](../Proposals/newlang.ye#L676))
-  ```text
-  SwitchStatement
-  :	'switch' '(' Expression ')' SwitchBlock
-  ;
-  ```
-- **J — `SwitchBlock`** ([source](../Proposals/newlang.ye#L680))
-  ```text
-  SwitchBlock
-  :	'{' { SwitchBlockStatementGroup } { SwitchLabel } '}'
-  ;
-  ```
-- **J — `SwitchBlockStatementGroup`** ([source](../Proposals/newlang.ye#L684))
-  ```text
-  SwitchBlockStatementGroup
-  :	SwitchLabels BlockStatements
-  ;
-  ```
-- **J — `SwitchLabels`** ([source](../Proposals/newlang.ye#L688))
-  ```text
-  SwitchLabels
-  :	SwitchLabel { SwitchLabel }
-  ;
-  ```
-- **J — `SwitchLabel`** ([source](../Proposals/newlang.ye#L692))
-  ```text
-  SwitchLabel
-  :	'case' ConstantExpression ':'
-  |	'case' EnumConstantName ':'
-  |	'default' ':'
-  ;
-  ```
-- **J — `EnumConstantName`** ([source](../Proposals/newlang.ye#L698))
-  ```text
-  EnumConstantName
-  :	Identifier
-  ;
-  ```
-- **J — `WhileStatement`** ([source](../Proposals/newlang.ye#L702))
-  ```text
-  WhileStatement
-  :	'while' '(' Expression ')' Statement
-  ;
-  ```
-- **J — `WhileStatementNoShortIf`** ([source](../Proposals/newlang.ye#L706))
-  ```text
-  WhileStatementNoShortIf
-  :	'while' '(' Expression ')' StatementNoShortIf
-  ;
-  ```
-- **J — `DoStatement`** ([source](../Proposals/newlang.ye#L710))
-  ```text
-  DoStatement
-  :	'do' Statement 'while' '(' Expression ')' ';'
-  ;
-  ```
-- **J — `ForStatement`** ([source](../Proposals/newlang.ye#L714))
-  ```text
-  ForStatement
-  :	BasicForStatement
-  |	EnhancedForStatement
-  ;
-  ```
-- **J — `ForStatementNoShortIf`** ([source](../Proposals/newlang.ye#L719))
-  ```text
-  ForStatementNoShortIf
-  :	BasicForStatementNoShortIf
-  |	EnhancedForStatementNoShortIf
-  ;
-  ```
-- **J — `BasicForStatement`** ([source](../Proposals/newlang.ye#L724))
-  ```text
-  BasicForStatement
-  :	'for' '(' [ ForInit ] ';' [ Expression ] ';' [ ForUpdate ] ')' Statement
-  ;
-  ```
-- **J — `BasicForStatementNoShortIf`** ([source](../Proposals/newlang.ye#L728))
-  ```text
-  BasicForStatementNoShortIf
-  :	'for' '(' [ ForInit ] ';' [ Expression ] ';' [ ForUpdate ] ')' StatementNoShortIf
-  ;
-  ```
-- **J — `ForInit`** ([source](../Proposals/newlang.ye#L732))
-  ```text
-  ForInit
-  :	StatementExpressionList
-  |	LocalVariableDeclaration
-  ;
-  ```
-- **J — `ForUpdate`** ([source](../Proposals/newlang.ye#L737))
-  ```text
-  ForUpdate
-  :	StatementExpressionList
-  ;
-  ```
-- **J — `StatementExpressionList`** ([source](../Proposals/newlang.ye#L741))
-  ```text
-  StatementExpressionList
-  :	StatementExpression { ',' StatementExpression }
-  ;
-  ```
-- **J — `EnhancedForStatement`** ([source](../Proposals/newlang.ye#L745))
-  ```text
-  EnhancedForStatement
-  :	'for' '(' { VariableModifier } UnannType VariableDeclaratorId ':' Expression ')' Statement
-  ;
-  ```
-- **J — `EnhancedForStatementNoShortIf`** ([source](../Proposals/newlang.ye#L749))
-  ```text
-  EnhancedForStatementNoShortIf
-  :	'for' '(' { VariableModifier } UnannType VariableDeclaratorId ':' Expression ')' StatementNoShortIf
-  ;
-  ```
-- **J — `BreakStatement`** ([source](../Proposals/newlang.ye#L753))
-  ```text
-  BreakStatement
-  :	'break' [ Identifier ] ';'
-  ;
-  ```
-- **J — `ContinueStatement`** ([source](../Proposals/newlang.ye#L757))
-  ```text
-  ContinueStatement
-  :	'continue' [ Identifier ] ';'
-  ;
-  ```
-- **J — `ReturnStatement`** ([source](../Proposals/newlang.ye#L761))
-  ```text
-  ReturnStatement
-  :	'return' [ Expression ] ';'
-  ;
-  ```
-- **J — `ThrowStatement`** ([source](../Proposals/newlang.ye#L765))
-  ```text
-  ThrowStatement
-  :	'throw' Expression ';'
-  ;
-  ```
-- **J — `SynchronizedStatement`** ([source](../Proposals/newlang.ye#L769))
-  ```text
-  SynchronizedStatement
-  :	'synchronized' '(' Expression ')' Block
-  ;
-  ```
-- **J — `TryStatement`** ([source](../Proposals/newlang.ye#L773))
-  ```text
-  TryStatement
-  :	'try' Block Catches
-  |	'try' Block [ Catches ] Finally
-  |	TryWithResourcesStatement
-  ;
-  ```
-- **J — `Catches`** ([source](../Proposals/newlang.ye#L779))
-  ```text
-  Catches
-  :	CatchClause { CatchClause }
-  ;
-  ```
-- **J — `CatchClause`** ([source](../Proposals/newlang.ye#L783))
-  ```text
-  CatchClause
-  :	'catch' '(' CatchFormalParameter ')' Block
-  ;
-  ```
-- **J — `CatchFormalParameter`** ([source](../Proposals/newlang.ye#L787))
-  ```text
-  CatchFormalParameter
-  :	{ VariableModifier } CatchType VariableDeclaratorId
-  ;
-  ```
-- **J — `CatchType`** ([source](../Proposals/newlang.ye#L791))
-  ```text
-  CatchType
-  :	UnannClassType { '|' ClassType }
-  ;
-  ```
-- **J — `Finally`** ([source](../Proposals/newlang.ye#L795))
-  ```text
-  Finally
-  :	'finally' Block
-  ;
-  ```
-- **J — `TryWithResourcesStatement`** ([source](../Proposals/newlang.ye#L799))
-  ```text
-  TryWithResourcesStatement
-  :	'try' ResourceSpecification Block [ Catches ] [ Finally ]
-  ;
-  ```
-- **J — `ResourceSpecification`** ([source](../Proposals/newlang.ye#L803))
-  ```text
-  ResourceSpecification
-  :	'(' ResourceList [ ';' ] ')'
-  ;
-  ```
-- **J — `ResourceList`** ([source](../Proposals/newlang.ye#L807))
-  ```text
-  ResourceList
-  :	Resource { ';' Resource }
-  ;
-  ```
-- **J — `Resource`** ([source](../Proposals/newlang.ye#L811))
-  ```text
-  Resource
-  :	{ VariableModifier } UnannType VariableDeclaratorId '=' Expression
-  ;
-  ```
-- **J — `Primary`** ([source](../Proposals/newlang.ye#L817))
-  ```text
-  Primary
-  :	PrimaryNoNewArray
-  |	ArrayCreationExpression
-  ;
-  ```
-- **J — `PrimaryNoNewArray`** ([source](../Proposals/newlang.ye#L822))
-  ```text
-  PrimaryNoNewArray
-  :	Literal
-  |	TypeName { '[' ']' } '.' 'class'
-  |	'void' '.' 'class'
-  |	'this'
-  |	TypeName '.' 'this'
-  |	'(' Expression ')'
-  |	ClassInstanceCreationExpression
-  |	FieldAccess
-  |	ArrayAccess
-  |	MethodInvocation
-  |	MethodReference
-  ;
-  ```
-- **J — `ClassInstanceCreationExpression`** ([source](../Proposals/newlang.ye#L836))
-  ```text
-  ClassInstanceCreationExpression
-  :	'new' [ TypeArguments ] { Annotation } Identifier [ TypeArgumentsOrDiamond ] '(' [ ArgumentList ] ')' [ ClassBody ]
-  |	ExpressionName '.' 'new' [ TypeArguments ] { Annotation } Identifier [ TypeArgumentsOrDiamond ] '(' [ ArgumentList ] ')' [ ClassBody ]
-  |	Primary '.' 'new' [ TypeArguments ] { Annotation } Identifier [ TypeArgumentsOrDiamond ] '(' [ ArgumentList ] ')' [ ClassBody ]
-  ;
-  ```
-- **J — `TypeArgumentsOrDiamond`** ([source](../Proposals/newlang.ye#L842))
-  ```text
-  TypeArgumentsOrDiamond
-  :	TypeArguments
-  |	'<' '>'
-  ;
-  ```
-- **J — `FieldAccess`** ([source](../Proposals/newlang.ye#L847))
-  ```text
-  FieldAccess
-  :	Primary '.' Identifier
-  |	'super' '.' Identifier
-  |	TypeName '.' 'super' '.' Identifier
-  ;
-  ```
-- **J — `ArrayAccess`** ([source](../Proposals/newlang.ye#L853))
-  ```text
-  ArrayAccess
-  :	ExpressionName '[' Expression ']'
-  |	PrimaryNoNewArray '[' Expression ']'
-  ;
-  ```
-- **J — `MethodInvocation`** ([source](../Proposals/newlang.ye#L858))
-  ```text
-  MethodInvocation
-  :	MethodName '(' [ ArgumentList ] ')'
-  |	TypeName '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
-  |	ExpressionName '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
-  |	Primary '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
-  |	'super' '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
-  |	TypeName '.' 'super' '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
-  ;
-  ```
-- **J — `ArgumentList`** ([source](../Proposals/newlang.ye#L867))
-  ```text
-  ArgumentList
-  :	Expression { ',' Expression }
-  ;
-  ```
-- **J — `MethodReference`** ([source](../Proposals/newlang.ye#L871))
-  ```text
-  MethodReference
-  :	ExpressionName '::' [ TypeArguments ] Identifier
-  |	ReferenceType '::' [ TypeArguments ] Identifier
-  |	Primary '::' [ TypeArguments ] Identifier
-  |	'super' '::' [ TypeArguments ] Identifier
-  |	TypeName '.' 'super' '::' [ TypeArguments ] Identifier
-  |	ClassType '::' [ TypeArguments ] 'new'
-  |	ArrayType '::' 'new'
-  ;
-  ```
-- **J — `ArrayCreationExpression`** ([source](../Proposals/newlang.ye#L881))
-  ```text
-  ArrayCreationExpression
-  :	'new' PrimitiveType DimExprs [ Dims ]
-  |	'new' ClassOrInterfaceType DimExprs [ Dims ]
-  |	'new' PrimitiveType Dims ArrayInitializer
-  |	'new' ClassOrInterfaceType Dims ArrayInitializer
-  ;
-  ```
-- **J — `DimExprs`** ([source](../Proposals/newlang.ye#L888))
-  ```text
-  DimExprs
-  :	DimExpr { DimExpr }
-  ;
-  ```
-- **J — `DimExpr`** ([source](../Proposals/newlang.ye#L892))
-  ```text
-  DimExpr
-  :	{ Annotation } '[' Expression ']'
-  ;
-  ```
-- **J — `ConstantExpression`** ([source](../Proposals/newlang.ye#L896))
-  ```text
-  ConstantExpression
-  :	Expression
-  ;
-  ```
-- **J — `Expression`** ([source](../Proposals/newlang.ye#L900))
-  ```text
-  Expression
-  :	LambdaExpression
-  |	AssignmentExpression
-  ;
-  ```
-- **J — `LambdaExpression`** ([source](../Proposals/newlang.ye#L905))
-  ```text
-  LambdaExpression
-  :	LambdaParameters '->' LambdaBody
-  ;
-  ```
-- **J — `LambdaParameters`** ([source](../Proposals/newlang.ye#L909))
-  ```text
-  LambdaParameters
-  :	Identifier
-  |	'(' [ FormalParameterList ] ')'
-  |	'(' InferredFormalParameterList ')'
-  ;
-  ```
-- **J — `InferredFormalParameterList`** ([source](../Proposals/newlang.ye#L915))
-  ```text
-  InferredFormalParameterList
-  :	Identifier { ',' Identifier }
-  ;
-  ```
-- **J — `LambdaBody`** ([source](../Proposals/newlang.ye#L919))
-  ```text
-  LambdaBody
-  :	Expression
-  |	Block
-  ;
-  ```
-- **J — `AssignmentExpression`** ([source](../Proposals/newlang.ye#L924))
-  ```text
-  AssignmentExpression
-  :	ConditionalExpression
-  |	Assignment
-  ;
-  ```
-- **J — `Assignment`** ([source](../Proposals/newlang.ye#L929))
-  ```text
-  Assignment
-  :	LeftHandSide AssignmentOperator Expression
-  ;
-  ```
-- **J — `LeftHandSide`** ([source](../Proposals/newlang.ye#L933))
-  ```text
-  LeftHandSide
-  :	ExpressionName
-  |	FieldAccess
-  |	ArrayAccess
-  ;
-  ```
-- **J — `AssignmentOperator`** ([source](../Proposals/newlang.ye#L939))
-  ```text
-  AssignmentOperator
-  :	'='
-  |	'*='
-  |	'/='
-  |	'%='
-  |	'+='
-  |	'-='
-  |	'<<='
-  |	'>>='
-  |	'>>>='
-  |	'&='
-  |	'^='
-  |	'|='
-  ;
-  ```
-- **J — `ConditionalExpression`** ([source](../Proposals/newlang.ye#L954))
-  ```text
-  ConditionalExpression
-  :	ConditionalOrExpression
-  |	ConditionalOrExpression '?' Expression ':' ConditionalExpression
-  ;
-  ```
-- **J — `ConditionalOrExpression`** ([source](../Proposals/newlang.ye#L959))
-  ```text
-  ConditionalOrExpression
-  :	ConditionalAndExpression
-  |	ConditionalOrExpression '||' ConditionalAndExpression
-  ;
-  ```
-- **J — `ConditionalAndExpression`** ([source](../Proposals/newlang.ye#L964))
-  ```text
-  ConditionalAndExpression
-  :	InclusiveOrExpression
-  |	ConditionalAndExpression '&&' InclusiveOrExpression
-  ;
-  ```
-- **J — `InclusiveOrExpression`** ([source](../Proposals/newlang.ye#L969))
-  ```text
-  InclusiveOrExpression
-  :	ExclusiveOrExpression
-  |	InclusiveOrExpression '|' ExclusiveOrExpression
-  ;
-  ```
-- **J — `ExclusiveOrExpression`** ([source](../Proposals/newlang.ye#L974))
-  ```text
-  ExclusiveOrExpression
-  :	AndExpression
-  |	ExclusiveOrExpression '^' AndExpression
-  ;
-  ```
-- **J — `AndExpression`** ([source](../Proposals/newlang.ye#L979))
-  ```text
-  AndExpression
-  :	EqualityExpression
-  |	AndExpression '&' EqualityExpression
-  ;
-  ```
-- **J — `EqualityExpression`** ([source](../Proposals/newlang.ye#L984))
-  ```text
-  EqualityExpression
-  :	RelationalExpression
-  |	EqualityExpression '==' RelationalExpression
-  |	EqualityExpression '!=' RelationalExpression
-  ;
-  ```
-- **J — `RelationalExpression`** ([source](../Proposals/newlang.ye#L990))
-  ```text
-  RelationalExpression
-  :	ShiftExpression
-  |	RelationalExpression '<' ShiftExpression
-  |	RelationalExpression '>' ShiftExpression
-  |	RelationalExpression '<=' ShiftExpression
-  |	RelationalExpression '>=' ShiftExpression
-  |	RelationalExpression 'instanceof' ReferenceType
-  ;
-  ```
-- **J — `ShiftExpression`** ([source](../Proposals/newlang.ye#L999))
-  ```text
-  ShiftExpression
-  :	AdditiveExpression
-  |	ShiftExpression '<<' AdditiveExpression
-  |	ShiftExpression '>>' AdditiveExpression
-  |	ShiftExpression '>>>' AdditiveExpression
-  ;
-  ```
-- **J — `AdditiveExpression`** ([source](../Proposals/newlang.ye#L1006))
-  ```text
-  AdditiveExpression
-  :	MultiplicativeExpression
-  |	AdditiveExpression '+' MultiplicativeExpression
-  |	AdditiveExpression '-' MultiplicativeExpression
-  ;
-  ```
-- **J — `MultiplicativeExpression`** ([source](../Proposals/newlang.ye#L1012))
-  ```text
-  MultiplicativeExpression
-  :	UnaryExpression
-  |	MultiplicativeExpression '*' UnaryExpression
-  |	MultiplicativeExpression '/' UnaryExpression
-  |	MultiplicativeExpression '%' UnaryExpression
-  ;
-  ```
-- **J — `UnaryExpression`** ([source](../Proposals/newlang.ye#L1019))
-  ```text
-  UnaryExpression
-  :	PreIncrementExpression
-  |	PreDecrementExpression
-  |	'+' UnaryExpression
-  |	'-' UnaryExpression
-  |	UnaryExpressionNotPlusMinus
-  ;
-  ```
-- **J — `PreIncrementExpression`** ([source](../Proposals/newlang.ye#L1027))
-  ```text
-  PreIncrementExpression
-  :	'++' UnaryExpression
-  ;
-  ```
-- **J — `PreDecrementExpression`** ([source](../Proposals/newlang.ye#L1031))
-  ```text
-  PreDecrementExpression
-  :	'--' UnaryExpression
-  ;
-  ```
-- **J — `UnaryExpressionNotPlusMinus`** ([source](../Proposals/newlang.ye#L1035))
-  ```text
-  UnaryExpressionNotPlusMinus
-  :	PostfixExpression
-  |	'~' UnaryExpression
-  |	'!' UnaryExpression
-  |	CastExpression
-  ;
-  ```
-- **J — `PostfixExpression`** ([source](../Proposals/newlang.ye#L1042))
-  ```text
-  PostfixExpression
-  :	Primary
-  |	ExpressionName
-  |	PostIncrementExpression
-  |	PostDecrementExpression
-  ;
-  ```
-- **J — `PostIncrementExpression`** ([source](../Proposals/newlang.ye#L1049))
-  ```text
-  PostIncrementExpression
-  :	PostfixExpression '++'
-  ;
-  ```
-- **J — `PostDecrementExpression`** ([source](../Proposals/newlang.ye#L1053))
-  ```text
-  PostDecrementExpression
-  :	PostfixExpression '--'
-  ;
-  ```
-- **J — `CastExpression`** ([source](../Proposals/newlang.ye#L1057))
-  ```text
-  CastExpression
-  :	'(' PrimitiveType ')' UnaryExpression
-  |	'(' ReferenceType { AdditionalBound } ')' UnaryExpressionNotPlusMinus
-  |	'(' ReferenceType { AdditionalBound } ')' LambdaExpression
-  ;
-  ```
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
 
-### Name and type productions — J
+```text
+SubPackageName
+:	Identifier
+;
+```
 
-These further Java-like productions duplicate or extend the earlier type/name
-proposal. The angle-bracket type-argument syntax is not selected; DEC-011 uses
-square brackets for templates.
+### 4. `PackageInterfaceFile` — O
 
-- **J / D — `PackageName`** ([source](../Proposals/newlang.ye#L1065))
-  ```text
-  PackageName
-  :	Identifier
-  |	PackageName '.' Identifier
-  ;
-  ```
-- **J — `TypeName`** ([source](../Proposals/newlang.ye#L1070))
-  ```text
-  TypeName
-  :	Identifier
-  |	PackageOrTypeName '.' Identifier
-  ;
-  ```
-- **J — `PackageOrTypeName`** ([source](../Proposals/newlang.ye#L1075))
-  ```text
-  PackageOrTypeName
-  :	Identifier
-  |	PackageOrTypeName '.' Identifier
-  ;
-  ```
-- **J — `ExpressionName`** ([source](../Proposals/newlang.ye#L1080))
-  ```text
-  ExpressionName
-  :	Identifier
-  |	AmbiguousName '.' Identifier
-  ;
-  ```
-- **J — `MethodName`** ([source](../Proposals/newlang.ye#L1085))
-  ```text
-  MethodName
-  :	Identifier
-  ;
-  ```
-- **J — `AmbiguousName`** ([source](../Proposals/newlang.ye#L1089))
-  ```text
-  AmbiguousName
-  :	Identifier
-  |	AmbiguousName '.' Identifier
-  ;
-  ```
-- **J — `SimpleTypeName`** ([source](../Proposals/newlang.ye#L1096))
-  ```text
-  SimpleTypeName
-  :	Identifier
-  ;
-  ```
-- **J — `TypeParameterModifier`** ([source](../Proposals/newlang.ye#L1100))
-  ```text
-  TypeParameterModifier
-  :	Annotation
-  ;
-  ```
-- **J / D — `Type`** ([source](../Proposals/newlang.ye#L1108))
-  ```text
-  Type
-  :	PrimitiveType
-  |	ReferenceType
-  ;
-  ```
-- **J — `PrimitiveType`** ([source](../Proposals/newlang.ye#L1113))
-  ```text
-  PrimitiveType
-  :	{ Annotation } NumericType
-  |	{ Annotation } 'boolean'
-  ;
-  ```
-- **J — `NumericType`** ([source](../Proposals/newlang.ye#L1118))
-  ```text
-  NumericType
-  :	IntegralType
-  |	FloatingPointType
-  ;
-  ```
-- **J — `IntegralType`** ([source](../Proposals/newlang.ye#L1123))
-  ```text
-  IntegralType
-  :	'byte'
-  |	'short'
-  |	'int'
-  |	'long'
-  |	'char'
-  ;
-  ```
-- **J — `FloatingPointType`** ([source](../Proposals/newlang.ye#L1131))
-  ```text
-  FloatingPointType
-  :	'float'
-  |	'double'
-  ;
-  ```
-- **J — `ReferenceType`** ([source](../Proposals/newlang.ye#L1136))
-  ```text
-  ReferenceType
-  :	ClassOrInterfaceType
-  |	TypeVariable
-  |	ArrayType
-  ;
-  ```
-- **J — `ClassOrInterfaceType`** ([source](../Proposals/newlang.ye#L1142))
-  ```text
-  ClassOrInterfaceType
-  :	ClassType
-  |	InterfaceType
-  ;
-  ```
-- **J — `ClassType`** ([source](../Proposals/newlang.ye#L1147))
-  ```text
-  ClassType
-  :	{ Annotation } Identifier [ TypeArguments ]
-  |	ClassOrInterfaceType '.' { Annotation } Identifier [ TypeArguments ]
-  ;
-  ```
-- **J — `InterfaceType`** ([source](../Proposals/newlang.ye#L1152))
-  ```text
-  InterfaceType
-  :	ClassType
-  ;
-  ```
-- **J — `TypeVariable`** ([source](../Proposals/newlang.ye#L1156))
-  ```text
-  TypeVariable
-  :	{ Annotation } Identifier
-  ;
-  ```
-- **J — `ArrayType`** ([source](../Proposals/newlang.ye#L1160))
-  ```text
-  ArrayType
-  :	PrimitiveType Dims
-  |	ClassOrInterfaceType Dims
-  |	TypeVariable Dims
-  ;
-  ```
-- **J — `Dims`** ([source](../Proposals/newlang.ye#L1166))
-  ```text
-  Dims
-  :	{ Annotation } '[' ']' { { Annotation } '[' ']' }
-  ;
-  ```
-- **J — `TypeParameter`** ([source](../Proposals/newlang.ye#L1170))
-  ```text
-  TypeParameter
-  :	{ TypeParameterModifier } Identifier [ TypeBound ]
-  ;
-  ```
-- **J — `TypeBound`** ([source](../Proposals/newlang.ye#L1174))
-  ```text
-  TypeBound
-  :	'extends' TypeVariable
-  |	'extends' ClassOrInterfaceType { AdditionalBound }
-  ;
-  ```
-- **J — `AdditionalBound`** ([source](../Proposals/newlang.ye#L1179))
-  ```text
-  AdditionalBound
-  :	'&' InterfaceType
-  ;
-  ```
-- **J — `TypeArguments`** ([source](../Proposals/newlang.ye#L1183))
-  ```text
-  TypeArguments
-  :	'<' TypeArgumentList '>'
-  ;
-  ```
-- **J — `TypeArgumentList`** ([source](../Proposals/newlang.ye#L1187))
-  ```text
-  TypeArgumentList
-  :	TypeArgument { ',' TypeArgument }
-  ;
-  ```
-- **J — `TypeArgument`** ([source](../Proposals/newlang.ye#L1191))
-  ```text
-  TypeArgument
-  :	ReferenceType
-  |	Wildcard
-  ;
-  ```
-- **J — `Wildcard`** ([source](../Proposals/newlang.ye#L1196))
-  ```text
-  Wildcard
-  :	{ Annotation } '?' [ WildcardBounds ]
-  ;
-  ```
-- **J — `WildcardBounds`** ([source](../Proposals/newlang.ye#L1200))
-  ```text
-  WildcardBounds
-  :	'extends' ReferenceType
-  |	'super' ReferenceType
-  ;
-  ```
+[Original production in `newlang.ye` (line 20)](../Proposals/newlang.ye#L20).
 
-`newlang` at line 99 is a file marker, not a production. The source also has
-two `PackageName`, `Type`, `VariableDeclaratorList`, `VariableDeclarator`, and
-`EnumDeclaration` definitions; see the linked occurrences above. In addition
-to those duplicates, the Java-like sections introduce syntax and names that
-are not established by the NewLang proposal or current decisions. These gaps
-must be resolved before treating `newlang.ye` as a normative complete grammar.
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+PackageInterfaceFile
+:	'package' PackageName { RemotePackageDef }
+;
+```
+
+### 5. `RemotePackageDef` — O
+
+[Original production in `newlang.ye` (line 24)](../Proposals/newlang.ye#L24).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+RemotePackageDef
+:	Identifier Literal
+;
+```
+
+### 6. `PackageExportsFile` — O
+
+[Original production in `newlang.ye` (line 30)](../Proposals/newlang.ye#L30).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+PackageExportsFile
+:	'package' PackageName 'exports' ModuleName { ',' ModuleName } ';'
+;
+```
+
+### 7. `ModuleName` — O
+
+[Original production in `newlang.ye` (line 34)](../Proposals/newlang.ye#L34).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ModuleName
+:	{ SubPackageName '.' } Identifier
+;
+```
+
+### 8. `ModuleDeclarationFile` — O
+
+[Original production in `newlang.ye` (line 41)](../Proposals/newlang.ye#L41).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ModuleDeclarationFile
+:	ContextDeclaration { StructDeclaration }
+;
+```
+
+### 9. `ContextDeclaration` — O
+
+[Original production in `newlang.ye` (line 45)](../Proposals/newlang.ye#L45).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ContextDeclaration
+:	'package' PackageName { '.' SubPackageName } ';'
+;
+```
+
+### 10. `Declaration` — O
+
+[Original production in `newlang.ye` (line 51)](../Proposals/newlang.ye#L51).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+Declaration
+:	{ Modifier } BasicDeclaration
+;
+```
+
+### 11. `Modifier` — O
+
+[Original production in `newlang.ye` (line 55)](../Proposals/newlang.ye#L55).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+Modifier
+:	'abstract'
+|	'default'
+|	'final'
+|	'native'
+|	'private'
+|	'protected'
+|	'public'
+|	'static'
+|	'strictfp'
+|	'synchronized'
+|	'transient'
+|	'volatile'
+;
+```
+
+### 12. `BasicDeclaration` — O
+
+[Original production in `newlang.ye` (line 70)](../Proposals/newlang.ye#L70).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+BasicDeclaration
+:	ImportDeclaration
+|	FieldOrConstantDeclaration
+|	TypeDeclaration
+;
+```
+
+### 13. `ImportDeclaration` — O
+
+[Original production in `newlang.ye` (line 76)](../Proposals/newlang.ye#L76).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ImportDeclaration
+:	'import' Name ';'
+;
+```
+
+### 14. `Name` — O
+
+[Original production in `newlang.ye` (line 80)](../Proposals/newlang.ye#L80).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+Name
+:	PackageName { '.' Identifier }
+;
+```
+
+### 15. `FieldOrConstantDeclaration` — O
+
+[Original production in `newlang.ye` (line 84)](../Proposals/newlang.ye#L84).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+FieldOrConstantDeclaration
+:	[ TypeParameters ] Type VariableDeclaratorList ';'
+;
+```
+
+### 16. `VariableDeclaratorList` — O / D
+
+[Original production in `newlang.ye` (line 88)](../Proposals/newlang.ye#L88).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+VariableDeclaratorList
+:	VariableDeclarator { ',' VariableDeclarator }
+;
+```
+
+### 17. `VariableDeclarator` — O / D
+
+[Original production in `newlang.ye` (line 92)](../Proposals/newlang.ye#L92).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+VariableDeclarator
+:	Identifier [ '=' Expression ]
+;
+```
+
+### 18. `TypeDeclaration` — O
+
+[Original production in `newlang.ye` (line 96)](../Proposals/newlang.ye#L96).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+TypeDeclaration
+:	'typedef' [ TypeParameters ] Type Identifier ';'
+;
+```
+
+### 19. `Type` — O / D
+
+[Original production in `newlang.ye` (line 102)](../Proposals/newlang.ye#L102).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+Type
+:	BasicType [ TypeArguments ]
+;
+```
+
+### 20. `BasicType` — O
+
+[Original production in `newlang.ye` (line 106)](../Proposals/newlang.ye#L106).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+BasicType
+:	Name
+|	ValueTypeDeclaration
+|	ReferenceTypeDeclaration
+;
+```
+
+### 21. `ValueTypeDeclaration` — O
+
+[Original production in `newlang.ye` (line 112)](../Proposals/newlang.ye#L112).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ValueTypeDeclaration
+:	OrdinalTypeDeclaration
+|	ComposedTypeDeclaration
+;
+```
+
+### 22. `OrdinalTypeDeclaration` — O
+
+[Original production in `newlang.ye` (line 117)](../Proposals/newlang.ye#L117).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+OrdinalTypeDeclaration
+:	EnumDeclaration
+|	SubrangeDeclaration
+;
+```
+
+### 23. `ComposedTypeDeclaration` — O
+
+[Original production in `newlang.ye` (line 122)](../Proposals/newlang.ye#L122).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ComposedTypeDeclaration
+:	SetDeclaration
+|	ArrayDeclaration
+|	StructDeclaration
+;
+```
+
+### 24. `ReferenceTypeDeclaration` — O
+
+[Original production in `newlang.ye` (line 128)](../Proposals/newlang.ye#L128).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ReferenceTypeDeclaration
+:	ClassDeclaration
+|	MixInDeclaration
+;
+```
+
+### 25. `EnumDeclaration` — O / D
+
+[Original production in `newlang.ye` (line 135)](../Proposals/newlang.ye#L135).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+EnumDeclaration
+:	'enum' [ Derivation ] '{' [ EnumDeclaratorList [ ';' [ DeclarationList ] ] ] '}'
+;
+```
+
+### 26. `EnumDeclaratorList` — O
+
+[Original production in `newlang.ye` (line 139)](../Proposals/newlang.ye#L139).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+EnumDeclaratorList
+:	EnumDeclarator { ',' EnumDeclarator }
+;
+```
+
+### 27. `EnumDeclarator` — O
+
+[Original production in `newlang.ye` (line 143)](../Proposals/newlang.ye#L143).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+EnumDeclarator
+:	Identifier [ '=' Expression ]
+;
+```
+
+### 28. `SubrangeDeclaration` — O
+
+[Original production in `newlang.ye` (line 147)](../Proposals/newlang.ye#L147).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+SubrangeDeclaration
+:	'range' [ Derivation ] '{' Expression '...' Expression [ ';' [ DeclarationList ] ] '}'
+;
+```
+
+### 29. `SetDeclaration` — O
+
+[Original production in `newlang.ye` (line 151)](../Proposals/newlang.ye#L151).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+SetDeclaration
+:	'set' [ Derivation ] '{' Type [ ';' [ DeclarationList ] ] '}'
+;
+```
+
+### 30. `ArrayDeclaration` — O
+
+[Original production in `newlang.ye` (line 155)](../Proposals/newlang.ye#L155).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ArrayDeclaration
+:	'array' [ Derivation ] '{' Lambda [ ';' [ DeclarationList ] ] '}'
+;
+```
+
+### 31. `StructDeclaration` — O
+
+[Original production in `newlang.ye` (line 159)](../Proposals/newlang.ye#L159).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+StructDeclaration
+:	'struct' [ Derivation ] '{' [ DeclarationList ] '}'
+;
+```
+
+### 32. `DeclarationList` — O
+
+[Original production in `newlang.ye` (line 163)](../Proposals/newlang.ye#L163).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+DeclarationList
+:	Declaration { Declaration }
+;
+```
+
+### 33. `ClassDeclaration` — M
+
+[Original production in `newlang.ye` (line 169)](../Proposals/newlang.ye#L169).
+
+**Accepted outline (not this RHS verbatim):** the accepted class form outline; see the approved [`class-declaration` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+ClassDeclaration
+:	NormalClassDeclaration
+|	EnumDeclaration
+;
+```
+
+### 34. `NormalClassDeclaration` — M
+
+[Original production in `newlang.ye` (line 174)](../Proposals/newlang.ye#L174).
+
+**Accepted outline (not this RHS verbatim):** the accepted class form outline; see the approved [`class-declaration` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+NormalClassDeclaration
+:	{ ClassModifier } 'class' Identifier [ TypeParameters ] [ Superclass ] [ Superinterfaces ] ClassBody
+;
+```
+
+### 35. `ClassModifier` — O
+
+[Original production in `newlang.ye` (line 178)](../Proposals/newlang.ye#L178).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ClassModifier
+:	Annotation
+|	'public'
+|	'protected'
+|	'private'
+|	'abstract'
+|	'static'
+|	'final'
+|	'strictfp'
+;
+```
+
+### 36. `TypeParameters` — O
+
+[Original production in `newlang.ye` (line 189)](../Proposals/newlang.ye#L189).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+TypeParameters
+:	'<' TypeParameterList '>'
+;
+```
+
+### 37. `TypeParameterList` — O
+
+[Original production in `newlang.ye` (line 193)](../Proposals/newlang.ye#L193).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+TypeParameterList
+:	TypeParameter { ',' TypeParameter }
+;
+```
+
+### 38. `Superclass` — M
+
+[Original production in `newlang.ye` (line 197)](../Proposals/newlang.ye#L197).
+
+**Accepted outline (not this RHS verbatim):** the accepted optional superclass outline; see the approved [`superclass` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+Superclass
+:	'extends' ClassType
+;
+```
+
+### 39. `Superinterfaces` — M
+
+[Original production in `newlang.ye` (line 201)](../Proposals/newlang.ye#L201).
+
+**Accepted outline (not this RHS verbatim):** the accepted implemented-interface outline; see the approved [`implemented-interfaces` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+Superinterfaces
+:	'implements' InterfaceTypeList
+;
+```
+
+### 40. `InterfaceTypeList` — O
+
+[Original production in `newlang.ye` (line 205)](../Proposals/newlang.ye#L205).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+InterfaceTypeList
+:	InterfaceType { ',' InterfaceType }
+;
+```
+
+### 41. `ClassBody` — M
+
+[Original production in `newlang.ye` (line 209)](../Proposals/newlang.ye#L209).
+
+**Accepted outline (not this RHS verbatim):** the accepted class-body outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+ClassBody
+:	'{' { ClassBodyDeclaration } '}'
+;
+```
+
+### 42. `ClassBodyDeclaration` — M
+
+[Original production in `newlang.ye` (line 213)](../Proposals/newlang.ye#L213).
+
+**Accepted outline (not this RHS verbatim):** the accepted class-body member outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+ClassBodyDeclaration
+:	ClassMemberDeclaration
+|	InstanceInitializer
+|	StaticInitializer
+|	ConstructorDeclaration
+|	ImportDeclaration
+;
+```
+
+### 43. `ClassMemberDeclaration` — M
+
+[Original production in `newlang.ye` (line 221)](../Proposals/newlang.ye#L221).
+
+**Accepted outline (not this RHS verbatim):** the accepted class-body member outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+ClassMemberDeclaration
+:	FieldDeclaration
+|	MethodDeclaration
+|	ClassDeclaration
+|	InterfaceDeclaration
+|	';'
+;
+```
+
+### 44. `FieldDeclaration` — M
+
+[Original production in `newlang.ye` (line 229)](../Proposals/newlang.ye#L229).
+
+**Accepted outline (not this RHS verbatim):** the accepted field-member outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+FieldDeclaration
+:	{ FieldModifier } UnannType VariableDeclaratorList ';'
+;
+```
+
+### 45. `FieldModifier` — O
+
+[Original production in `newlang.ye` (line 233)](../Proposals/newlang.ye#L233).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+FieldModifier
+:	Annotation
+|	'public'
+|	'protected'
+|	'private'
+|	'static'
+|	'final'
+|	'transient'
+|	'volatile'
+;
+```
+
+### 46. `VariableDeclaratorList` — O / D
+
+[Original production in `newlang.ye` (line 244)](../Proposals/newlang.ye#L244).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+VariableDeclaratorList
+:	VariableDeclarator { ',' VariableDeclarator }
+;
+```
+
+### 47. `VariableDeclarator` — O / D
+
+[Original production in `newlang.ye` (line 248)](../Proposals/newlang.ye#L248).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+VariableDeclarator
+:	VariableDeclaratorId [ '=' VariableInitializer ]
+;
+```
+
+### 48. `VariableDeclaratorId` — O
+
+[Original production in `newlang.ye` (line 252)](../Proposals/newlang.ye#L252).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+VariableDeclaratorId
+:	Identifier [ Dims ]
+;
+```
+
+### 49. `VariableInitializer` — O
+
+[Original production in `newlang.ye` (line 256)](../Proposals/newlang.ye#L256).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+VariableInitializer
+:	Expression
+|	ArrayInitializer
+;
+```
+
+### 50. `UnannType` — O
+
+[Original production in `newlang.ye` (line 261)](../Proposals/newlang.ye#L261).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+UnannType
+:	UnannPrimitiveType
+|	UnannReferenceType
+;
+```
+
+### 51. `UnannPrimitiveType` — O
+
+[Original production in `newlang.ye` (line 266)](../Proposals/newlang.ye#L266).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+UnannPrimitiveType
+:	NumericType
+|	'boolean'
+;
+```
+
+### 52. `UnannReferenceType` — O
+
+[Original production in `newlang.ye` (line 271)](../Proposals/newlang.ye#L271).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+UnannReferenceType
+:	UnannClassOrInterfaceType
+|	UnannTypeVariable
+|	UnannArrayType
+;
+```
+
+### 53. `UnannClassOrInterfaceType` — O
+
+[Original production in `newlang.ye` (line 277)](../Proposals/newlang.ye#L277).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+UnannClassOrInterfaceType
+:	UnannClassType
+|	UnannInterfaceType
+;
+```
+
+### 54. `UnannClassType` — O
+
+[Original production in `newlang.ye` (line 282)](../Proposals/newlang.ye#L282).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+UnannClassType
+:	Identifier [ TypeArguments ]
+|	UnannClassOrInterfaceType '.' { Annotation } Identifier [ TypeArguments ]
+;
+```
+
+### 55. `UnannInterfaceType` — O
+
+[Original production in `newlang.ye` (line 287)](../Proposals/newlang.ye#L287).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+UnannInterfaceType
+:	UnannClassType
+;
+```
+
+### 56. `UnannTypeVariable` — O
+
+[Original production in `newlang.ye` (line 291)](../Proposals/newlang.ye#L291).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+UnannTypeVariable
+:	Identifier
+;
+```
+
+### 57. `UnannArrayType` — O
+
+[Original production in `newlang.ye` (line 295)](../Proposals/newlang.ye#L295).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+UnannArrayType
+:	UnannPrimitiveType Dims
+|	UnannClassOrInterfaceType Dims
+|	UnannTypeVariable Dims
+;
+```
+
+### 58. `MethodDeclaration` — M
+
+[Original production in `newlang.ye` (line 301)](../Proposals/newlang.ye#L301).
+
+**Accepted outline (not this RHS verbatim):** the accepted method-member outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+MethodDeclaration
+:	{ MethodModifier } MethodHeader MethodBody
+;
+```
+
+### 59. `MethodModifier` — O
+
+[Original production in `newlang.ye` (line 305)](../Proposals/newlang.ye#L305).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+MethodModifier
+:	Annotation
+|	'public'
+|	'protected'
+|	'private'
+|	'abstract'
+|	'static'
+|	'final'
+|	'synchronized'
+|	'native'
+|	'strictfp'
+;
+```
+
+### 60. `MethodHeader` — O
+
+[Original production in `newlang.ye` (line 318)](../Proposals/newlang.ye#L318).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+MethodHeader
+:	Result MethodDeclarator [ Throws ]
+|	TypeParameters { Annotation } Result MethodDeclarator [ Throws ]
+;
+```
+
+### 61. `Result` — O
+
+[Original production in `newlang.ye` (line 323)](../Proposals/newlang.ye#L323).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+Result
+:	UnannType
+|	'void'
+;
+```
+
+### 62. `MethodDeclarator` — O
+
+[Original production in `newlang.ye` (line 328)](../Proposals/newlang.ye#L328).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+MethodDeclarator
+:	Identifier '(' [ FormalParameterList ] ')' [ Dims ]
+;
+```
+
+### 63. `FormalParameterList` — O
+
+[Original production in `newlang.ye` (line 332)](../Proposals/newlang.ye#L332).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+FormalParameterList
+:	FormalParameters ',' LastFormalParameter
+|	LastFormalParameter
+;
+```
+
+### 64. `FormalParameters` — O
+
+[Original production in `newlang.ye` (line 337)](../Proposals/newlang.ye#L337).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+FormalParameters
+:	FormalParameter { ',' FormalParameter }
+|	ReceiverParameter { ',' FormalParameter }
+;
+```
+
+### 65. `FormalParameter` — O
+
+[Original production in `newlang.ye` (line 342)](../Proposals/newlang.ye#L342).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+FormalParameter
+:	{ VariableModifier } UnannType VariableDeclaratorId
+;
+```
+
+### 66. `VariableModifier` — O
+
+[Original production in `newlang.ye` (line 346)](../Proposals/newlang.ye#L346).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+VariableModifier
+:	Annotation
+|	'final'
+;
+```
+
+### 67. `LastFormalParameter` — O
+
+[Original production in `newlang.ye` (line 351)](../Proposals/newlang.ye#L351).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+LastFormalParameter
+:	{ VariableModifier } UnannType { Annotation } '...' VariableDeclaratorId
+|	FormalParameter
+;
+```
+
+### 68. `ReceiverParameter` — O
+
+[Original production in `newlang.ye` (line 356)](../Proposals/newlang.ye#L356).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ReceiverParameter
+:	{ Annotation } UnannType [ Identifier '.' ] 'this'
+;
+```
+
+### 69. `Throws` — O
+
+[Original production in `newlang.ye` (line 360)](../Proposals/newlang.ye#L360).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+Throws
+:	'throws' ExceptionTypeList
+;
+```
+
+### 70. `ExceptionTypeList` — O
+
+[Original production in `newlang.ye` (line 364)](../Proposals/newlang.ye#L364).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ExceptionTypeList
+:	ExceptionType { ',' ExceptionType }
+;
+```
+
+### 71. `ExceptionType` — O
+
+[Original production in `newlang.ye` (line 368)](../Proposals/newlang.ye#L368).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ExceptionType
+:	ClassType
+|	TypeVariable
+;
+```
+
+### 72. `MethodBody` — O
+
+[Original production in `newlang.ye` (line 373)](../Proposals/newlang.ye#L373).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+MethodBody
+:	Block
+|	';'
+;
+```
+
+### 73. `InstanceInitializer` — O
+
+[Original production in `newlang.ye` (line 378)](../Proposals/newlang.ye#L378).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+InstanceInitializer
+:	Block
+;
+```
+
+### 74. `StaticInitializer` — O
+
+[Original production in `newlang.ye` (line 382)](../Proposals/newlang.ye#L382).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+StaticInitializer
+:	'static' Block
+;
+```
+
+### 75. `ConstructorDeclaration` — M
+
+[Original production in `newlang.ye` (line 386)](../Proposals/newlang.ye#L386).
+
+**Accepted outline (not this RHS verbatim):** the accepted constructor-member outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+ConstructorDeclaration
+:	{ ConstructorModifier } ConstructorDeclarator [ Throws ] ConstructorBody
+;
+```
+
+### 76. `ConstructorModifier` — O
+
+[Original production in `newlang.ye` (line 390)](../Proposals/newlang.ye#L390).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ConstructorModifier
+:	Annotation
+|	'public'
+|	'protected'
+|	'private'
+;
+```
+
+### 77. `ConstructorDeclarator` — O
+
+[Original production in `newlang.ye` (line 397)](../Proposals/newlang.ye#L397).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ConstructorDeclarator
+:	[ TypeParameters ] SimpleTypeName '(' [ FormalParameterList ] ')'
+;
+```
+
+### 78. `ConstructorBody` — O
+
+[Original production in `newlang.ye` (line 401)](../Proposals/newlang.ye#L401).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ConstructorBody
+:	'{' [ ExplicitConstructorInvocation ] [ BlockStatements ] '}'
+;
+```
+
+### 79. `ExplicitConstructorInvocation` — O
+
+[Original production in `newlang.ye` (line 405)](../Proposals/newlang.ye#L405).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ExplicitConstructorInvocation
+:	[ TypeArguments ] 'this' '(' [ ArgumentList ] ')' ';'
+|	[ TypeArguments ] 'super' '(' [ ArgumentList ] ')' ';'
+|	ExpressionName '.' [ TypeArguments ] 'super' '(' [ ArgumentList ] ')' ';'
+|	Primary '.' [ TypeArguments ] 'super' '(' [ ArgumentList ] ')' ';'
+;
+```
+
+### 80. `EnumDeclaration` — J / D
+
+[Original production in `newlang.ye` (line 412)](../Proposals/newlang.ye#L412).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EnumDeclaration
+:	{ ClassModifier } 'enum' Identifier [ Superinterfaces ] EnumBody
+;
+```
+
+### 81. `EnumBody` — J
+
+[Original production in `newlang.ye` (line 416)](../Proposals/newlang.ye#L416).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EnumBody
+:	'{' [ EnumConstantList ] [ ',' ] [ EnumBodyDeclarations ] '}'
+;
+```
+
+### 82. `EnumConstantList` — J
+
+[Original production in `newlang.ye` (line 420)](../Proposals/newlang.ye#L420).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EnumConstantList
+:	EnumConstant { ',' EnumConstant }
+;
+```
+
+### 83. `EnumConstant` — J
+
+[Original production in `newlang.ye` (line 424)](../Proposals/newlang.ye#L424).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EnumConstant
+:	{ EnumConstantModifier } Identifier [ '(' [ ArgumentList ] ')' ] [ ClassBody ]
+;
+```
+
+### 84. `EnumConstantModifier` — J
+
+[Original production in `newlang.ye` (line 428)](../Proposals/newlang.ye#L428).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EnumConstantModifier
+:	Annotation
+;
+```
+
+### 85. `EnumBodyDeclarations` — J
+
+[Original production in `newlang.ye` (line 432)](../Proposals/newlang.ye#L432).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EnumBodyDeclarations
+:	';' { ClassBodyDeclaration }
+;
+```
+
+### 86. `InterfaceDeclaration` — M
+
+[Original production in `newlang.ye` (line 438)](../Proposals/newlang.ye#L438).
+
+**Accepted outline (not this RHS verbatim):** the accepted nested-interface outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+InterfaceDeclaration
+:	NormalInterfaceDeclaration
+|	AnnotationTypeDeclaration
+;
+```
+
+### 87. `NormalInterfaceDeclaration` — M
+
+[Original production in `newlang.ye` (line 443)](../Proposals/newlang.ye#L443).
+
+**Accepted outline (not this RHS verbatim):** the accepted nested-interface outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+NormalInterfaceDeclaration
+:	{ InterfaceModifier } 'interface' Identifier [ TypeParameters ] [ ExtendsInterfaces ] InterfaceBody
+;
+```
+
+### 88. `InterfaceModifier` — O
+
+[Original production in `newlang.ye` (line 447)](../Proposals/newlang.ye#L447).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+InterfaceModifier
+:	Annotation
+|	'public'
+|	'protected'
+|	'private'
+|	'abstract'
+|	'static'
+|	'strictfp'
+;
+```
+
+### 89. `ExtendsInterfaces` — O
+
+[Original production in `newlang.ye` (line 457)](../Proposals/newlang.ye#L457).
+
+**Not provisionally accepted:** This proposal RHS is not a selected rule; its source spelling or detailed requirements remain unresolved and may conflict with DEC-011, DEC-051, DEC-076, or Q-012 as applicable. The SEM-003 crosswalk above records tentative alternatives only.
+
+```text
+ExtendsInterfaces
+:	'extends' InterfaceTypeList
+;
+```
+
+### 90. `InterfaceBody` — M
+
+[Original production in `newlang.ye` (line 461)](../Proposals/newlang.ye#L461).
+
+**Accepted outline (not this RHS verbatim):** the accepted nested-interface body outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+InterfaceBody
+:	'{' { InterfaceMemberDeclaration } '}'
+;
+```
+
+### 91. `InterfaceMemberDeclaration` — M
+
+[Original production in `newlang.ye` (line 465)](../Proposals/newlang.ye#L465).
+
+**Accepted outline (not this RHS verbatim):** the accepted nested-interface member outline; see the approved [`class-body` EBNF](#what-is-provisionally-accepted). Detailed syntax for this production remains open.
+
+```text
+InterfaceMemberDeclaration
+:	ConstantDeclaration
+|	InterfaceMethodDeclaration
+|	ClassDeclaration
+|	InterfaceDeclaration
+|	';'
+;
+```
+
+### 92. `ConstantDeclaration` — J
+
+[Original production in `newlang.ye` (line 473)](../Proposals/newlang.ye#L473).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ConstantDeclaration
+:	{ ConstantModifier } UnannType VariableDeclaratorList ';'
+;
+```
+
+### 93. `ConstantModifier` — J
+
+[Original production in `newlang.ye` (line 477)](../Proposals/newlang.ye#L477).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ConstantModifier
+:	Annotation
+|	'public'
+|	'static'
+|	'final'
+;
+```
+
+### 94. `InterfaceMethodDeclaration` — J
+
+[Original production in `newlang.ye` (line 484)](../Proposals/newlang.ye#L484).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+InterfaceMethodDeclaration
+:	{ InterfaceMethodModifier } MethodHeader MethodBody
+;
+```
+
+### 95. `InterfaceMethodModifier` — J
+
+[Original production in `newlang.ye` (line 488)](../Proposals/newlang.ye#L488).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+InterfaceMethodModifier
+:	Annotation
+|	'public'
+|	'abstract'
+|	'default'
+|	'static'
+|	'strictfp'
+;
+```
+
+### 96. `AnnotationTypeDeclaration` — J
+
+[Original production in `newlang.ye` (line 497)](../Proposals/newlang.ye#L497).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AnnotationTypeDeclaration
+:	{ InterfaceModifier } '@' 'interface' Identifier AnnotationTypeBody
+;
+```
+
+### 97. `AnnotationTypeBody` — J
+
+[Original production in `newlang.ye` (line 501)](../Proposals/newlang.ye#L501).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AnnotationTypeBody
+:	'{' { AnnotationTypeMemberDeclaration } '}'
+;
+```
+
+### 98. `AnnotationTypeMemberDeclaration` — J
+
+[Original production in `newlang.ye` (line 505)](../Proposals/newlang.ye#L505).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AnnotationTypeMemberDeclaration
+:	AnnotationTypeElementDeclaration
+|	ConstantDeclaration
+|	ClassDeclaration
+|	InterfaceDeclaration
+|	';'
+;
+```
+
+### 99. `AnnotationTypeElementDeclaration` — J
+
+[Original production in `newlang.ye` (line 513)](../Proposals/newlang.ye#L513).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AnnotationTypeElementDeclaration
+:	{ AnnotationTypeElementModifier } UnannType Identifier '(' ')' [ Dims ] [ DefaultValue ] ';'
+;
+```
+
+### 100. `AnnotationTypeElementModifier` — J
+
+[Original production in `newlang.ye` (line 517)](../Proposals/newlang.ye#L517).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AnnotationTypeElementModifier
+:	Annotation
+|	'public'
+|	'abstract'
+;
+```
+
+### 101. `DefaultValue` — J
+
+[Original production in `newlang.ye` (line 523)](../Proposals/newlang.ye#L523).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+DefaultValue
+:	'default' ElementValue
+;
+```
+
+### 102. `Annotation` — J
+
+[Original production in `newlang.ye` (line 527)](../Proposals/newlang.ye#L527).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Annotation
+:	NormalAnnotation
+|	MarkerAnnotation
+|	SingleElementAnnotation
+;
+```
+
+### 103. `NormalAnnotation` — J
+
+[Original production in `newlang.ye` (line 533)](../Proposals/newlang.ye#L533).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+NormalAnnotation
+:	'@' TypeName '(' [ ElementValuePairList ] ')'
+;
+```
+
+### 104. `ElementValuePairList` — J
+
+[Original production in `newlang.ye` (line 537)](../Proposals/newlang.ye#L537).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ElementValuePairList
+:	ElementValuePair { ',' ElementValuePair }
+;
+```
+
+### 105. `ElementValuePair` — J
+
+[Original production in `newlang.ye` (line 541)](../Proposals/newlang.ye#L541).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ElementValuePair
+:	Identifier '=' ElementValue
+;
+```
+
+### 106. `ElementValue` — J
+
+[Original production in `newlang.ye` (line 545)](../Proposals/newlang.ye#L545).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ElementValue
+:	ConditionalExpression
+|	ElementValueArrayInitializer
+|	Annotation
+;
+```
+
+### 107. `ElementValueArrayInitializer` — J
+
+[Original production in `newlang.ye` (line 551)](../Proposals/newlang.ye#L551).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ElementValueArrayInitializer
+:	'{' [ ElementValueList ] [ ',' ] '}'
+;
+```
+
+### 108. `ElementValueList` — J
+
+[Original production in `newlang.ye` (line 555)](../Proposals/newlang.ye#L555).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ElementValueList
+:	ElementValue { ',' ElementValue }
+;
+```
+
+### 109. `MarkerAnnotation` — J
+
+[Original production in `newlang.ye` (line 559)](../Proposals/newlang.ye#L559).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+MarkerAnnotation
+:	'@' TypeName
+;
+```
+
+### 110. `SingleElementAnnotation` — J
+
+[Original production in `newlang.ye` (line 563)](../Proposals/newlang.ye#L563).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+SingleElementAnnotation
+:	'@' TypeName '(' ElementValue ')'
+;
+```
+
+### 111. `ArrayInitializer` — J
+
+[Original production in `newlang.ye` (line 569)](../Proposals/newlang.ye#L569).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ArrayInitializer
+:	{ [ VariableInitializerList ] [ ',' ] }
+;
+```
+
+### 112. `VariableInitializerList` — J
+
+[Original production in `newlang.ye` (line 573)](../Proposals/newlang.ye#L573).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+VariableInitializerList
+:	VariableInitializer { ',' VariableInitializer }
+;
+```
+
+### 113. `Block` — J
+
+[Original production in `newlang.ye` (line 579)](../Proposals/newlang.ye#L579).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Block
+:	'{' [ BlockStatements ] '}'
+;
+```
+
+### 114. `BlockStatements` — J
+
+[Original production in `newlang.ye` (line 583)](../Proposals/newlang.ye#L583).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+BlockStatements
+:	BlockStatement { BlockStatement }
+;
+```
+
+### 115. `BlockStatement` — J
+
+[Original production in `newlang.ye` (line 587)](../Proposals/newlang.ye#L587).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+BlockStatement
+:	LocalVariableDeclarationStatement
+|	ClassDeclaration
+|	Statement
+;
+```
+
+### 116. `LocalVariableDeclarationStatement` — J
+
+[Original production in `newlang.ye` (line 593)](../Proposals/newlang.ye#L593).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+LocalVariableDeclarationStatement
+:	LocalVariableDeclaration ';'
+;
+```
+
+### 117. `LocalVariableDeclaration` — J
+
+[Original production in `newlang.ye` (line 597)](../Proposals/newlang.ye#L597).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+LocalVariableDeclaration
+:	{ VariableModifier } UnannType VariableDeclaratorList
+;
+```
+
+### 118. `Statement` — J
+
+[Original production in `newlang.ye` (line 601)](../Proposals/newlang.ye#L601).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Statement
+:	StatementWithoutTrailingSubstatement
+|	LabeledStatement
+|	IfThenStatement
+|	IfThenElseStatement
+|	WhileStatement
+|	ForStatement
+;
+```
+
+### 119. `StatementNoShortIf` — J
+
+[Original production in `newlang.ye` (line 610)](../Proposals/newlang.ye#L610).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+StatementNoShortIf
+:	StatementWithoutTrailingSubstatement
+|	LabeledStatementNoShortIf
+|	IfThenElseStatementNoShortIf
+|	WhileStatementNoShortIf
+|	ForStatementNoShortIf
+;
+```
+
+### 120. `StatementWithoutTrailingSubstatement` — J
+
+[Original production in `newlang.ye` (line 618)](../Proposals/newlang.ye#L618).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+StatementWithoutTrailingSubstatement
+:	Block
+|	EmptyStatement
+|	ExpressionStatement
+|	AssertStatement
+|	SwitchStatement
+|	DoStatement
+|	BreakStatement
+|	ContinueStatement
+|	ReturnStatement
+|	SynchronizedStatement
+|	ThrowStatement
+|	TryStatement
+;
+```
+
+### 121. `EmptyStatement` — J
+
+[Original production in `newlang.ye` (line 633)](../Proposals/newlang.ye#L633).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EmptyStatement
+:	';'
+;
+```
+
+### 122. `LabeledStatement` — J
+
+[Original production in `newlang.ye` (line 637)](../Proposals/newlang.ye#L637).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+LabeledStatement
+:	Identifier ':' Statement
+;
+```
+
+### 123. `LabeledStatementNoShortIf` — J
+
+[Original production in `newlang.ye` (line 641)](../Proposals/newlang.ye#L641).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+LabeledStatementNoShortIf
+:	Identifier ':' StatementNoShortIf
+;
+```
+
+### 124. `ExpressionStatement` — J
+
+[Original production in `newlang.ye` (line 645)](../Proposals/newlang.ye#L645).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ExpressionStatement
+:	StatementExpression ';'
+;
+```
+
+### 125. `StatementExpression` — J
+
+[Original production in `newlang.ye` (line 649)](../Proposals/newlang.ye#L649).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+StatementExpression
+:	Assignment
+|	PreIncrementExpression
+|	PreDecrementExpression
+|	PostIncrementExpression
+|	PostDecrementExpression
+|	MethodInvocation
+|	ClassInstanceCreationExpression
+;
+```
+
+### 126. `IfThenStatement` — J
+
+[Original production in `newlang.ye` (line 659)](../Proposals/newlang.ye#L659).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+IfThenStatement
+:	'if' '(' Expression ')' Statement
+;
+```
+
+### 127. `IfThenElseStatement` — J
+
+[Original production in `newlang.ye` (line 663)](../Proposals/newlang.ye#L663).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+IfThenElseStatement
+:	'if' '(' Expression ')' StatementNoShortIf 'else' Statement
+;
+```
+
+### 128. `IfThenElseStatementNoShortIf` — J
+
+[Original production in `newlang.ye` (line 667)](../Proposals/newlang.ye#L667).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+IfThenElseStatementNoShortIf
+:	'if' '(' Expression ')' StatementNoShortIf 'else' StatementNoShortIf
+;
+```
+
+### 129. `AssertStatement` — J
+
+[Original production in `newlang.ye` (line 671)](../Proposals/newlang.ye#L671).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AssertStatement
+:	'assert' Expression ';'
+|	'assert' Expression ':' Expression ';'
+;
+```
+
+### 130. `SwitchStatement` — J
+
+[Original production in `newlang.ye` (line 676)](../Proposals/newlang.ye#L676).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+SwitchStatement
+:	'switch' '(' Expression ')' SwitchBlock
+;
+```
+
+### 131. `SwitchBlock` — J
+
+[Original production in `newlang.ye` (line 680)](../Proposals/newlang.ye#L680).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+SwitchBlock
+:	'{' { SwitchBlockStatementGroup } { SwitchLabel } '}'
+;
+```
+
+### 132. `SwitchBlockStatementGroup` — J
+
+[Original production in `newlang.ye` (line 684)](../Proposals/newlang.ye#L684).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+SwitchBlockStatementGroup
+:	SwitchLabels BlockStatements
+;
+```
+
+### 133. `SwitchLabels` — J
+
+[Original production in `newlang.ye` (line 688)](../Proposals/newlang.ye#L688).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+SwitchLabels
+:	SwitchLabel { SwitchLabel }
+;
+```
+
+### 134. `SwitchLabel` — J
+
+[Original production in `newlang.ye` (line 692)](../Proposals/newlang.ye#L692).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+SwitchLabel
+:	'case' ConstantExpression ':'
+|	'case' EnumConstantName ':'
+|	'default' ':'
+;
+```
+
+### 135. `EnumConstantName` — J
+
+[Original production in `newlang.ye` (line 698)](../Proposals/newlang.ye#L698).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EnumConstantName
+:	Identifier
+;
+```
+
+### 136. `WhileStatement` — J
+
+[Original production in `newlang.ye` (line 702)](../Proposals/newlang.ye#L702).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+WhileStatement
+:	'while' '(' Expression ')' Statement
+;
+```
+
+### 137. `WhileStatementNoShortIf` — J
+
+[Original production in `newlang.ye` (line 706)](../Proposals/newlang.ye#L706).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+WhileStatementNoShortIf
+:	'while' '(' Expression ')' StatementNoShortIf
+;
+```
+
+### 138. `DoStatement` — J
+
+[Original production in `newlang.ye` (line 710)](../Proposals/newlang.ye#L710).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+DoStatement
+:	'do' Statement 'while' '(' Expression ')' ';'
+;
+```
+
+### 139. `ForStatement` — J
+
+[Original production in `newlang.ye` (line 714)](../Proposals/newlang.ye#L714).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ForStatement
+:	BasicForStatement
+|	EnhancedForStatement
+;
+```
+
+### 140. `ForStatementNoShortIf` — J
+
+[Original production in `newlang.ye` (line 719)](../Proposals/newlang.ye#L719).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ForStatementNoShortIf
+:	BasicForStatementNoShortIf
+|	EnhancedForStatementNoShortIf
+;
+```
+
+### 141. `BasicForStatement` — J
+
+[Original production in `newlang.ye` (line 724)](../Proposals/newlang.ye#L724).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+BasicForStatement
+:	'for' '(' [ ForInit ] ';' [ Expression ] ';' [ ForUpdate ] ')' Statement
+;
+```
+
+### 142. `BasicForStatementNoShortIf` — J
+
+[Original production in `newlang.ye` (line 728)](../Proposals/newlang.ye#L728).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+BasicForStatementNoShortIf
+:	'for' '(' [ ForInit ] ';' [ Expression ] ';' [ ForUpdate ] ')' StatementNoShortIf
+;
+```
+
+### 143. `ForInit` — J
+
+[Original production in `newlang.ye` (line 732)](../Proposals/newlang.ye#L732).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ForInit
+:	StatementExpressionList
+|	LocalVariableDeclaration
+;
+```
+
+### 144. `ForUpdate` — J
+
+[Original production in `newlang.ye` (line 737)](../Proposals/newlang.ye#L737).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ForUpdate
+:	StatementExpressionList
+;
+```
+
+### 145. `StatementExpressionList` — J
+
+[Original production in `newlang.ye` (line 741)](../Proposals/newlang.ye#L741).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+StatementExpressionList
+:	StatementExpression { ',' StatementExpression }
+;
+```
+
+### 146. `EnhancedForStatement` — J
+
+[Original production in `newlang.ye` (line 745)](../Proposals/newlang.ye#L745).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EnhancedForStatement
+:	'for' '(' { VariableModifier } UnannType VariableDeclaratorId ':' Expression ')' Statement
+;
+```
+
+### 147. `EnhancedForStatementNoShortIf` — J
+
+[Original production in `newlang.ye` (line 749)](../Proposals/newlang.ye#L749).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EnhancedForStatementNoShortIf
+:	'for' '(' { VariableModifier } UnannType VariableDeclaratorId ':' Expression ')' StatementNoShortIf
+;
+```
+
+### 148. `BreakStatement` — J
+
+[Original production in `newlang.ye` (line 753)](../Proposals/newlang.ye#L753).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+BreakStatement
+:	'break' [ Identifier ] ';'
+;
+```
+
+### 149. `ContinueStatement` — J
+
+[Original production in `newlang.ye` (line 757)](../Proposals/newlang.ye#L757).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ContinueStatement
+:	'continue' [ Identifier ] ';'
+;
+```
+
+### 150. `ReturnStatement` — J
+
+[Original production in `newlang.ye` (line 761)](../Proposals/newlang.ye#L761).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ReturnStatement
+:	'return' [ Expression ] ';'
+;
+```
+
+### 151. `ThrowStatement` — J
+
+[Original production in `newlang.ye` (line 765)](../Proposals/newlang.ye#L765).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ThrowStatement
+:	'throw' Expression ';'
+;
+```
+
+### 152. `SynchronizedStatement` — J
+
+[Original production in `newlang.ye` (line 769)](../Proposals/newlang.ye#L769).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+SynchronizedStatement
+:	'synchronized' '(' Expression ')' Block
+;
+```
+
+### 153. `TryStatement` — J
+
+[Original production in `newlang.ye` (line 773)](../Proposals/newlang.ye#L773).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TryStatement
+:	'try' Block Catches
+|	'try' Block [ Catches ] Finally
+|	TryWithResourcesStatement
+;
+```
+
+### 154. `Catches` — J
+
+[Original production in `newlang.ye` (line 779)](../Proposals/newlang.ye#L779).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Catches
+:	CatchClause { CatchClause }
+;
+```
+
+### 155. `CatchClause` — J
+
+[Original production in `newlang.ye` (line 783)](../Proposals/newlang.ye#L783).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+CatchClause
+:	'catch' '(' CatchFormalParameter ')' Block
+;
+```
+
+### 156. `CatchFormalParameter` — J
+
+[Original production in `newlang.ye` (line 787)](../Proposals/newlang.ye#L787).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+CatchFormalParameter
+:	{ VariableModifier } CatchType VariableDeclaratorId
+;
+```
+
+### 157. `CatchType` — J
+
+[Original production in `newlang.ye` (line 791)](../Proposals/newlang.ye#L791).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+CatchType
+:	UnannClassType { '|' ClassType }
+;
+```
+
+### 158. `Finally` — J
+
+[Original production in `newlang.ye` (line 795)](../Proposals/newlang.ye#L795).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Finally
+:	'finally' Block
+;
+```
+
+### 159. `TryWithResourcesStatement` — J
+
+[Original production in `newlang.ye` (line 799)](../Proposals/newlang.ye#L799).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TryWithResourcesStatement
+:	'try' ResourceSpecification Block [ Catches ] [ Finally ]
+;
+```
+
+### 160. `ResourceSpecification` — J
+
+[Original production in `newlang.ye` (line 803)](../Proposals/newlang.ye#L803).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ResourceSpecification
+:	'(' ResourceList [ ';' ] ')'
+;
+```
+
+### 161. `ResourceList` — J
+
+[Original production in `newlang.ye` (line 807)](../Proposals/newlang.ye#L807).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ResourceList
+:	Resource { ';' Resource }
+;
+```
+
+### 162. `Resource` — J
+
+[Original production in `newlang.ye` (line 811)](../Proposals/newlang.ye#L811).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Resource
+:	{ VariableModifier } UnannType VariableDeclaratorId '=' Expression
+;
+```
+
+### 163. `Primary` — J
+
+[Original production in `newlang.ye` (line 817)](../Proposals/newlang.ye#L817).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Primary
+:	PrimaryNoNewArray
+|	ArrayCreationExpression
+;
+```
+
+### 164. `PrimaryNoNewArray` — J
+
+[Original production in `newlang.ye` (line 822)](../Proposals/newlang.ye#L822).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+PrimaryNoNewArray
+:	Literal
+|	TypeName { '[' ']' } '.' 'class'
+|	'void' '.' 'class'
+|	'this'
+|	TypeName '.' 'this'
+|	'(' Expression ')'
+|	ClassInstanceCreationExpression
+|	FieldAccess
+|	ArrayAccess
+|	MethodInvocation
+|	MethodReference
+;
+```
+
+### 165. `ClassInstanceCreationExpression` — J
+
+[Original production in `newlang.ye` (line 836)](../Proposals/newlang.ye#L836).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ClassInstanceCreationExpression
+:	'new' [ TypeArguments ] { Annotation } Identifier [ TypeArgumentsOrDiamond ] '(' [ ArgumentList ] ')' [ ClassBody ]
+|	ExpressionName '.' 'new' [ TypeArguments ] { Annotation } Identifier [ TypeArgumentsOrDiamond ] '(' [ ArgumentList ] ')' [ ClassBody ]
+|	Primary '.' 'new' [ TypeArguments ] { Annotation } Identifier [ TypeArgumentsOrDiamond ] '(' [ ArgumentList ] ')' [ ClassBody ]
+;
+```
+
+### 166. `TypeArgumentsOrDiamond` — J
+
+[Original production in `newlang.ye` (line 842)](../Proposals/newlang.ye#L842).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TypeArgumentsOrDiamond
+:	TypeArguments
+|	'<' '>'
+;
+```
+
+### 167. `FieldAccess` — J
+
+[Original production in `newlang.ye` (line 847)](../Proposals/newlang.ye#L847).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+FieldAccess
+:	Primary '.' Identifier
+|	'super' '.' Identifier
+|	TypeName '.' 'super' '.' Identifier
+;
+```
+
+### 168. `ArrayAccess` — J
+
+[Original production in `newlang.ye` (line 853)](../Proposals/newlang.ye#L853).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ArrayAccess
+:	ExpressionName '[' Expression ']'
+|	PrimaryNoNewArray '[' Expression ']'
+;
+```
+
+### 169. `MethodInvocation` — J
+
+[Original production in `newlang.ye` (line 858)](../Proposals/newlang.ye#L858).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+MethodInvocation
+:	MethodName '(' [ ArgumentList ] ')'
+|	TypeName '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+|	ExpressionName '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+|	Primary '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+|	'super' '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+|	TypeName '.' 'super' '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+;
+```
+
+### 170. `ArgumentList` — J
+
+[Original production in `newlang.ye` (line 867)](../Proposals/newlang.ye#L867).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ArgumentList
+:	Expression { ',' Expression }
+;
+```
+
+### 171. `MethodReference` — J
+
+[Original production in `newlang.ye` (line 871)](../Proposals/newlang.ye#L871).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+MethodReference
+:	ExpressionName '::' [ TypeArguments ] Identifier
+|	ReferenceType '::' [ TypeArguments ] Identifier
+|	Primary '::' [ TypeArguments ] Identifier
+|	'super' '::' [ TypeArguments ] Identifier
+|	TypeName '.' 'super' '::' [ TypeArguments ] Identifier
+|	ClassType '::' [ TypeArguments ] 'new'
+|	ArrayType '::' 'new'
+;
+```
+
+### 172. `ArrayCreationExpression` — J
+
+[Original production in `newlang.ye` (line 881)](../Proposals/newlang.ye#L881).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ArrayCreationExpression
+:	'new' PrimitiveType DimExprs [ Dims ]
+|	'new' ClassOrInterfaceType DimExprs [ Dims ]
+|	'new' PrimitiveType Dims ArrayInitializer
+|	'new' ClassOrInterfaceType Dims ArrayInitializer
+;
+```
+
+### 173. `DimExprs` — J
+
+[Original production in `newlang.ye` (line 888)](../Proposals/newlang.ye#L888).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+DimExprs
+:	DimExpr { DimExpr }
+;
+```
+
+### 174. `DimExpr` — J
+
+[Original production in `newlang.ye` (line 892)](../Proposals/newlang.ye#L892).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+DimExpr
+:	{ Annotation } '[' Expression ']'
+;
+```
+
+### 175. `ConstantExpression` — J
+
+[Original production in `newlang.ye` (line 896)](../Proposals/newlang.ye#L896).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ConstantExpression
+:	Expression
+;
+```
+
+### 176. `Expression` — J
+
+[Original production in `newlang.ye` (line 900)](../Proposals/newlang.ye#L900).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Expression
+:	LambdaExpression
+|	AssignmentExpression
+;
+```
+
+### 177. `LambdaExpression` — J
+
+[Original production in `newlang.ye` (line 905)](../Proposals/newlang.ye#L905).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+LambdaExpression
+:	LambdaParameters '->' LambdaBody
+;
+```
+
+### 178. `LambdaParameters` — J
+
+[Original production in `newlang.ye` (line 909)](../Proposals/newlang.ye#L909).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+LambdaParameters
+:	Identifier
+|	'(' [ FormalParameterList ] ')'
+|	'(' InferredFormalParameterList ')'
+;
+```
+
+### 179. `InferredFormalParameterList` — J
+
+[Original production in `newlang.ye` (line 915)](../Proposals/newlang.ye#L915).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+InferredFormalParameterList
+:	Identifier { ',' Identifier }
+;
+```
+
+### 180. `LambdaBody` — J
+
+[Original production in `newlang.ye` (line 919)](../Proposals/newlang.ye#L919).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+LambdaBody
+:	Expression
+|	Block
+;
+```
+
+### 181. `AssignmentExpression` — J
+
+[Original production in `newlang.ye` (line 924)](../Proposals/newlang.ye#L924).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AssignmentExpression
+:	ConditionalExpression
+|	Assignment
+;
+```
+
+### 182. `Assignment` — J
+
+[Original production in `newlang.ye` (line 929)](../Proposals/newlang.ye#L929).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Assignment
+:	LeftHandSide AssignmentOperator Expression
+;
+```
+
+### 183. `LeftHandSide` — J
+
+[Original production in `newlang.ye` (line 933)](../Proposals/newlang.ye#L933).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+LeftHandSide
+:	ExpressionName
+|	FieldAccess
+|	ArrayAccess
+;
+```
+
+### 184. `AssignmentOperator` — J
+
+[Original production in `newlang.ye` (line 939)](../Proposals/newlang.ye#L939).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AssignmentOperator
+:	'='
+|	'*='
+|	'/='
+|	'%='
+|	'+='
+|	'-='
+|	'<<='
+|	'>>='
+|	'>>>='
+|	'&='
+|	'^='
+|	'|='
+;
+```
+
+### 185. `ConditionalExpression` — J
+
+[Original production in `newlang.ye` (line 954)](../Proposals/newlang.ye#L954).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ConditionalExpression
+:	ConditionalOrExpression
+|	ConditionalOrExpression '?' Expression ':' ConditionalExpression
+;
+```
+
+### 186. `ConditionalOrExpression` — J
+
+[Original production in `newlang.ye` (line 959)](../Proposals/newlang.ye#L959).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ConditionalOrExpression
+:	ConditionalAndExpression
+|	ConditionalOrExpression '||' ConditionalAndExpression
+;
+```
+
+### 187. `ConditionalAndExpression` — J
+
+[Original production in `newlang.ye` (line 964)](../Proposals/newlang.ye#L964).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ConditionalAndExpression
+:	InclusiveOrExpression
+|	ConditionalAndExpression '&&' InclusiveOrExpression
+;
+```
+
+### 188. `InclusiveOrExpression` — J
+
+[Original production in `newlang.ye` (line 969)](../Proposals/newlang.ye#L969).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+InclusiveOrExpression
+:	ExclusiveOrExpression
+|	InclusiveOrExpression '|' ExclusiveOrExpression
+;
+```
+
+### 189. `ExclusiveOrExpression` — J
+
+[Original production in `newlang.ye` (line 974)](../Proposals/newlang.ye#L974).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ExclusiveOrExpression
+:	AndExpression
+|	ExclusiveOrExpression '^' AndExpression
+;
+```
+
+### 190. `AndExpression` — J
+
+[Original production in `newlang.ye` (line 979)](../Proposals/newlang.ye#L979).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AndExpression
+:	EqualityExpression
+|	AndExpression '&' EqualityExpression
+;
+```
+
+### 191. `EqualityExpression` — J
+
+[Original production in `newlang.ye` (line 984)](../Proposals/newlang.ye#L984).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+EqualityExpression
+:	RelationalExpression
+|	EqualityExpression '==' RelationalExpression
+|	EqualityExpression '!=' RelationalExpression
+;
+```
+
+### 192. `RelationalExpression` — J
+
+[Original production in `newlang.ye` (line 990)](../Proposals/newlang.ye#L990).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+RelationalExpression
+:	ShiftExpression
+|	RelationalExpression '<' ShiftExpression
+|	RelationalExpression '>' ShiftExpression
+|	RelationalExpression '<=' ShiftExpression
+|	RelationalExpression '>=' ShiftExpression
+|	RelationalExpression 'instanceof' ReferenceType
+;
+```
+
+### 193. `ShiftExpression` — J
+
+[Original production in `newlang.ye` (line 999)](../Proposals/newlang.ye#L999).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ShiftExpression
+:	AdditiveExpression
+|	ShiftExpression '<<' AdditiveExpression
+|	ShiftExpression '>>' AdditiveExpression
+|	ShiftExpression '>>>' AdditiveExpression
+;
+```
+
+### 194. `AdditiveExpression` — J
+
+[Original production in `newlang.ye` (line 1006)](../Proposals/newlang.ye#L1006).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AdditiveExpression
+:	MultiplicativeExpression
+|	AdditiveExpression '+' MultiplicativeExpression
+|	AdditiveExpression '-' MultiplicativeExpression
+;
+```
+
+### 195. `MultiplicativeExpression` — J
+
+[Original production in `newlang.ye` (line 1012)](../Proposals/newlang.ye#L1012).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+MultiplicativeExpression
+:	UnaryExpression
+|	MultiplicativeExpression '*' UnaryExpression
+|	MultiplicativeExpression '/' UnaryExpression
+|	MultiplicativeExpression '%' UnaryExpression
+;
+```
+
+### 196. `UnaryExpression` — J
+
+[Original production in `newlang.ye` (line 1019)](../Proposals/newlang.ye#L1019).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+UnaryExpression
+:	PreIncrementExpression
+|	PreDecrementExpression
+|	'+' UnaryExpression
+|	'-' UnaryExpression
+|	UnaryExpressionNotPlusMinus
+;
+```
+
+### 197. `PreIncrementExpression` — J
+
+[Original production in `newlang.ye` (line 1027)](../Proposals/newlang.ye#L1027).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+PreIncrementExpression
+:	'++' UnaryExpression
+;
+```
+
+### 198. `PreDecrementExpression` — J
+
+[Original production in `newlang.ye` (line 1031)](../Proposals/newlang.ye#L1031).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+PreDecrementExpression
+:	'--' UnaryExpression
+;
+```
+
+### 199. `UnaryExpressionNotPlusMinus` — J
+
+[Original production in `newlang.ye` (line 1035)](../Proposals/newlang.ye#L1035).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+UnaryExpressionNotPlusMinus
+:	PostfixExpression
+|	'~' UnaryExpression
+|	'!' UnaryExpression
+|	CastExpression
+;
+```
+
+### 200. `PostfixExpression` — J
+
+[Original production in `newlang.ye` (line 1042)](../Proposals/newlang.ye#L1042).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+PostfixExpression
+:	Primary
+|	ExpressionName
+|	PostIncrementExpression
+|	PostDecrementExpression
+;
+```
+
+### 201. `PostIncrementExpression` — J
+
+[Original production in `newlang.ye` (line 1049)](../Proposals/newlang.ye#L1049).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+PostIncrementExpression
+:	PostfixExpression '++'
+;
+```
+
+### 202. `PostDecrementExpression` — J
+
+[Original production in `newlang.ye` (line 1053)](../Proposals/newlang.ye#L1053).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+PostDecrementExpression
+:	PostfixExpression '--'
+;
+```
+
+### 203. `CastExpression` — J
+
+[Original production in `newlang.ye` (line 1057)](../Proposals/newlang.ye#L1057).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+CastExpression
+:	'(' PrimitiveType ')' UnaryExpression
+|	'(' ReferenceType { AdditionalBound } ')' UnaryExpressionNotPlusMinus
+|	'(' ReferenceType { AdditionalBound } ')' LambdaExpression
+;
+```
+
+### 204. `PackageName` — J / D
+
+[Original production in `newlang.ye` (line 1065)](../Proposals/newlang.ye#L1065).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+PackageName
+:	Identifier
+|	PackageName '.' Identifier
+;
+```
+
+### 205. `TypeName` — J
+
+[Original production in `newlang.ye` (line 1070)](../Proposals/newlang.ye#L1070).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TypeName
+:	Identifier
+|	PackageOrTypeName '.' Identifier
+;
+```
+
+### 206. `PackageOrTypeName` — J
+
+[Original production in `newlang.ye` (line 1075)](../Proposals/newlang.ye#L1075).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+PackageOrTypeName
+:	Identifier
+|	PackageOrTypeName '.' Identifier
+;
+```
+
+### 207. `ExpressionName` — J
+
+[Original production in `newlang.ye` (line 1080)](../Proposals/newlang.ye#L1080).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ExpressionName
+:	Identifier
+|	AmbiguousName '.' Identifier
+;
+```
+
+### 208. `MethodName` — J
+
+[Original production in `newlang.ye` (line 1085)](../Proposals/newlang.ye#L1085).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+MethodName
+:	Identifier
+;
+```
+
+### 209. `AmbiguousName` — J
+
+[Original production in `newlang.ye` (line 1089)](../Proposals/newlang.ye#L1089).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AmbiguousName
+:	Identifier
+|	AmbiguousName '.' Identifier
+;
+```
+
+### 210. `SimpleTypeName` — J
+
+[Original production in `newlang.ye` (line 1096)](../Proposals/newlang.ye#L1096).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+SimpleTypeName
+:	Identifier
+;
+```
+
+### 211. `TypeParameterModifier` — J
+
+[Original production in `newlang.ye` (line 1100)](../Proposals/newlang.ye#L1100).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TypeParameterModifier
+:	Annotation
+;
+```
+
+### 212. `Type` — J / D
+
+[Original production in `newlang.ye` (line 1108)](../Proposals/newlang.ye#L1108).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Type
+:	PrimitiveType
+|	ReferenceType
+;
+```
+
+### 213. `PrimitiveType` — J
+
+[Original production in `newlang.ye` (line 1113)](../Proposals/newlang.ye#L1113).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+PrimitiveType
+:	{ Annotation } NumericType
+|	{ Annotation } 'boolean'
+;
+```
+
+### 214. `NumericType` — J
+
+[Original production in `newlang.ye` (line 1118)](../Proposals/newlang.ye#L1118).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+NumericType
+:	IntegralType
+|	FloatingPointType
+;
+```
+
+### 215. `IntegralType` — J
+
+[Original production in `newlang.ye` (line 1123)](../Proposals/newlang.ye#L1123).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+IntegralType
+:	'byte'
+|	'short'
+|	'int'
+|	'long'
+|	'char'
+;
+```
+
+### 216. `FloatingPointType` — J
+
+[Original production in `newlang.ye` (line 1131)](../Proposals/newlang.ye#L1131).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+FloatingPointType
+:	'float'
+|	'double'
+;
+```
+
+### 217. `ReferenceType` — J
+
+[Original production in `newlang.ye` (line 1136)](../Proposals/newlang.ye#L1136).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ReferenceType
+:	ClassOrInterfaceType
+|	TypeVariable
+|	ArrayType
+;
+```
+
+### 218. `ClassOrInterfaceType` — J
+
+[Original production in `newlang.ye` (line 1142)](../Proposals/newlang.ye#L1142).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ClassOrInterfaceType
+:	ClassType
+|	InterfaceType
+;
+```
+
+### 219. `ClassType` — J
+
+[Original production in `newlang.ye` (line 1147)](../Proposals/newlang.ye#L1147).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ClassType
+:	{ Annotation } Identifier [ TypeArguments ]
+|	ClassOrInterfaceType '.' { Annotation } Identifier [ TypeArguments ]
+;
+```
+
+### 220. `InterfaceType` — J
+
+[Original production in `newlang.ye` (line 1152)](../Proposals/newlang.ye#L1152).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+InterfaceType
+:	ClassType
+;
+```
+
+### 221. `TypeVariable` — J
+
+[Original production in `newlang.ye` (line 1156)](../Proposals/newlang.ye#L1156).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TypeVariable
+:	{ Annotation } Identifier
+;
+```
+
+### 222. `ArrayType` — J
+
+[Original production in `newlang.ye` (line 1160)](../Proposals/newlang.ye#L1160).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+ArrayType
+:	PrimitiveType Dims
+|	ClassOrInterfaceType Dims
+|	TypeVariable Dims
+;
+```
+
+### 223. `Dims` — J
+
+[Original production in `newlang.ye` (line 1166)](../Proposals/newlang.ye#L1166).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Dims
+:	{ Annotation } '[' ']' { { Annotation } '[' ']' }
+;
+```
+
+### 224. `TypeParameter` — J
+
+[Original production in `newlang.ye` (line 1170)](../Proposals/newlang.ye#L1170).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TypeParameter
+:	{ TypeParameterModifier } Identifier [ TypeBound ]
+;
+```
+
+### 225. `TypeBound` — J
+
+[Original production in `newlang.ye` (line 1174)](../Proposals/newlang.ye#L1174).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TypeBound
+:	'extends' TypeVariable
+|	'extends' ClassOrInterfaceType { AdditionalBound }
+;
+```
+
+### 226. `AdditionalBound` — J
+
+[Original production in `newlang.ye` (line 1179)](../Proposals/newlang.ye#L1179).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+AdditionalBound
+:	'&' InterfaceType
+;
+```
+
+### 227. `TypeArguments` — J
+
+[Original production in `newlang.ye` (line 1183)](../Proposals/newlang.ye#L1183).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TypeArguments
+:	'<' TypeArgumentList '>'
+;
+```
+
+### 228. `TypeArgumentList` — J
+
+[Original production in `newlang.ye` (line 1187)](../Proposals/newlang.ye#L1187).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TypeArgumentList
+:	TypeArgument { ',' TypeArgument }
+;
+```
+
+### 229. `TypeArgument` — J
+
+[Original production in `newlang.ye` (line 1191)](../Proposals/newlang.ye#L1191).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+TypeArgument
+:	ReferenceType
+|	Wildcard
+;
+```
+
+### 230. `Wildcard` — J
+
+[Original production in `newlang.ye` (line 1196)](../Proposals/newlang.ye#L1196).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+Wildcard
+:	{ Annotation } '?' [ WildcardBounds ]
+;
+```
+
+### 231. `WildcardBounds` — J
+
+[Original production in `newlang.ye` (line 1200)](../Proposals/newlang.ye#L1200).
+
+**Not provisionally accepted:** This Java-like rule is not selected by DEC-019, which accepts the NewLang object model rather than Java grammar. Related forms are deferred or governed by the generic syntax in DEC-076; see the deferrals and crosswalk above.
+
+```text
+WildcardBounds
+:	'extends' ReferenceType
+|	'super' ReferenceType
+;
+```
+
+`newlang` at line 99 is a file marker, not a production. The source also has two `PackageName`, `Type`, `VariableDeclaratorList`, `VariableDeclarator`, and `EnumDeclaration` definitions; each occurrence is shown separately above. In addition to those duplicates, the Java-like sections introduce syntax and names that are not established by the NewLang proposal or current decisions. These gaps must be resolved before treating `newlang.ye` as a normative complete grammar.

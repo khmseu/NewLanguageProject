@@ -2860,3 +2860,23 @@ and separately linked.
 **Verification:** Checked all copied source productions against their source
 lines and confirmed the adapted examples agree with SEM-003's table. Documentation
 whitespace and links were checked; no compiler tests or build were needed.
+
+### KP-132 - Production overview organized by source rule
+
+- Event/documentation date: 2026-11-11.
+- Source: follow-up review comment requesting that the overview be organized by
+  the old production rules in `newlang.ye`.
+- Status: documentation organization and disposition clarification only; no
+  language decision or compiler behavior changed.
+
+**Nutzerangabe:** Organize the production overview by the old production rule.
+
+**Belegt:** Reorganized all 231 source production occurrences into their
+`newlang.ye` definition order. Each entry now shows its exact source RHS, source
+line, and a per-production disposition linking either the provisionally
+accepted model-level EBNF or the reason the proposal rule remains unaccepted.
+SEM-003 remains explicitly tentative.
+
+**Verification:** Compared every copied RHS, name, and source line to the
+corresponding source definition; confirmed the inventory count and source order.
+Documentation-only change; no compiler tests or build were needed.
