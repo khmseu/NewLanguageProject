@@ -2,10 +2,9 @@
 
 This is an inventory of the 231 production occurrences in
 [`Proposals/newlang.ye`](../Proposals/newlang.ye), not an endorsement of that
-file as the current language grammar. Each production name below links to its
-verbatim rule in the source; keeping the RHS there avoids maintaining a second,
-potentially divergent copy. Repeated names are listed separately at each
-definition.
+file as the current language grammar. Each entry gives its status,
+the verbatim source production, and a link to that occurrence in the source.
+Repeated names are listed separately at each definition.
 
 ## What is provisionally accepted
 
@@ -50,9 +49,10 @@ operator/operand model rather than these as dedicated parser productions.
 - **J — not adopted:** This is from the Java-like grammar material in the file.
   DEC-019 adopts the object model, not every Java-like construct; the grammar's
   presence does not make these forms NewLang requirements.
-- **D — duplicate definition:** The name is defined more than once in the
-  source. The definitions overlap or conflict, so a canonical rule must be
-  chosen before either can be treated as a single production.
+- **D — duplicate definition:** Added alongside the section status on every
+  occurrence of a name defined more than once in the source. The definitions
+  overlap or conflict, so a canonical rule must be chosen before either can be
+  treated as a single production.
 
 ## Production inventory
 
@@ -63,38 +63,220 @@ not settled language syntax. In particular, a trailing semicolon is not
 generally a required declaration terminator (DEC-051), and the name-first
 binding forms in DEC-011 are not represented by these declaration rules.
 
-- [CompilationUnit](../Proposals/newlang.ye#L4)
-- [PackageName](../Proposals/newlang.ye#L10)
-- [SubPackageName](../Proposals/newlang.ye#L14)
-- [PackageInterfaceFile](../Proposals/newlang.ye#L20)
-- [RemotePackageDef](../Proposals/newlang.ye#L24)
-- [PackageExportsFile](../Proposals/newlang.ye#L30)
-- [ModuleName](../Proposals/newlang.ye#L34)
-- [ModuleDeclarationFile](../Proposals/newlang.ye#L41)
-- [ContextDeclaration](../Proposals/newlang.ye#L45)
-- [Declaration](../Proposals/newlang.ye#L51)
-- [Modifier](../Proposals/newlang.ye#L55)
-- [BasicDeclaration](../Proposals/newlang.ye#L70)
-- [ImportDeclaration](../Proposals/newlang.ye#L76)
-- [Name](../Proposals/newlang.ye#L80)
-- [FieldOrConstantDeclaration](../Proposals/newlang.ye#L84)
-- [VariableDeclaratorList](../Proposals/newlang.ye#L88)
-- [VariableDeclarator](../Proposals/newlang.ye#L92)
-- [TypeDeclaration](../Proposals/newlang.ye#L96)
-- [Type](../Proposals/newlang.ye#L102)
-- [BasicType](../Proposals/newlang.ye#L106)
-- [ValueTypeDeclaration](../Proposals/newlang.ye#L112)
-- [OrdinalTypeDeclaration](../Proposals/newlang.ye#L117)
-- [ComposedTypeDeclaration](../Proposals/newlang.ye#L122)
-- [ReferenceTypeDeclaration](../Proposals/newlang.ye#L128)
-- [EnumDeclaration](../Proposals/newlang.ye#L135)
-- [EnumDeclaratorList](../Proposals/newlang.ye#L139)
-- [EnumDeclarator](../Proposals/newlang.ye#L143)
-- [SubrangeDeclaration](../Proposals/newlang.ye#L147)
-- [SetDeclaration](../Proposals/newlang.ye#L151)
-- [ArrayDeclaration](../Proposals/newlang.ye#L155)
-- [StructDeclaration](../Proposals/newlang.ye#L159)
-- [DeclarationList](../Proposals/newlang.ye#L163)
+- **O — `CompilationUnit`** ([source](../Proposals/newlang.ye#L4))
+  ```text
+  CompilationUnit
+  :	'=I=' PackageImportsFile
+  |	'=E=' PackageExportsFile
+  |	'=M=' ModuleDeclarationFile
+  ;
+  ```
+- **O / D — `PackageName`** ([source](../Proposals/newlang.ye#L10))
+  ```text
+  PackageName
+  :	Identifier
+  ;
+  ```
+- **O — `SubPackageName`** ([source](../Proposals/newlang.ye#L14))
+  ```text
+  SubPackageName
+  :	Identifier
+  ;
+  ```
+- **O — `PackageInterfaceFile`** ([source](../Proposals/newlang.ye#L20))
+  ```text
+  PackageInterfaceFile
+  :	'package' PackageName { RemotePackageDef }
+  ;
+  ```
+- **O — `RemotePackageDef`** ([source](../Proposals/newlang.ye#L24))
+  ```text
+  RemotePackageDef
+  :	Identifier Literal
+  ;
+  ```
+- **O — `PackageExportsFile`** ([source](../Proposals/newlang.ye#L30))
+  ```text
+  PackageExportsFile
+  :	'package' PackageName 'exports' ModuleName { ',' ModuleName } ';'
+  ;
+  ```
+- **O — `ModuleName`** ([source](../Proposals/newlang.ye#L34))
+  ```text
+  ModuleName
+  :	{ SubPackageName '.' } Identifier
+  ;
+  ```
+- **O — `ModuleDeclarationFile`** ([source](../Proposals/newlang.ye#L41))
+  ```text
+  ModuleDeclarationFile
+  :	ContextDeclaration { StructDeclaration }
+  ;
+  ```
+- **O — `ContextDeclaration`** ([source](../Proposals/newlang.ye#L45))
+  ```text
+  ContextDeclaration
+  :	'package' PackageName { '.' SubPackageName } ';'
+  ;
+  ```
+- **O — `Declaration`** ([source](../Proposals/newlang.ye#L51))
+  ```text
+  Declaration
+  :	{ Modifier } BasicDeclaration
+  ;
+  ```
+- **O — `Modifier`** ([source](../Proposals/newlang.ye#L55))
+  ```text
+  Modifier
+  :	'abstract'
+  |	'default'
+  |	'final'
+  |	'native'
+  |	'private'
+  |	'protected'
+  |	'public'
+  |	'static'
+  |	'strictfp'
+  |	'synchronized'
+  |	'transient'
+  |	'volatile'
+  ;
+  ```
+- **O — `BasicDeclaration`** ([source](../Proposals/newlang.ye#L70))
+  ```text
+  BasicDeclaration
+  :	ImportDeclaration
+  |	FieldOrConstantDeclaration
+  |	TypeDeclaration
+  ;
+  ```
+- **O — `ImportDeclaration`** ([source](../Proposals/newlang.ye#L76))
+  ```text
+  ImportDeclaration
+  :	'import' Name ';'
+  ;
+  ```
+- **O — `Name`** ([source](../Proposals/newlang.ye#L80))
+  ```text
+  Name
+  :	PackageName { '.' Identifier }
+  ;
+  ```
+- **O — `FieldOrConstantDeclaration`** ([source](../Proposals/newlang.ye#L84))
+  ```text
+  FieldOrConstantDeclaration
+  :	[ TypeParameters ] Type VariableDeclaratorList ';'
+  ;
+  ```
+- **O / D — `VariableDeclaratorList`** ([source](../Proposals/newlang.ye#L88))
+  ```text
+  VariableDeclaratorList
+  :	VariableDeclarator { ',' VariableDeclarator }
+  ;
+  ```
+- **O / D — `VariableDeclarator`** ([source](../Proposals/newlang.ye#L92))
+  ```text
+  VariableDeclarator
+  :	Identifier [ '=' Expression ]
+  ;
+  ```
+- **O — `TypeDeclaration`** ([source](../Proposals/newlang.ye#L96))
+  ```text
+  TypeDeclaration
+  :	'typedef' [ TypeParameters ] Type Identifier ';'
+  ;
+  ```
+- **O / D — `Type`** ([source](../Proposals/newlang.ye#L102))
+  ```text
+  Type
+  :	BasicType [ TypeArguments ]
+  ;
+  ```
+- **O — `BasicType`** ([source](../Proposals/newlang.ye#L106))
+  ```text
+  BasicType
+  :	Name
+  |	ValueTypeDeclaration
+  |	ReferenceTypeDeclaration
+  ;
+  ```
+- **O — `ValueTypeDeclaration`** ([source](../Proposals/newlang.ye#L112))
+  ```text
+  ValueTypeDeclaration
+  :	OrdinalTypeDeclaration
+  |	ComposedTypeDeclaration
+  ;
+  ```
+- **O — `OrdinalTypeDeclaration`** ([source](../Proposals/newlang.ye#L117))
+  ```text
+  OrdinalTypeDeclaration
+  :	EnumDeclaration
+  |	SubrangeDeclaration
+  ;
+  ```
+- **O — `ComposedTypeDeclaration`** ([source](../Proposals/newlang.ye#L122))
+  ```text
+  ComposedTypeDeclaration
+  :	SetDeclaration
+  |	ArrayDeclaration
+  |	StructDeclaration
+  ;
+  ```
+- **O — `ReferenceTypeDeclaration`** ([source](../Proposals/newlang.ye#L128))
+  ```text
+  ReferenceTypeDeclaration
+  :	ClassDeclaration
+  |	MixInDeclaration
+  ;
+  ```
+- **O / D — `EnumDeclaration`** ([source](../Proposals/newlang.ye#L135))
+  ```text
+  EnumDeclaration
+  :	'enum' [ Derivation ] '{' [ EnumDeclaratorList [ ';' [ DeclarationList ] ] ] '}'
+  ;
+  ```
+- **O — `EnumDeclaratorList`** ([source](../Proposals/newlang.ye#L139))
+  ```text
+  EnumDeclaratorList
+  :	EnumDeclarator { ',' EnumDeclarator }
+  ;
+  ```
+- **O — `EnumDeclarator`** ([source](../Proposals/newlang.ye#L143))
+  ```text
+  EnumDeclarator
+  :	Identifier [ '=' Expression ]
+  ;
+  ```
+- **O — `SubrangeDeclaration`** ([source](../Proposals/newlang.ye#L147))
+  ```text
+  SubrangeDeclaration
+  :	'range' [ Derivation ] '{' Expression '...' Expression [ ';' [ DeclarationList ] ] '}'
+  ;
+  ```
+- **O — `SetDeclaration`** ([source](../Proposals/newlang.ye#L151))
+  ```text
+  SetDeclaration
+  :	'set' [ Derivation ] '{' Type [ ';' [ DeclarationList ] ] '}'
+  ;
+  ```
+- **O — `ArrayDeclaration`** ([source](../Proposals/newlang.ye#L155))
+  ```text
+  ArrayDeclaration
+  :	'array' [ Derivation ] '{' Lambda [ ';' [ DeclarationList ] ] '}'
+  ;
+  ```
+- **O — `StructDeclaration`** ([source](../Proposals/newlang.ye#L159))
+  ```text
+  StructDeclaration
+  :	'struct' [ Derivation ] '{' [ DeclarationList ] '}'
+  ;
+  ```
+- **O — `DeclarationList`** ([source](../Proposals/newlang.ye#L163))
+  ```text
+  DeclarationList
+  :	Declaration { Declaration }
+  ;
+  ```
 
 ### Class-model outline — M
 
@@ -102,20 +284,104 @@ These productions correspond to the provisionally accepted class-model
 concepts. They are links to the source proposal, not acceptance of its exact
 Java-derived RHS or of the unresolved helper rules listed next.
 
-- [ClassDeclaration](../Proposals/newlang.ye#L169)
-- [NormalClassDeclaration](../Proposals/newlang.ye#L174)
-- [Superclass](../Proposals/newlang.ye#L197)
-- [Superinterfaces](../Proposals/newlang.ye#L201)
-- [ClassBody](../Proposals/newlang.ye#L209)
-- [ClassBodyDeclaration](../Proposals/newlang.ye#L213)
-- [ClassMemberDeclaration](../Proposals/newlang.ye#L221)
-- [FieldDeclaration](../Proposals/newlang.ye#L229)
-- [MethodDeclaration](../Proposals/newlang.ye#L301)
-- [ConstructorDeclaration](../Proposals/newlang.ye#L386)
-- [InterfaceDeclaration](../Proposals/newlang.ye#L438)
-- [NormalInterfaceDeclaration](../Proposals/newlang.ye#L443)
-- [InterfaceBody](../Proposals/newlang.ye#L461)
-- [InterfaceMemberDeclaration](../Proposals/newlang.ye#L465)
+- **M — `ClassDeclaration`** ([source](../Proposals/newlang.ye#L169))
+  ```text
+  ClassDeclaration
+  :	NormalClassDeclaration
+  |	EnumDeclaration
+  ;
+  ```
+- **M — `NormalClassDeclaration`** ([source](../Proposals/newlang.ye#L174))
+  ```text
+  NormalClassDeclaration
+  :	{ ClassModifier } 'class' Identifier [ TypeParameters ] [ Superclass ] [ Superinterfaces ] ClassBody
+  ;
+  ```
+- **M — `Superclass`** ([source](../Proposals/newlang.ye#L197))
+  ```text
+  Superclass
+  :	'extends' ClassType
+  ;
+  ```
+- **M — `Superinterfaces`** ([source](../Proposals/newlang.ye#L201))
+  ```text
+  Superinterfaces
+  :	'implements' InterfaceTypeList
+  ;
+  ```
+- **M — `ClassBody`** ([source](../Proposals/newlang.ye#L209))
+  ```text
+  ClassBody
+  :	'{' { ClassBodyDeclaration } '}'
+  ;
+  ```
+- **M — `ClassBodyDeclaration`** ([source](../Proposals/newlang.ye#L213))
+  ```text
+  ClassBodyDeclaration
+  :	ClassMemberDeclaration
+  |	InstanceInitializer
+  |	StaticInitializer
+  |	ConstructorDeclaration
+  |	ImportDeclaration
+  ;
+  ```
+- **M — `ClassMemberDeclaration`** ([source](../Proposals/newlang.ye#L221))
+  ```text
+  ClassMemberDeclaration
+  :	FieldDeclaration
+  |	MethodDeclaration
+  |	ClassDeclaration
+  |	InterfaceDeclaration
+  |	';'
+  ;
+  ```
+- **M — `FieldDeclaration`** ([source](../Proposals/newlang.ye#L229))
+  ```text
+  FieldDeclaration
+  :	{ FieldModifier } UnannType VariableDeclaratorList ';'
+  ;
+  ```
+- **M — `MethodDeclaration`** ([source](../Proposals/newlang.ye#L301))
+  ```text
+  MethodDeclaration
+  :	{ MethodModifier } MethodHeader MethodBody
+  ;
+  ```
+- **M — `ConstructorDeclaration`** ([source](../Proposals/newlang.ye#L386))
+  ```text
+  ConstructorDeclaration
+  :	{ ConstructorModifier } ConstructorDeclarator [ Throws ] ConstructorBody
+  ;
+  ```
+- **M — `InterfaceDeclaration`** ([source](../Proposals/newlang.ye#L438))
+  ```text
+  InterfaceDeclaration
+  :	NormalInterfaceDeclaration
+  |	AnnotationTypeDeclaration
+  ;
+  ```
+- **M — `NormalInterfaceDeclaration`** ([source](../Proposals/newlang.ye#L443))
+  ```text
+  NormalInterfaceDeclaration
+  :	{ InterfaceModifier } 'interface' Identifier [ TypeParameters ] [ ExtendsInterfaces ] InterfaceBody
+  ;
+  ```
+- **M — `InterfaceBody`** ([source](../Proposals/newlang.ye#L461))
+  ```text
+  InterfaceBody
+  :	'{' { InterfaceMemberDeclaration } '}'
+  ;
+  ```
+- **M — `InterfaceMemberDeclaration`** ([source](../Proposals/newlang.ye#L465))
+  ```text
+  InterfaceMemberDeclaration
+  :	ConstantDeclaration
+  |	InterfaceMethodDeclaration
+  |	ClassDeclaration
+  |	InterfaceDeclaration
+  |	';'
+  ;
+  ```
 
 ### Class and member details — O
 
@@ -123,45 +389,292 @@ These support the class outline, but DEC-019 does not settle their exact
 syntax, permitted alternatives, or detailed member forms. The angle-bracket
 template spelling also conflicts with the selected square-bracket spelling.
 
-- [ClassModifier](../Proposals/newlang.ye#L178)
-- [TypeParameters](../Proposals/newlang.ye#L189)
-- [TypeParameterList](../Proposals/newlang.ye#L193)
-- [InterfaceTypeList](../Proposals/newlang.ye#L205)
-- [FieldModifier](../Proposals/newlang.ye#L233)
-- [VariableDeclaratorList](../Proposals/newlang.ye#L244)
-- [VariableDeclarator](../Proposals/newlang.ye#L248)
-- [VariableDeclaratorId](../Proposals/newlang.ye#L252)
-- [VariableInitializer](../Proposals/newlang.ye#L256)
-- [UnannType](../Proposals/newlang.ye#L261)
-- [UnannPrimitiveType](../Proposals/newlang.ye#L266)
-- [UnannReferenceType](../Proposals/newlang.ye#L271)
-- [UnannClassOrInterfaceType](../Proposals/newlang.ye#L277)
-- [UnannClassType](../Proposals/newlang.ye#L282)
-- [UnannInterfaceType](../Proposals/newlang.ye#L287)
-- [UnannTypeVariable](../Proposals/newlang.ye#L291)
-- [UnannArrayType](../Proposals/newlang.ye#L295)
-- [MethodModifier](../Proposals/newlang.ye#L305)
-- [MethodHeader](../Proposals/newlang.ye#L318)
-- [Result](../Proposals/newlang.ye#L323)
-- [MethodDeclarator](../Proposals/newlang.ye#L328)
-- [FormalParameterList](../Proposals/newlang.ye#L332)
-- [FormalParameters](../Proposals/newlang.ye#L337)
-- [FormalParameter](../Proposals/newlang.ye#L342)
-- [VariableModifier](../Proposals/newlang.ye#L346)
-- [LastFormalParameter](../Proposals/newlang.ye#L351)
-- [ReceiverParameter](../Proposals/newlang.ye#L356)
-- [Throws](../Proposals/newlang.ye#L360)
-- [ExceptionTypeList](../Proposals/newlang.ye#L364)
-- [ExceptionType](../Proposals/newlang.ye#L368)
-- [MethodBody](../Proposals/newlang.ye#L373)
-- [InstanceInitializer](../Proposals/newlang.ye#L378)
-- [StaticInitializer](../Proposals/newlang.ye#L382)
-- [ConstructorModifier](../Proposals/newlang.ye#L390)
-- [ConstructorDeclarator](../Proposals/newlang.ye#L397)
-- [ConstructorBody](../Proposals/newlang.ye#L401)
-- [ExplicitConstructorInvocation](../Proposals/newlang.ye#L405)
-- [InterfaceModifier](../Proposals/newlang.ye#L447)
-- [ExtendsInterfaces](../Proposals/newlang.ye#L457)
+- **O — `ClassModifier`** ([source](../Proposals/newlang.ye#L178))
+  ```text
+  ClassModifier
+  :	Annotation
+  |	'public'
+  |	'protected'
+  |	'private'
+  |	'abstract'
+  |	'static'
+  |	'final'
+  |	'strictfp'
+  ;
+  ```
+- **O — `TypeParameters`** ([source](../Proposals/newlang.ye#L189))
+  ```text
+  TypeParameters
+  :	'<' TypeParameterList '>'
+  ;
+  ```
+- **O — `TypeParameterList`** ([source](../Proposals/newlang.ye#L193))
+  ```text
+  TypeParameterList
+  :	TypeParameter { ',' TypeParameter }
+  ;
+  ```
+- **O — `InterfaceTypeList`** ([source](../Proposals/newlang.ye#L205))
+  ```text
+  InterfaceTypeList
+  :	InterfaceType { ',' InterfaceType }
+  ;
+  ```
+- **O — `FieldModifier`** ([source](../Proposals/newlang.ye#L233))
+  ```text
+  FieldModifier
+  :	Annotation
+  |	'public'
+  |	'protected'
+  |	'private'
+  |	'static'
+  |	'final'
+  |	'transient'
+  |	'volatile'
+  ;
+  ```
+- **O / D — `VariableDeclaratorList`** ([source](../Proposals/newlang.ye#L244))
+  ```text
+  VariableDeclaratorList
+  :	VariableDeclarator { ',' VariableDeclarator }
+  ;
+  ```
+- **O / D — `VariableDeclarator`** ([source](../Proposals/newlang.ye#L248))
+  ```text
+  VariableDeclarator
+  :	VariableDeclaratorId [ '=' VariableInitializer ]
+  ;
+  ```
+- **O — `VariableDeclaratorId`** ([source](../Proposals/newlang.ye#L252))
+  ```text
+  VariableDeclaratorId
+  :	Identifier [ Dims ]
+  ;
+  ```
+- **O — `VariableInitializer`** ([source](../Proposals/newlang.ye#L256))
+  ```text
+  VariableInitializer
+  :	Expression
+  |	ArrayInitializer
+  ;
+  ```
+- **O — `UnannType`** ([source](../Proposals/newlang.ye#L261))
+  ```text
+  UnannType
+  :	UnannPrimitiveType
+  |	UnannReferenceType
+  ;
+  ```
+- **O — `UnannPrimitiveType`** ([source](../Proposals/newlang.ye#L266))
+  ```text
+  UnannPrimitiveType
+  :	NumericType
+  |	'boolean'
+  ;
+  ```
+- **O — `UnannReferenceType`** ([source](../Proposals/newlang.ye#L271))
+  ```text
+  UnannReferenceType
+  :	UnannClassOrInterfaceType
+  |	UnannTypeVariable
+  |	UnannArrayType
+  ;
+  ```
+- **O — `UnannClassOrInterfaceType`** ([source](../Proposals/newlang.ye#L277))
+  ```text
+  UnannClassOrInterfaceType
+  :	UnannClassType
+  |	UnannInterfaceType
+  ;
+  ```
+- **O — `UnannClassType`** ([source](../Proposals/newlang.ye#L282))
+  ```text
+  UnannClassType
+  :	Identifier [ TypeArguments ]
+  |	UnannClassOrInterfaceType '.' { Annotation } Identifier [ TypeArguments ]
+  ;
+  ```
+- **O — `UnannInterfaceType`** ([source](../Proposals/newlang.ye#L287))
+  ```text
+  UnannInterfaceType
+  :	UnannClassType
+  ;
+  ```
+- **O — `UnannTypeVariable`** ([source](../Proposals/newlang.ye#L291))
+  ```text
+  UnannTypeVariable
+  :	Identifier
+  ;
+  ```
+- **O — `UnannArrayType`** ([source](../Proposals/newlang.ye#L295))
+  ```text
+  UnannArrayType
+  :	UnannPrimitiveType Dims
+  |	UnannClassOrInterfaceType Dims
+  |	UnannTypeVariable Dims
+  ;
+  ```
+- **O — `MethodModifier`** ([source](../Proposals/newlang.ye#L305))
+  ```text
+  MethodModifier
+  :	Annotation
+  |	'public'
+  |	'protected'
+  |	'private'
+  |	'abstract'
+  |	'static'
+  |	'final'
+  |	'synchronized'
+  |	'native'
+  |	'strictfp'
+  ;
+  ```
+- **O — `MethodHeader`** ([source](../Proposals/newlang.ye#L318))
+  ```text
+  MethodHeader
+  :	Result MethodDeclarator [ Throws ]
+  |	TypeParameters { Annotation } Result MethodDeclarator [ Throws ]
+  ;
+  ```
+- **O — `Result`** ([source](../Proposals/newlang.ye#L323))
+  ```text
+  Result
+  :	UnannType
+  |	'void'
+  ;
+  ```
+- **O — `MethodDeclarator`** ([source](../Proposals/newlang.ye#L328))
+  ```text
+  MethodDeclarator
+  :	Identifier '(' [ FormalParameterList ] ')' [ Dims ]
+  ;
+  ```
+- **O — `FormalParameterList`** ([source](../Proposals/newlang.ye#L332))
+  ```text
+  FormalParameterList
+  :	FormalParameters ',' LastFormalParameter
+  |	LastFormalParameter
+  ;
+  ```
+- **O — `FormalParameters`** ([source](../Proposals/newlang.ye#L337))
+  ```text
+  FormalParameters
+  :	FormalParameter { ',' FormalParameter }
+  |	ReceiverParameter { ',' FormalParameter }
+  ;
+  ```
+- **O — `FormalParameter`** ([source](../Proposals/newlang.ye#L342))
+  ```text
+  FormalParameter
+  :	{ VariableModifier } UnannType VariableDeclaratorId
+  ;
+  ```
+- **O — `VariableModifier`** ([source](../Proposals/newlang.ye#L346))
+  ```text
+  VariableModifier
+  :	Annotation
+  |	'final'
+  ;
+  ```
+- **O — `LastFormalParameter`** ([source](../Proposals/newlang.ye#L351))
+  ```text
+  LastFormalParameter
+  :	{ VariableModifier } UnannType { Annotation } '...' VariableDeclaratorId
+  |	FormalParameter
+  ;
+  ```
+- **O — `ReceiverParameter`** ([source](../Proposals/newlang.ye#L356))
+  ```text
+  ReceiverParameter
+  :	{ Annotation } UnannType [ Identifier '.' ] 'this'
+  ;
+  ```
+- **O — `Throws`** ([source](../Proposals/newlang.ye#L360))
+  ```text
+  Throws
+  :	'throws' ExceptionTypeList
+  ;
+  ```
+- **O — `ExceptionTypeList`** ([source](../Proposals/newlang.ye#L364))
+  ```text
+  ExceptionTypeList
+  :	ExceptionType { ',' ExceptionType }
+  ;
+  ```
+- **O — `ExceptionType`** ([source](../Proposals/newlang.ye#L368))
+  ```text
+  ExceptionType
+  :	ClassType
+  |	TypeVariable
+  ;
+  ```
+- **O — `MethodBody`** ([source](../Proposals/newlang.ye#L373))
+  ```text
+  MethodBody
+  :	Block
+  |	';'
+  ;
+  ```
+- **O — `InstanceInitializer`** ([source](../Proposals/newlang.ye#L378))
+  ```text
+  InstanceInitializer
+  :	Block
+  ;
+  ```
+- **O — `StaticInitializer`** ([source](../Proposals/newlang.ye#L382))
+  ```text
+  StaticInitializer
+  :	'static' Block
+  ;
+  ```
+- **O — `ConstructorModifier`** ([source](../Proposals/newlang.ye#L390))
+  ```text
+  ConstructorModifier
+  :	Annotation
+  |	'public'
+  |	'protected'
+  |	'private'
+  ;
+  ```
+- **O — `ConstructorDeclarator`** ([source](../Proposals/newlang.ye#L397))
+  ```text
+  ConstructorDeclarator
+  :	[ TypeParameters ] SimpleTypeName '(' [ FormalParameterList ] ')'
+  ;
+  ```
+- **O — `ConstructorBody`** ([source](../Proposals/newlang.ye#L401))
+  ```text
+  ConstructorBody
+  :	'{' [ ExplicitConstructorInvocation ] [ BlockStatements ] '}'
+  ;
+  ```
+- **O — `ExplicitConstructorInvocation`** ([source](../Proposals/newlang.ye#L405))
+  ```text
+  ExplicitConstructorInvocation
+  :	[ TypeArguments ] 'this' '(' [ ArgumentList ] ')' ';'
+  |	[ TypeArguments ] 'super' '(' [ ArgumentList ] ')' ';'
+  |	ExpressionName '.' [ TypeArguments ] 'super' '(' [ ArgumentList ] ')' ';'
+  |	Primary '.' [ TypeArguments ] 'super' '(' [ ArgumentList ] ')' ';'
+  ;
+  ```
+- **O — `InterfaceModifier`** ([source](../Proposals/newlang.ye#L447))
+  ```text
+  InterfaceModifier
+  :	Annotation
+  |	'public'
+  |	'protected'
+  |	'private'
+  |	'abstract'
+  |	'static'
+  |	'strictfp'
+  ;
+  ```
+- **O — `ExtendsInterfaces`** ([source](../Proposals/newlang.ye#L457))
+  ```text
+  ExtendsInterfaces
+  :	'extends' InterfaceTypeList
+  ;
+  ```
 
 ### Java-like productions not adopted — J
 
@@ -169,124 +682,850 @@ The following are Java-like grammar material rather than selected NewLang
 requirements. DEC-019 explicitly does not adopt every Java-like construct;
 DEC-076 also means these are not additional parser productions.
 
-- [EnumDeclaration](../Proposals/newlang.ye#L412) **D**
-- [EnumBody](../Proposals/newlang.ye#L416)
-- [EnumConstantList](../Proposals/newlang.ye#L420)
-- [EnumConstant](../Proposals/newlang.ye#L424)
-- [EnumConstantModifier](../Proposals/newlang.ye#L428)
-- [EnumBodyDeclarations](../Proposals/newlang.ye#L432)
-- [ConstantDeclaration](../Proposals/newlang.ye#L473)
-- [ConstantModifier](../Proposals/newlang.ye#L477)
-- [InterfaceMethodDeclaration](../Proposals/newlang.ye#L484)
-- [InterfaceMethodModifier](../Proposals/newlang.ye#L488)
-- [AnnotationTypeDeclaration](../Proposals/newlang.ye#L497)
-- [AnnotationTypeBody](../Proposals/newlang.ye#L501)
-- [AnnotationTypeMemberDeclaration](../Proposals/newlang.ye#L505)
-- [AnnotationTypeElementDeclaration](../Proposals/newlang.ye#L513)
-- [AnnotationTypeElementModifier](../Proposals/newlang.ye#L517)
-- [DefaultValue](../Proposals/newlang.ye#L523)
-- [Annotation](../Proposals/newlang.ye#L527)
-- [NormalAnnotation](../Proposals/newlang.ye#L533)
-- [ElementValuePairList](../Proposals/newlang.ye#L537)
-- [ElementValuePair](../Proposals/newlang.ye#L541)
-- [ElementValue](../Proposals/newlang.ye#L545)
-- [ElementValueArrayInitializer](../Proposals/newlang.ye#L551)
-- [ElementValueList](../Proposals/newlang.ye#L555)
-- [MarkerAnnotation](../Proposals/newlang.ye#L559)
-- [SingleElementAnnotation](../Proposals/newlang.ye#L563)
-- [ArrayInitializer](../Proposals/newlang.ye#L569)
-- [VariableInitializerList](../Proposals/newlang.ye#L573)
-- [Block](../Proposals/newlang.ye#L579)
-- [BlockStatements](../Proposals/newlang.ye#L583)
-- [BlockStatement](../Proposals/newlang.ye#L587)
-- [LocalVariableDeclarationStatement](../Proposals/newlang.ye#L593)
-- [LocalVariableDeclaration](../Proposals/newlang.ye#L597)
-- [Statement](../Proposals/newlang.ye#L601)
-- [StatementNoShortIf](../Proposals/newlang.ye#L610)
-- [StatementWithoutTrailingSubstatement](../Proposals/newlang.ye#L618)
-- [EmptyStatement](../Proposals/newlang.ye#L633)
-- [LabeledStatement](../Proposals/newlang.ye#L637)
-- [LabeledStatementNoShortIf](../Proposals/newlang.ye#L641)
-- [ExpressionStatement](../Proposals/newlang.ye#L645)
-- [StatementExpression](../Proposals/newlang.ye#L649)
-- [IfThenStatement](../Proposals/newlang.ye#L659)
-- [IfThenElseStatement](../Proposals/newlang.ye#L663)
-- [IfThenElseStatementNoShortIf](../Proposals/newlang.ye#L667)
-- [AssertStatement](../Proposals/newlang.ye#L671)
-- [SwitchStatement](../Proposals/newlang.ye#L676)
-- [SwitchBlock](../Proposals/newlang.ye#L680)
-- [SwitchBlockStatementGroup](../Proposals/newlang.ye#L684)
-- [SwitchLabels](../Proposals/newlang.ye#L688)
-- [SwitchLabel](../Proposals/newlang.ye#L692)
-- [EnumConstantName](../Proposals/newlang.ye#L698)
-- [WhileStatement](../Proposals/newlang.ye#L702)
-- [WhileStatementNoShortIf](../Proposals/newlang.ye#L706)
-- [DoStatement](../Proposals/newlang.ye#L710)
-- [ForStatement](../Proposals/newlang.ye#L714)
-- [ForStatementNoShortIf](../Proposals/newlang.ye#L719)
-- [BasicForStatement](../Proposals/newlang.ye#L724)
-- [BasicForStatementNoShortIf](../Proposals/newlang.ye#L728)
-- [ForInit](../Proposals/newlang.ye#L732)
-- [ForUpdate](../Proposals/newlang.ye#L737)
-- [StatementExpressionList](../Proposals/newlang.ye#L741)
-- [EnhancedForStatement](../Proposals/newlang.ye#L745)
-- [EnhancedForStatementNoShortIf](../Proposals/newlang.ye#L749)
-- [BreakStatement](../Proposals/newlang.ye#L753)
-- [ContinueStatement](../Proposals/newlang.ye#L757)
-- [ReturnStatement](../Proposals/newlang.ye#L761)
-- [ThrowStatement](../Proposals/newlang.ye#L765)
-- [SynchronizedStatement](../Proposals/newlang.ye#L769)
-- [TryStatement](../Proposals/newlang.ye#L773)
-- [Catches](../Proposals/newlang.ye#L779)
-- [CatchClause](../Proposals/newlang.ye#L783)
-- [CatchFormalParameter](../Proposals/newlang.ye#L787)
-- [CatchType](../Proposals/newlang.ye#L791)
-- [Finally](../Proposals/newlang.ye#L795)
-- [TryWithResourcesStatement](../Proposals/newlang.ye#L799)
-- [ResourceSpecification](../Proposals/newlang.ye#L803)
-- [ResourceList](../Proposals/newlang.ye#L807)
-- [Resource](../Proposals/newlang.ye#L811)
-- [Primary](../Proposals/newlang.ye#L817)
-- [PrimaryNoNewArray](../Proposals/newlang.ye#L822)
-- [ClassInstanceCreationExpression](../Proposals/newlang.ye#L836)
-- [TypeArgumentsOrDiamond](../Proposals/newlang.ye#L842)
-- [FieldAccess](../Proposals/newlang.ye#L847)
-- [ArrayAccess](../Proposals/newlang.ye#L853)
-- [MethodInvocation](../Proposals/newlang.ye#L858)
-- [ArgumentList](../Proposals/newlang.ye#L867)
-- [MethodReference](../Proposals/newlang.ye#L871)
-- [ArrayCreationExpression](../Proposals/newlang.ye#L881)
-- [DimExprs](../Proposals/newlang.ye#L888)
-- [DimExpr](../Proposals/newlang.ye#L892)
-- [ConstantExpression](../Proposals/newlang.ye#L896)
-- [Expression](../Proposals/newlang.ye#L900)
-- [LambdaExpression](../Proposals/newlang.ye#L905)
-- [LambdaParameters](../Proposals/newlang.ye#L909)
-- [InferredFormalParameterList](../Proposals/newlang.ye#L915)
-- [LambdaBody](../Proposals/newlang.ye#L919)
-- [AssignmentExpression](../Proposals/newlang.ye#L924)
-- [Assignment](../Proposals/newlang.ye#L929)
-- [LeftHandSide](../Proposals/newlang.ye#L933)
-- [AssignmentOperator](../Proposals/newlang.ye#L939)
-- [ConditionalExpression](../Proposals/newlang.ye#L954)
-- [ConditionalOrExpression](../Proposals/newlang.ye#L959)
-- [ConditionalAndExpression](../Proposals/newlang.ye#L964)
-- [InclusiveOrExpression](../Proposals/newlang.ye#L969)
-- [ExclusiveOrExpression](../Proposals/newlang.ye#L974)
-- [AndExpression](../Proposals/newlang.ye#L979)
-- [EqualityExpression](../Proposals/newlang.ye#L984)
-- [RelationalExpression](../Proposals/newlang.ye#L990)
-- [ShiftExpression](../Proposals/newlang.ye#L999)
-- [AdditiveExpression](../Proposals/newlang.ye#L1006)
-- [MultiplicativeExpression](../Proposals/newlang.ye#L1012)
-- [UnaryExpression](../Proposals/newlang.ye#L1019)
-- [PreIncrementExpression](../Proposals/newlang.ye#L1027)
-- [PreDecrementExpression](../Proposals/newlang.ye#L1031)
-- [UnaryExpressionNotPlusMinus](../Proposals/newlang.ye#L1035)
-- [PostfixExpression](../Proposals/newlang.ye#L1042)
-- [PostIncrementExpression](../Proposals/newlang.ye#L1049)
-- [PostDecrementExpression](../Proposals/newlang.ye#L1053)
-- [CastExpression](../Proposals/newlang.ye#L1057)
+- **J / D — `EnumDeclaration`** ([source](../Proposals/newlang.ye#L412))
+  ```text
+  EnumDeclaration
+  :	{ ClassModifier } 'enum' Identifier [ Superinterfaces ] EnumBody
+  ;
+  ```
+- **J — `EnumBody`** ([source](../Proposals/newlang.ye#L416))
+  ```text
+  EnumBody
+  :	'{' [ EnumConstantList ] [ ',' ] [ EnumBodyDeclarations ] '}'
+  ;
+  ```
+- **J — `EnumConstantList`** ([source](../Proposals/newlang.ye#L420))
+  ```text
+  EnumConstantList
+  :	EnumConstant { ',' EnumConstant }
+  ;
+  ```
+- **J — `EnumConstant`** ([source](../Proposals/newlang.ye#L424))
+  ```text
+  EnumConstant
+  :	{ EnumConstantModifier } Identifier [ '(' [ ArgumentList ] ')' ] [ ClassBody ]
+  ;
+  ```
+- **J — `EnumConstantModifier`** ([source](../Proposals/newlang.ye#L428))
+  ```text
+  EnumConstantModifier
+  :	Annotation
+  ;
+  ```
+- **J — `EnumBodyDeclarations`** ([source](../Proposals/newlang.ye#L432))
+  ```text
+  EnumBodyDeclarations
+  :	';' { ClassBodyDeclaration }
+  ;
+  ```
+- **J — `ConstantDeclaration`** ([source](../Proposals/newlang.ye#L473))
+  ```text
+  ConstantDeclaration
+  :	{ ConstantModifier } UnannType VariableDeclaratorList ';'
+  ;
+  ```
+- **J — `ConstantModifier`** ([source](../Proposals/newlang.ye#L477))
+  ```text
+  ConstantModifier
+  :	Annotation
+  |	'public'
+  |	'static'
+  |	'final'
+  ;
+  ```
+- **J — `InterfaceMethodDeclaration`** ([source](../Proposals/newlang.ye#L484))
+  ```text
+  InterfaceMethodDeclaration
+  :	{ InterfaceMethodModifier } MethodHeader MethodBody
+  ;
+  ```
+- **J — `InterfaceMethodModifier`** ([source](../Proposals/newlang.ye#L488))
+  ```text
+  InterfaceMethodModifier
+  :	Annotation
+  |	'public'
+  |	'abstract'
+  |	'default'
+  |	'static'
+  |	'strictfp'
+  ;
+  ```
+- **J — `AnnotationTypeDeclaration`** ([source](../Proposals/newlang.ye#L497))
+  ```text
+  AnnotationTypeDeclaration
+  :	{ InterfaceModifier } '@' 'interface' Identifier AnnotationTypeBody
+  ;
+  ```
+- **J — `AnnotationTypeBody`** ([source](../Proposals/newlang.ye#L501))
+  ```text
+  AnnotationTypeBody
+  :	'{' { AnnotationTypeMemberDeclaration } '}'
+  ;
+  ```
+- **J — `AnnotationTypeMemberDeclaration`** ([source](../Proposals/newlang.ye#L505))
+  ```text
+  AnnotationTypeMemberDeclaration
+  :	AnnotationTypeElementDeclaration
+  |	ConstantDeclaration
+  |	ClassDeclaration
+  |	InterfaceDeclaration
+  |	';'
+  ;
+  ```
+- **J — `AnnotationTypeElementDeclaration`** ([source](../Proposals/newlang.ye#L513))
+  ```text
+  AnnotationTypeElementDeclaration
+  :	{ AnnotationTypeElementModifier } UnannType Identifier '(' ')' [ Dims ] [ DefaultValue ] ';'
+  ;
+  ```
+- **J — `AnnotationTypeElementModifier`** ([source](../Proposals/newlang.ye#L517))
+  ```text
+  AnnotationTypeElementModifier
+  :	Annotation
+  |	'public'
+  |	'abstract'
+  ;
+  ```
+- **J — `DefaultValue`** ([source](../Proposals/newlang.ye#L523))
+  ```text
+  DefaultValue
+  :	'default' ElementValue
+  ;
+  ```
+- **J — `Annotation`** ([source](../Proposals/newlang.ye#L527))
+  ```text
+  Annotation
+  :	NormalAnnotation
+  |	MarkerAnnotation
+  |	SingleElementAnnotation
+  ;
+  ```
+- **J — `NormalAnnotation`** ([source](../Proposals/newlang.ye#L533))
+  ```text
+  NormalAnnotation
+  :	'@' TypeName '(' [ ElementValuePairList ] ')'
+  ;
+  ```
+- **J — `ElementValuePairList`** ([source](../Proposals/newlang.ye#L537))
+  ```text
+  ElementValuePairList
+  :	ElementValuePair { ',' ElementValuePair }
+  ;
+  ```
+- **J — `ElementValuePair`** ([source](../Proposals/newlang.ye#L541))
+  ```text
+  ElementValuePair
+  :	Identifier '=' ElementValue
+  ;
+  ```
+- **J — `ElementValue`** ([source](../Proposals/newlang.ye#L545))
+  ```text
+  ElementValue
+  :	ConditionalExpression
+  |	ElementValueArrayInitializer
+  |	Annotation
+  ;
+  ```
+- **J — `ElementValueArrayInitializer`** ([source](../Proposals/newlang.ye#L551))
+  ```text
+  ElementValueArrayInitializer
+  :	'{' [ ElementValueList ] [ ',' ] '}'
+  ;
+  ```
+- **J — `ElementValueList`** ([source](../Proposals/newlang.ye#L555))
+  ```text
+  ElementValueList
+  :	ElementValue { ',' ElementValue }
+  ;
+  ```
+- **J — `MarkerAnnotation`** ([source](../Proposals/newlang.ye#L559))
+  ```text
+  MarkerAnnotation
+  :	'@' TypeName
+  ;
+  ```
+- **J — `SingleElementAnnotation`** ([source](../Proposals/newlang.ye#L563))
+  ```text
+  SingleElementAnnotation
+  :	'@' TypeName '(' ElementValue ')'
+  ;
+  ```
+- **J — `ArrayInitializer`** ([source](../Proposals/newlang.ye#L569))
+  ```text
+  ArrayInitializer
+  :	{ [ VariableInitializerList ] [ ',' ] }
+  ;
+  ```
+- **J — `VariableInitializerList`** ([source](../Proposals/newlang.ye#L573))
+  ```text
+  VariableInitializerList
+  :	VariableInitializer { ',' VariableInitializer }
+  ;
+  ```
+- **J — `Block`** ([source](../Proposals/newlang.ye#L579))
+  ```text
+  Block
+  :	'{' [ BlockStatements ] '}'
+  ;
+  ```
+- **J — `BlockStatements`** ([source](../Proposals/newlang.ye#L583))
+  ```text
+  BlockStatements
+  :	BlockStatement { BlockStatement }
+  ;
+  ```
+- **J — `BlockStatement`** ([source](../Proposals/newlang.ye#L587))
+  ```text
+  BlockStatement
+  :	LocalVariableDeclarationStatement
+  |	ClassDeclaration
+  |	Statement
+  ;
+  ```
+- **J — `LocalVariableDeclarationStatement`** ([source](../Proposals/newlang.ye#L593))
+  ```text
+  LocalVariableDeclarationStatement
+  :	LocalVariableDeclaration ';'
+  ;
+  ```
+- **J — `LocalVariableDeclaration`** ([source](../Proposals/newlang.ye#L597))
+  ```text
+  LocalVariableDeclaration
+  :	{ VariableModifier } UnannType VariableDeclaratorList
+  ;
+  ```
+- **J — `Statement`** ([source](../Proposals/newlang.ye#L601))
+  ```text
+  Statement
+  :	StatementWithoutTrailingSubstatement
+  |	LabeledStatement
+  |	IfThenStatement
+  |	IfThenElseStatement
+  |	WhileStatement
+  |	ForStatement
+  ;
+  ```
+- **J — `StatementNoShortIf`** ([source](../Proposals/newlang.ye#L610))
+  ```text
+  StatementNoShortIf
+  :	StatementWithoutTrailingSubstatement
+  |	LabeledStatementNoShortIf
+  |	IfThenElseStatementNoShortIf
+  |	WhileStatementNoShortIf
+  |	ForStatementNoShortIf
+  ;
+  ```
+- **J — `StatementWithoutTrailingSubstatement`** ([source](../Proposals/newlang.ye#L618))
+  ```text
+  StatementWithoutTrailingSubstatement
+  :	Block
+  |	EmptyStatement
+  |	ExpressionStatement
+  |	AssertStatement
+  |	SwitchStatement
+  |	DoStatement
+  |	BreakStatement
+  |	ContinueStatement
+  |	ReturnStatement
+  |	SynchronizedStatement
+  |	ThrowStatement
+  |	TryStatement
+  ;
+  ```
+- **J — `EmptyStatement`** ([source](../Proposals/newlang.ye#L633))
+  ```text
+  EmptyStatement
+  :	';'
+  ;
+  ```
+- **J — `LabeledStatement`** ([source](../Proposals/newlang.ye#L637))
+  ```text
+  LabeledStatement
+  :	Identifier ':' Statement
+  ;
+  ```
+- **J — `LabeledStatementNoShortIf`** ([source](../Proposals/newlang.ye#L641))
+  ```text
+  LabeledStatementNoShortIf
+  :	Identifier ':' StatementNoShortIf
+  ;
+  ```
+- **J — `ExpressionStatement`** ([source](../Proposals/newlang.ye#L645))
+  ```text
+  ExpressionStatement
+  :	StatementExpression ';'
+  ;
+  ```
+- **J — `StatementExpression`** ([source](../Proposals/newlang.ye#L649))
+  ```text
+  StatementExpression
+  :	Assignment
+  |	PreIncrementExpression
+  |	PreDecrementExpression
+  |	PostIncrementExpression
+  |	PostDecrementExpression
+  |	MethodInvocation
+  |	ClassInstanceCreationExpression
+  ;
+  ```
+- **J — `IfThenStatement`** ([source](../Proposals/newlang.ye#L659))
+  ```text
+  IfThenStatement
+  :	'if' '(' Expression ')' Statement
+  ;
+  ```
+- **J — `IfThenElseStatement`** ([source](../Proposals/newlang.ye#L663))
+  ```text
+  IfThenElseStatement
+  :	'if' '(' Expression ')' StatementNoShortIf 'else' Statement
+  ;
+  ```
+- **J — `IfThenElseStatementNoShortIf`** ([source](../Proposals/newlang.ye#L667))
+  ```text
+  IfThenElseStatementNoShortIf
+  :	'if' '(' Expression ')' StatementNoShortIf 'else' StatementNoShortIf
+  ;
+  ```
+- **J — `AssertStatement`** ([source](../Proposals/newlang.ye#L671))
+  ```text
+  AssertStatement
+  :	'assert' Expression ';'
+  |	'assert' Expression ':' Expression ';'
+  ;
+  ```
+- **J — `SwitchStatement`** ([source](../Proposals/newlang.ye#L676))
+  ```text
+  SwitchStatement
+  :	'switch' '(' Expression ')' SwitchBlock
+  ;
+  ```
+- **J — `SwitchBlock`** ([source](../Proposals/newlang.ye#L680))
+  ```text
+  SwitchBlock
+  :	'{' { SwitchBlockStatementGroup } { SwitchLabel } '}'
+  ;
+  ```
+- **J — `SwitchBlockStatementGroup`** ([source](../Proposals/newlang.ye#L684))
+  ```text
+  SwitchBlockStatementGroup
+  :	SwitchLabels BlockStatements
+  ;
+  ```
+- **J — `SwitchLabels`** ([source](../Proposals/newlang.ye#L688))
+  ```text
+  SwitchLabels
+  :	SwitchLabel { SwitchLabel }
+  ;
+  ```
+- **J — `SwitchLabel`** ([source](../Proposals/newlang.ye#L692))
+  ```text
+  SwitchLabel
+  :	'case' ConstantExpression ':'
+  |	'case' EnumConstantName ':'
+  |	'default' ':'
+  ;
+  ```
+- **J — `EnumConstantName`** ([source](../Proposals/newlang.ye#L698))
+  ```text
+  EnumConstantName
+  :	Identifier
+  ;
+  ```
+- **J — `WhileStatement`** ([source](../Proposals/newlang.ye#L702))
+  ```text
+  WhileStatement
+  :	'while' '(' Expression ')' Statement
+  ;
+  ```
+- **J — `WhileStatementNoShortIf`** ([source](../Proposals/newlang.ye#L706))
+  ```text
+  WhileStatementNoShortIf
+  :	'while' '(' Expression ')' StatementNoShortIf
+  ;
+  ```
+- **J — `DoStatement`** ([source](../Proposals/newlang.ye#L710))
+  ```text
+  DoStatement
+  :	'do' Statement 'while' '(' Expression ')' ';'
+  ;
+  ```
+- **J — `ForStatement`** ([source](../Proposals/newlang.ye#L714))
+  ```text
+  ForStatement
+  :	BasicForStatement
+  |	EnhancedForStatement
+  ;
+  ```
+- **J — `ForStatementNoShortIf`** ([source](../Proposals/newlang.ye#L719))
+  ```text
+  ForStatementNoShortIf
+  :	BasicForStatementNoShortIf
+  |	EnhancedForStatementNoShortIf
+  ;
+  ```
+- **J — `BasicForStatement`** ([source](../Proposals/newlang.ye#L724))
+  ```text
+  BasicForStatement
+  :	'for' '(' [ ForInit ] ';' [ Expression ] ';' [ ForUpdate ] ')' Statement
+  ;
+  ```
+- **J — `BasicForStatementNoShortIf`** ([source](../Proposals/newlang.ye#L728))
+  ```text
+  BasicForStatementNoShortIf
+  :	'for' '(' [ ForInit ] ';' [ Expression ] ';' [ ForUpdate ] ')' StatementNoShortIf
+  ;
+  ```
+- **J — `ForInit`** ([source](../Proposals/newlang.ye#L732))
+  ```text
+  ForInit
+  :	StatementExpressionList
+  |	LocalVariableDeclaration
+  ;
+  ```
+- **J — `ForUpdate`** ([source](../Proposals/newlang.ye#L737))
+  ```text
+  ForUpdate
+  :	StatementExpressionList
+  ;
+  ```
+- **J — `StatementExpressionList`** ([source](../Proposals/newlang.ye#L741))
+  ```text
+  StatementExpressionList
+  :	StatementExpression { ',' StatementExpression }
+  ;
+  ```
+- **J — `EnhancedForStatement`** ([source](../Proposals/newlang.ye#L745))
+  ```text
+  EnhancedForStatement
+  :	'for' '(' { VariableModifier } UnannType VariableDeclaratorId ':' Expression ')' Statement
+  ;
+  ```
+- **J — `EnhancedForStatementNoShortIf`** ([source](../Proposals/newlang.ye#L749))
+  ```text
+  EnhancedForStatementNoShortIf
+  :	'for' '(' { VariableModifier } UnannType VariableDeclaratorId ':' Expression ')' StatementNoShortIf
+  ;
+  ```
+- **J — `BreakStatement`** ([source](../Proposals/newlang.ye#L753))
+  ```text
+  BreakStatement
+  :	'break' [ Identifier ] ';'
+  ;
+  ```
+- **J — `ContinueStatement`** ([source](../Proposals/newlang.ye#L757))
+  ```text
+  ContinueStatement
+  :	'continue' [ Identifier ] ';'
+  ;
+  ```
+- **J — `ReturnStatement`** ([source](../Proposals/newlang.ye#L761))
+  ```text
+  ReturnStatement
+  :	'return' [ Expression ] ';'
+  ;
+  ```
+- **J — `ThrowStatement`** ([source](../Proposals/newlang.ye#L765))
+  ```text
+  ThrowStatement
+  :	'throw' Expression ';'
+  ;
+  ```
+- **J — `SynchronizedStatement`** ([source](../Proposals/newlang.ye#L769))
+  ```text
+  SynchronizedStatement
+  :	'synchronized' '(' Expression ')' Block
+  ;
+  ```
+- **J — `TryStatement`** ([source](../Proposals/newlang.ye#L773))
+  ```text
+  TryStatement
+  :	'try' Block Catches
+  |	'try' Block [ Catches ] Finally
+  |	TryWithResourcesStatement
+  ;
+  ```
+- **J — `Catches`** ([source](../Proposals/newlang.ye#L779))
+  ```text
+  Catches
+  :	CatchClause { CatchClause }
+  ;
+  ```
+- **J — `CatchClause`** ([source](../Proposals/newlang.ye#L783))
+  ```text
+  CatchClause
+  :	'catch' '(' CatchFormalParameter ')' Block
+  ;
+  ```
+- **J — `CatchFormalParameter`** ([source](../Proposals/newlang.ye#L787))
+  ```text
+  CatchFormalParameter
+  :	{ VariableModifier } CatchType VariableDeclaratorId
+  ;
+  ```
+- **J — `CatchType`** ([source](../Proposals/newlang.ye#L791))
+  ```text
+  CatchType
+  :	UnannClassType { '|' ClassType }
+  ;
+  ```
+- **J — `Finally`** ([source](../Proposals/newlang.ye#L795))
+  ```text
+  Finally
+  :	'finally' Block
+  ;
+  ```
+- **J — `TryWithResourcesStatement`** ([source](../Proposals/newlang.ye#L799))
+  ```text
+  TryWithResourcesStatement
+  :	'try' ResourceSpecification Block [ Catches ] [ Finally ]
+  ;
+  ```
+- **J — `ResourceSpecification`** ([source](../Proposals/newlang.ye#L803))
+  ```text
+  ResourceSpecification
+  :	'(' ResourceList [ ';' ] ')'
+  ;
+  ```
+- **J — `ResourceList`** ([source](../Proposals/newlang.ye#L807))
+  ```text
+  ResourceList
+  :	Resource { ';' Resource }
+  ;
+  ```
+- **J — `Resource`** ([source](../Proposals/newlang.ye#L811))
+  ```text
+  Resource
+  :	{ VariableModifier } UnannType VariableDeclaratorId '=' Expression
+  ;
+  ```
+- **J — `Primary`** ([source](../Proposals/newlang.ye#L817))
+  ```text
+  Primary
+  :	PrimaryNoNewArray
+  |	ArrayCreationExpression
+  ;
+  ```
+- **J — `PrimaryNoNewArray`** ([source](../Proposals/newlang.ye#L822))
+  ```text
+  PrimaryNoNewArray
+  :	Literal
+  |	TypeName { '[' ']' } '.' 'class'
+  |	'void' '.' 'class'
+  |	'this'
+  |	TypeName '.' 'this'
+  |	'(' Expression ')'
+  |	ClassInstanceCreationExpression
+  |	FieldAccess
+  |	ArrayAccess
+  |	MethodInvocation
+  |	MethodReference
+  ;
+  ```
+- **J — `ClassInstanceCreationExpression`** ([source](../Proposals/newlang.ye#L836))
+  ```text
+  ClassInstanceCreationExpression
+  :	'new' [ TypeArguments ] { Annotation } Identifier [ TypeArgumentsOrDiamond ] '(' [ ArgumentList ] ')' [ ClassBody ]
+  |	ExpressionName '.' 'new' [ TypeArguments ] { Annotation } Identifier [ TypeArgumentsOrDiamond ] '(' [ ArgumentList ] ')' [ ClassBody ]
+  |	Primary '.' 'new' [ TypeArguments ] { Annotation } Identifier [ TypeArgumentsOrDiamond ] '(' [ ArgumentList ] ')' [ ClassBody ]
+  ;
+  ```
+- **J — `TypeArgumentsOrDiamond`** ([source](../Proposals/newlang.ye#L842))
+  ```text
+  TypeArgumentsOrDiamond
+  :	TypeArguments
+  |	'<' '>'
+  ;
+  ```
+- **J — `FieldAccess`** ([source](../Proposals/newlang.ye#L847))
+  ```text
+  FieldAccess
+  :	Primary '.' Identifier
+  |	'super' '.' Identifier
+  |	TypeName '.' 'super' '.' Identifier
+  ;
+  ```
+- **J — `ArrayAccess`** ([source](../Proposals/newlang.ye#L853))
+  ```text
+  ArrayAccess
+  :	ExpressionName '[' Expression ']'
+  |	PrimaryNoNewArray '[' Expression ']'
+  ;
+  ```
+- **J — `MethodInvocation`** ([source](../Proposals/newlang.ye#L858))
+  ```text
+  MethodInvocation
+  :	MethodName '(' [ ArgumentList ] ')'
+  |	TypeName '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+  |	ExpressionName '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+  |	Primary '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+  |	'super' '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+  |	TypeName '.' 'super' '.' [ TypeArguments ] Identifier '(' [ ArgumentList ] ')'
+  ;
+  ```
+- **J — `ArgumentList`** ([source](../Proposals/newlang.ye#L867))
+  ```text
+  ArgumentList
+  :	Expression { ',' Expression }
+  ;
+  ```
+- **J — `MethodReference`** ([source](../Proposals/newlang.ye#L871))
+  ```text
+  MethodReference
+  :	ExpressionName '::' [ TypeArguments ] Identifier
+  |	ReferenceType '::' [ TypeArguments ] Identifier
+  |	Primary '::' [ TypeArguments ] Identifier
+  |	'super' '::' [ TypeArguments ] Identifier
+  |	TypeName '.' 'super' '::' [ TypeArguments ] Identifier
+  |	ClassType '::' [ TypeArguments ] 'new'
+  |	ArrayType '::' 'new'
+  ;
+  ```
+- **J — `ArrayCreationExpression`** ([source](../Proposals/newlang.ye#L881))
+  ```text
+  ArrayCreationExpression
+  :	'new' PrimitiveType DimExprs [ Dims ]
+  |	'new' ClassOrInterfaceType DimExprs [ Dims ]
+  |	'new' PrimitiveType Dims ArrayInitializer
+  |	'new' ClassOrInterfaceType Dims ArrayInitializer
+  ;
+  ```
+- **J — `DimExprs`** ([source](../Proposals/newlang.ye#L888))
+  ```text
+  DimExprs
+  :	DimExpr { DimExpr }
+  ;
+  ```
+- **J — `DimExpr`** ([source](../Proposals/newlang.ye#L892))
+  ```text
+  DimExpr
+  :	{ Annotation } '[' Expression ']'
+  ;
+  ```
+- **J — `ConstantExpression`** ([source](../Proposals/newlang.ye#L896))
+  ```text
+  ConstantExpression
+  :	Expression
+  ;
+  ```
+- **J — `Expression`** ([source](../Proposals/newlang.ye#L900))
+  ```text
+  Expression
+  :	LambdaExpression
+  |	AssignmentExpression
+  ;
+  ```
+- **J — `LambdaExpression`** ([source](../Proposals/newlang.ye#L905))
+  ```text
+  LambdaExpression
+  :	LambdaParameters '->' LambdaBody
+  ;
+  ```
+- **J — `LambdaParameters`** ([source](../Proposals/newlang.ye#L909))
+  ```text
+  LambdaParameters
+  :	Identifier
+  |	'(' [ FormalParameterList ] ')'
+  |	'(' InferredFormalParameterList ')'
+  ;
+  ```
+- **J — `InferredFormalParameterList`** ([source](../Proposals/newlang.ye#L915))
+  ```text
+  InferredFormalParameterList
+  :	Identifier { ',' Identifier }
+  ;
+  ```
+- **J — `LambdaBody`** ([source](../Proposals/newlang.ye#L919))
+  ```text
+  LambdaBody
+  :	Expression
+  |	Block
+  ;
+  ```
+- **J — `AssignmentExpression`** ([source](../Proposals/newlang.ye#L924))
+  ```text
+  AssignmentExpression
+  :	ConditionalExpression
+  |	Assignment
+  ;
+  ```
+- **J — `Assignment`** ([source](../Proposals/newlang.ye#L929))
+  ```text
+  Assignment
+  :	LeftHandSide AssignmentOperator Expression
+  ;
+  ```
+- **J — `LeftHandSide`** ([source](../Proposals/newlang.ye#L933))
+  ```text
+  LeftHandSide
+  :	ExpressionName
+  |	FieldAccess
+  |	ArrayAccess
+  ;
+  ```
+- **J — `AssignmentOperator`** ([source](../Proposals/newlang.ye#L939))
+  ```text
+  AssignmentOperator
+  :	'='
+  |	'*='
+  |	'/='
+  |	'%='
+  |	'+='
+  |	'-='
+  |	'<<='
+  |	'>>='
+  |	'>>>='
+  |	'&='
+  |	'^='
+  |	'|='
+  ;
+  ```
+- **J — `ConditionalExpression`** ([source](../Proposals/newlang.ye#L954))
+  ```text
+  ConditionalExpression
+  :	ConditionalOrExpression
+  |	ConditionalOrExpression '?' Expression ':' ConditionalExpression
+  ;
+  ```
+- **J — `ConditionalOrExpression`** ([source](../Proposals/newlang.ye#L959))
+  ```text
+  ConditionalOrExpression
+  :	ConditionalAndExpression
+  |	ConditionalOrExpression '||' ConditionalAndExpression
+  ;
+  ```
+- **J — `ConditionalAndExpression`** ([source](../Proposals/newlang.ye#L964))
+  ```text
+  ConditionalAndExpression
+  :	InclusiveOrExpression
+  |	ConditionalAndExpression '&&' InclusiveOrExpression
+  ;
+  ```
+- **J — `InclusiveOrExpression`** ([source](../Proposals/newlang.ye#L969))
+  ```text
+  InclusiveOrExpression
+  :	ExclusiveOrExpression
+  |	InclusiveOrExpression '|' ExclusiveOrExpression
+  ;
+  ```
+- **J — `ExclusiveOrExpression`** ([source](../Proposals/newlang.ye#L974))
+  ```text
+  ExclusiveOrExpression
+  :	AndExpression
+  |	ExclusiveOrExpression '^' AndExpression
+  ;
+  ```
+- **J — `AndExpression`** ([source](../Proposals/newlang.ye#L979))
+  ```text
+  AndExpression
+  :	EqualityExpression
+  |	AndExpression '&' EqualityExpression
+  ;
+  ```
+- **J — `EqualityExpression`** ([source](../Proposals/newlang.ye#L984))
+  ```text
+  EqualityExpression
+  :	RelationalExpression
+  |	EqualityExpression '==' RelationalExpression
+  |	EqualityExpression '!=' RelationalExpression
+  ;
+  ```
+- **J — `RelationalExpression`** ([source](../Proposals/newlang.ye#L990))
+  ```text
+  RelationalExpression
+  :	ShiftExpression
+  |	RelationalExpression '<' ShiftExpression
+  |	RelationalExpression '>' ShiftExpression
+  |	RelationalExpression '<=' ShiftExpression
+  |	RelationalExpression '>=' ShiftExpression
+  |	RelationalExpression 'instanceof' ReferenceType
+  ;
+  ```
+- **J — `ShiftExpression`** ([source](../Proposals/newlang.ye#L999))
+  ```text
+  ShiftExpression
+  :	AdditiveExpression
+  |	ShiftExpression '<<' AdditiveExpression
+  |	ShiftExpression '>>' AdditiveExpression
+  |	ShiftExpression '>>>' AdditiveExpression
+  ;
+  ```
+- **J — `AdditiveExpression`** ([source](../Proposals/newlang.ye#L1006))
+  ```text
+  AdditiveExpression
+  :	MultiplicativeExpression
+  |	AdditiveExpression '+' MultiplicativeExpression
+  |	AdditiveExpression '-' MultiplicativeExpression
+  ;
+  ```
+- **J — `MultiplicativeExpression`** ([source](../Proposals/newlang.ye#L1012))
+  ```text
+  MultiplicativeExpression
+  :	UnaryExpression
+  |	MultiplicativeExpression '*' UnaryExpression
+  |	MultiplicativeExpression '/' UnaryExpression
+  |	MultiplicativeExpression '%' UnaryExpression
+  ;
+  ```
+- **J — `UnaryExpression`** ([source](../Proposals/newlang.ye#L1019))
+  ```text
+  UnaryExpression
+  :	PreIncrementExpression
+  |	PreDecrementExpression
+  |	'+' UnaryExpression
+  |	'-' UnaryExpression
+  |	UnaryExpressionNotPlusMinus
+  ;
+  ```
+- **J — `PreIncrementExpression`** ([source](../Proposals/newlang.ye#L1027))
+  ```text
+  PreIncrementExpression
+  :	'++' UnaryExpression
+  ;
+  ```
+- **J — `PreDecrementExpression`** ([source](../Proposals/newlang.ye#L1031))
+  ```text
+  PreDecrementExpression
+  :	'--' UnaryExpression
+  ;
+  ```
+- **J — `UnaryExpressionNotPlusMinus`** ([source](../Proposals/newlang.ye#L1035))
+  ```text
+  UnaryExpressionNotPlusMinus
+  :	PostfixExpression
+  |	'~' UnaryExpression
+  |	'!' UnaryExpression
+  |	CastExpression
+  ;
+  ```
+- **J — `PostfixExpression`** ([source](../Proposals/newlang.ye#L1042))
+  ```text
+  PostfixExpression
+  :	Primary
+  |	ExpressionName
+  |	PostIncrementExpression
+  |	PostDecrementExpression
+  ;
+  ```
+- **J — `PostIncrementExpression`** ([source](../Proposals/newlang.ye#L1049))
+  ```text
+  PostIncrementExpression
+  :	PostfixExpression '++'
+  ;
+  ```
+- **J — `PostDecrementExpression`** ([source](../Proposals/newlang.ye#L1053))
+  ```text
+  PostDecrementExpression
+  :	PostfixExpression '--'
+  ;
+  ```
+- **J — `CastExpression`** ([source](../Proposals/newlang.ye#L1057))
+  ```text
+  CastExpression
+  :	'(' PrimitiveType ')' UnaryExpression
+  |	'(' ReferenceType { AdditionalBound } ')' UnaryExpressionNotPlusMinus
+  |	'(' ReferenceType { AdditionalBound } ')' LambdaExpression
+  ;
+  ```
 
 ### Name and type productions — J
 
@@ -294,34 +1533,196 @@ These further Java-like productions duplicate or extend the earlier type/name
 proposal. The angle-bracket type-argument syntax is not selected; DEC-011 uses
 square brackets for templates.
 
-- [PackageName](../Proposals/newlang.ye#L1065) **D**
-- [TypeName](../Proposals/newlang.ye#L1070)
-- [PackageOrTypeName](../Proposals/newlang.ye#L1075)
-- [ExpressionName](../Proposals/newlang.ye#L1080)
-- [MethodName](../Proposals/newlang.ye#L1085)
-- [AmbiguousName](../Proposals/newlang.ye#L1089)
-- [SimpleTypeName](../Proposals/newlang.ye#L1096)
-- [TypeParameterModifier](../Proposals/newlang.ye#L1100)
-- [Type](../Proposals/newlang.ye#L1108) **D**
-- [PrimitiveType](../Proposals/newlang.ye#L1113)
-- [NumericType](../Proposals/newlang.ye#L1118)
-- [IntegralType](../Proposals/newlang.ye#L1123)
-- [FloatingPointType](../Proposals/newlang.ye#L1131)
-- [ReferenceType](../Proposals/newlang.ye#L1136)
-- [ClassOrInterfaceType](../Proposals/newlang.ye#L1142)
-- [ClassType](../Proposals/newlang.ye#L1147)
-- [InterfaceType](../Proposals/newlang.ye#L1152)
-- [TypeVariable](../Proposals/newlang.ye#L1156)
-- [ArrayType](../Proposals/newlang.ye#L1160)
-- [Dims](../Proposals/newlang.ye#L1166)
-- [TypeParameter](../Proposals/newlang.ye#L1170)
-- [TypeBound](../Proposals/newlang.ye#L1174)
-- [AdditionalBound](../Proposals/newlang.ye#L1179)
-- [TypeArguments](../Proposals/newlang.ye#L1183)
-- [TypeArgumentList](../Proposals/newlang.ye#L1187)
-- [TypeArgument](../Proposals/newlang.ye#L1191)
-- [Wildcard](../Proposals/newlang.ye#L1196)
-- [WildcardBounds](../Proposals/newlang.ye#L1200)
+- **J / D — `PackageName`** ([source](../Proposals/newlang.ye#L1065))
+  ```text
+  PackageName
+  :	Identifier
+  |	PackageName '.' Identifier
+  ;
+  ```
+- **J — `TypeName`** ([source](../Proposals/newlang.ye#L1070))
+  ```text
+  TypeName
+  :	Identifier
+  |	PackageOrTypeName '.' Identifier
+  ;
+  ```
+- **J — `PackageOrTypeName`** ([source](../Proposals/newlang.ye#L1075))
+  ```text
+  PackageOrTypeName
+  :	Identifier
+  |	PackageOrTypeName '.' Identifier
+  ;
+  ```
+- **J — `ExpressionName`** ([source](../Proposals/newlang.ye#L1080))
+  ```text
+  ExpressionName
+  :	Identifier
+  |	AmbiguousName '.' Identifier
+  ;
+  ```
+- **J — `MethodName`** ([source](../Proposals/newlang.ye#L1085))
+  ```text
+  MethodName
+  :	Identifier
+  ;
+  ```
+- **J — `AmbiguousName`** ([source](../Proposals/newlang.ye#L1089))
+  ```text
+  AmbiguousName
+  :	Identifier
+  |	AmbiguousName '.' Identifier
+  ;
+  ```
+- **J — `SimpleTypeName`** ([source](../Proposals/newlang.ye#L1096))
+  ```text
+  SimpleTypeName
+  :	Identifier
+  ;
+  ```
+- **J — `TypeParameterModifier`** ([source](../Proposals/newlang.ye#L1100))
+  ```text
+  TypeParameterModifier
+  :	Annotation
+  ;
+  ```
+- **J / D — `Type`** ([source](../Proposals/newlang.ye#L1108))
+  ```text
+  Type
+  :	PrimitiveType
+  |	ReferenceType
+  ;
+  ```
+- **J — `PrimitiveType`** ([source](../Proposals/newlang.ye#L1113))
+  ```text
+  PrimitiveType
+  :	{ Annotation } NumericType
+  |	{ Annotation } 'boolean'
+  ;
+  ```
+- **J — `NumericType`** ([source](../Proposals/newlang.ye#L1118))
+  ```text
+  NumericType
+  :	IntegralType
+  |	FloatingPointType
+  ;
+  ```
+- **J — `IntegralType`** ([source](../Proposals/newlang.ye#L1123))
+  ```text
+  IntegralType
+  :	'byte'
+  |	'short'
+  |	'int'
+  |	'long'
+  |	'char'
+  ;
+  ```
+- **J — `FloatingPointType`** ([source](../Proposals/newlang.ye#L1131))
+  ```text
+  FloatingPointType
+  :	'float'
+  |	'double'
+  ;
+  ```
+- **J — `ReferenceType`** ([source](../Proposals/newlang.ye#L1136))
+  ```text
+  ReferenceType
+  :	ClassOrInterfaceType
+  |	TypeVariable
+  |	ArrayType
+  ;
+  ```
+- **J — `ClassOrInterfaceType`** ([source](../Proposals/newlang.ye#L1142))
+  ```text
+  ClassOrInterfaceType
+  :	ClassType
+  |	InterfaceType
+  ;
+  ```
+- **J — `ClassType`** ([source](../Proposals/newlang.ye#L1147))
+  ```text
+  ClassType
+  :	{ Annotation } Identifier [ TypeArguments ]
+  |	ClassOrInterfaceType '.' { Annotation } Identifier [ TypeArguments ]
+  ;
+  ```
+- **J — `InterfaceType`** ([source](../Proposals/newlang.ye#L1152))
+  ```text
+  InterfaceType
+  :	ClassType
+  ;
+  ```
+- **J — `TypeVariable`** ([source](../Proposals/newlang.ye#L1156))
+  ```text
+  TypeVariable
+  :	{ Annotation } Identifier
+  ;
+  ```
+- **J — `ArrayType`** ([source](../Proposals/newlang.ye#L1160))
+  ```text
+  ArrayType
+  :	PrimitiveType Dims
+  |	ClassOrInterfaceType Dims
+  |	TypeVariable Dims
+  ;
+  ```
+- **J — `Dims`** ([source](../Proposals/newlang.ye#L1166))
+  ```text
+  Dims
+  :	{ Annotation } '[' ']' { { Annotation } '[' ']' }
+  ;
+  ```
+- **J — `TypeParameter`** ([source](../Proposals/newlang.ye#L1170))
+  ```text
+  TypeParameter
+  :	{ TypeParameterModifier } Identifier [ TypeBound ]
+  ;
+  ```
+- **J — `TypeBound`** ([source](../Proposals/newlang.ye#L1174))
+  ```text
+  TypeBound
+  :	'extends' TypeVariable
+  |	'extends' ClassOrInterfaceType { AdditionalBound }
+  ;
+  ```
+- **J — `AdditionalBound`** ([source](../Proposals/newlang.ye#L1179))
+  ```text
+  AdditionalBound
+  :	'&' InterfaceType
+  ;
+  ```
+- **J — `TypeArguments`** ([source](../Proposals/newlang.ye#L1183))
+  ```text
+  TypeArguments
+  :	'<' TypeArgumentList '>'
+  ;
+  ```
+- **J — `TypeArgumentList`** ([source](../Proposals/newlang.ye#L1187))
+  ```text
+  TypeArgumentList
+  :	TypeArgument { ',' TypeArgument }
+  ;
+  ```
+- **J — `TypeArgument`** ([source](../Proposals/newlang.ye#L1191))
+  ```text
+  TypeArgument
+  :	ReferenceType
+  |	Wildcard
+  ;
+  ```
+- **J — `Wildcard`** ([source](../Proposals/newlang.ye#L1196))
+  ```text
+  Wildcard
+  :	{ Annotation } '?' [ WildcardBounds ]
+  ;
+  ```
+- **J — `WildcardBounds`** ([source](../Proposals/newlang.ye#L1200))
+  ```text
+  WildcardBounds
+  :	'extends' ReferenceType
+  |	'super' ReferenceType
+  ;
+  ```
 
 `newlang` at line 99 is a file marker, not a production. The source also has
 two `PackageName`, `Type`, `VariableDeclaratorList`, `VariableDeclarator`, and
