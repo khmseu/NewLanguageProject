@@ -4,10 +4,26 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-11 (timezone +01:00); added the [NewLang production overview](../docs/newlang-production-overview.md) for `Proposals/newlang.ye` (KP-127). It distinguishes the provisionally adopted class-model outline from unresolved source productions and unadopted Java-like material. No language decision or compiler behavior changed. Earlier parse-wrapper verification is KP-126; reduced JSON verification remains KP-125; package manifests/tooling remain DEC-094/REQ-006 (KP-124).
+- Last substantive update: 2026-11-10 (timezone +01:00); DEC-095 specifies TypeScript-like prefix spread `...`, non-associative at a dedicated level between assignment and comma (KP-129). User explicitly selected specification/operator documentation only: lexer/parser support is not implemented. Legal expansion contexts and runtime/type details remain open. SEM-003 adaptation remains KP-128; full grammar compatibility assessment remains KP-127. Earlier wrapper/reduced JSON verification remains KP-126/KP-125; package manifests/tooling remain DEC-094/REQ-006 (KP-124).
+- Latest documentation update: 2026-11-11; revised the [NewLang production overview](../docs/newlang-production-overview.md) to include SEM-003's tentative CST-compatible source forms and EBNF beside the verbatim proposal rules (KP-131). This does not approve the tentative semantic forms or change compiler behavior. The previous substantive design update is DEC-095 on spread (KP-129).
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)
+
+- Rest-parameter direction (KP-130): reuse prefix `...` over a whole name-first
+  parameter binding, e.g. `...@args : T` has proposed future shape
+  `(... EMPTY (: (@ EMPTY args) T))`. Parameter-context elaboration would mark
+  the binding as rest; argument-context elaboration spreads a value. This is
+  tentative, not implemented; collected/element type, defaults and position/count
+  restrictions remain open.
+
+- Current semantic-specification step (KP-128): [SEM-003](../docs/design-research/Language-Design.md#sem-003--first-cst-compatible-adaptation-of-the-proposal-grammar)
+  maps previous grammar productions to tentative CST-compatible forms and their
+  predefined identifiers/operators. It uses name-first bindings, square templates,
+  bounded semicolon elements and braced control forms without changing precedence.
+  Seventeen representative forms pass exact CST/status/diagnostic assertions.
+  This is a requested tentative adaptation, not implemented semantic recognition;
+  unsupported/conflicting productions and remaining semantic choices stay deferred.
 
 This is a first-pass classification, not a provenance audit or a decision to move/delete experiment files. The directories listed in `langlist` are outside this workspace. They were read for this task; no source files were changed.
 

@@ -2711,28 +2711,152 @@ the wrapper. After creation, `sh -n`, executable-existence, real help (status
 0, clean stdout), and a quoted missing leading-hyphen path after `--` (status
 2, stderr only) passed. No compiler logic changed.
 
-### KP-127 - NewLang production overview
+### KP-127 - Proposal grammar compatibility with the generic CST
+
+- Event/documentation date: 2026-11-09 (+01:00); user request at 00:53.
+- Source: current conversation, complete [newlang.ye](../Proposals/newlang.ye),
+  approved language design, current precedence table and built-frontend probes.
+- Status: assessment completed; no grammar adoption or implementation approved.
+
+**Nutzerangabe:** Check how much of the proposal grammar can be reproduced on
+top of the existing parser and report.
+
+**Belegt:** The [compatibility report](../docs/newlang-grammar-compatibility.md)
+inventories 231 production definitions / 226 distinct nonterminals and 107
+quoted terminals. Of these terminals, 101 lex as single diagnostic-free tokens;
+the goal markers, ellipsis and unsigned-shift spellings split. Draft limitations
+include duplicate productions, undefined construct references, lexical categories
+without rules, a stray word, productions after a second `%%`, and unquoted
+array-initializer braces.
+
+**Verification:** Build passed. Ran 43 representative parse probes: 40 complete
+without diagnostics, three errors for non-associative chains. Inspected exact
+tree signatures, including incompatible complete parses. Nine further assertions
+passed for six complete basic/grouped forms and three expected diagnostic/status
+failures. These figures measure this probe set, not a percentage of grammar
+reproduction. No full test suite run or compiler behavior change.
+
+**Ableitung:** Many braced declarations, names, calls and control-flow heads
+can supply semantic recognition patterns. Exact historical expression/statement
+grammar is not supplied by ordinary interpretation of the current tree:
+call/member attachment, lambda-body extent, unary/bitwise precedence, conditional
+nesting and dangling-else/list ownership differ. Recovering a different grammar
+from preserved structural sequences is a second recognizer/parser, not evidence
+that the approved expression tree already encodes it.
+
+**Vorschlag / offen:** Use the grammar as a construct inventory; adapt bindings
+to name-first `@name`, templates to `[]`, and package configuration to DEC-094.
+Resolve wanted operator/construct semantics and exact CST consumption boundaries
+before implementation. Exact old-source compatibility would require explicit
+approval and clarification of the incomplete draft. No silent supersession of
+approved language decisions is proposed.
+
+### KP-128 - First CST-compatible semantic source-form adaptation
+
+- Event/documentation date: 2026-11-09 (+01:00); user request at 01:45.
+- Source: current conversation, proposal grammar, KP-127 assessment and approved
+  language design.
+- Status: tentative specification documented; no semantic implementation or
+  parser-rule supersession.
+
+**Nutzerangabe:** As a first step, adapt the directly usable grammar constructs
+to the specification and list previous production names and required identifiers
+and operators.
+
+**Belegt:** Added [SEM-003](../docs/design-research/Language-Design.md#sem-003--first-cst-compatible-adaptation-of-the-proposal-grammar)
+with an old-production/source-form/vocabulary table. Existing decisions govern
+name-first bindings, templates, delimiters and precedence. Proposed recognition
+consumes exact application spines within a semicolon sequence element; declarations
+are not separated by newline/adjacency. Grouped return operands and braced control
+forms avoid the earlier extent/dangling-else issues. The historical proposal stays
+unchanged. The tentative construct-head set contains 18 predefined identifiers;
+no new operators or lexer keywords are introduced.
+
+**Verification:** Seventeen adapted source examples passed exact CST signature,
+complete parse status and empty diagnostic assertions with the built frontend.
+This is structural compatibility evidence only, not tested semantic/runtime
+behavior. No compiler source changed.
+
+**Vorschlag / offen:** Minimal class/interface/enum/set bodies and selected
+control forms are tentative semantic patterns, not completed meaning. Type
+validity, enumeration values, parameter binding, exception matching, visibility
+and transfers remain incomplete. Conflicting/incomplete forms (including casts,
+annotations, unbraced control flow, array/indexing, angle generics, unsigned
+shifts, method references and historical manifest-source syntax) stay deferred.
+
+### KP-129 - TypeScript-like spread binding selected
+
+- Event/documentation date: 2026-11-10 (+01:00); user request at 17:47.
+- Source: current conversation and clarification form; ECMAScript SpreadElement
+  grammar and MDN operator-precedence table linked in DEC-095.
+- Status: binding/notation approved; specification only, not implemented.
+
+**Nutzerangabe:** Add a TypeScript-like spread operator and align binding and
+associativity with TypeScript as far as possible. In clarification, the user
+selected "Specification and operator documentation only" and "Dedicated
+non-associative level between assignment and comma (recommended)".
+
+**Belegt:** DEC-095 and the operator reference now specify prefix `...` with
+left `EMPTY` and a present right operand, its own level below assignment and
+above comma. The reference now has 23 ordinal levels and explicitly distinguishes
+approved specification from the unchanged 22-level implementation. TypeScript
+spread is contextual rather than a general associative operator; its assignment
+expression operand extent motivates the selected placement.
+
+**Abgrenzung / offen:** No array/object delimiter roles, rest parameters,
+destructuring, range semantics or new predefined identifiers are selected.
+Spread contexts, accepted types, expansion/evaluation rules and nested-spread
+legality remain open. Infix/postfix forms are semantically invalid; ungrouped
+spread chains are non-associative errors in the specification. Implementation
+must later test longest-match tokenization, numeric adjacency, comments,
+assignment/conditional operands, comma boundaries and invalid forms.
+
+**Verification:** Documentation-only change; no compiler red/green cycle or
+new spread parser result is claimed. Historical KP-127 measurements still
+describe the unchanged implementation, which splits ellipsis into dots.
+
+### KP-130 - Reusing prefix ellipsis for rest parameter bindings
+
+- Event/documentation date: 2026-11-10 (+01:00); user observation at 18:02.
+- Source: current conversation and DEC-095/052 binding relationships.
+- Status: tentative semantic direction; no implementation or completed rest rules.
+
+**Nutzerangabe:** The same operator can probably serve spread and rest;
+because `:` binds tighter, rest-parameter handling would convert the binding,
+which the user considers feasible.
+
+**Ableitung / Vorschlag:** Documented intended future shape for
+`...@args : T` as `(... EMPTY (: (@ EMPTY args) T))`. Semantic elaboration
+in a parameter context could transform the enclosed declaration description into
+a rest-parameter binding before installing it, rather than mutating an existing
+ordinary binding. Argument contexts instead expand values. No precedence change,
+postfix form or new lexer mechanism is needed beyond the pending DEC-095 work.
+
+**Offen:** Element versus collection meaning of the annotation, collected value
+type, defaults, binding-operator choices, position/count restrictions and
+destructuring rest. The user expressed feasibility, not answers to these questions.
+
+**Verification:** Documentation-only analysis of specified precedence, not an
+actual parser result: ellipsis remains unimplemented.
+
+### KP-131 - Production overview extended with SEM-003 adaptation
 
 - Event/documentation date: 2026-11-11.
-- Source: current issue request to document every production in
-  `Proposals/newlang.ye`.
-- Status: source inventory only; no new language decision or implementation.
+- Source: latest review comment on PR #7 requesting SEM-003 annotations and EBNF,
+  after merging `main` to obtain the referenced SEM-003 specification.
+- Status: documentation cross-reference only; SEM-003 remains tentative and no
+  compiler behavior or language decision changed.
 
-**Nutzerangabe:** Create an overview for each production, showing its source
-rule, an EBNF for provisionally accepted forms, or the reason it is not
-accepted.
+**Nutzerangabe:** Include the SEM-003 notes for the relevant productions and EBNF
+for source forms provisionally accepted there.
 
-**Belegt:** Added
-[NewLang production overview](../docs/newlang-production-overview.md). It
-indexes all 231 production occurrences (226 distinct names) to their verbatim
-source locations, records duplicate definitions, separates the
-model-level class outline from its unresolved details, and identifies the
-unadopted Java-like grammar sections. The EBNF summarizes the provisional class
-model only; it is not a new parser grammar or a claim that the source RHSs are
-accepted verbatim. This follows DEC-019 and its limits, DEC-037/076's generic
-parser boundary, and DEC-011's square-bracket template syntax.
+**Belegt:** Extended the [NewLang production overview](../docs/newlang-production-overview.md)
+with a SEM-003 production crosswalk, its constraints and the proposed source
+forms for adapted declarations, types, members, calls and control constructs.
+These are explicitly labeled tentative rather than promoted to approved
+language syntax. The original 231 source production occurrences remain verbatim
+and separately linked.
 
-**Verification:** A mechanical coverage check matched all 231 production
-occurrences to source-line links; all 232 relative links resolve, and
-`git diff --check` passes. Documentation-only; no compiler tests or build were
-needed.
+**Verification:** Checked all copied source productions against their source
+lines and confirmed the adapted examples agree with SEM-003's table. Documentation
+whitespace and links were checked; no compiler tests or build were needed.

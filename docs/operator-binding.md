@@ -1,14 +1,18 @@
 # Operator binding reference
 
-This reference expands the approved relative precedence in DEC-022/093 and the
+This reference expands the approved relative precedence in DEC-022/093/095 and the
 associativity rule in DEC-066 into one row per operator spelling. Binding levels
-are ordinal: **1 is tightest, 22 is loosest**. They are not numeric precedence
+are ordinal: **1 is tightest, 23 is loosest**. They are not numeric precedence
 values. Operators at the same level share associativity.
 
 Rows within a level are ordered by operator spelling (ASCII lexicographic
 order); `APPLY` is the synthetic operator inserted between adjacent operands.
 The delimiters `(` `)` `{` `}` `[` `]` group syntax and are not precedence
 operators, so they have no binding level or associativity.
+
+**Specification versus implementation:** DEC-095 adds `...` at level 21.
+This addition is not implemented yet: the current lexer still splits `...`
+into dots, and the parser still uses its previous 22-level inventory.
 
 | Operator | Binding level | Associativity | Notes |
 |---|---:|---|---|
@@ -56,8 +60,9 @@ operators, so they have no binding level or associativity.
 | `>>=` | 20 | Right | Compound assignment. |
 | `^=` | 20 | Right | Compound assignment. |
 | <code>&#124;=</code> | 20 | Right | Compound assignment. |
-| `,` | 21 | Left | List operator; expressions may be evaluated in parallel, but need not be (DEC-064). |
-| `;` | 22 | Left | Expression sequence; evaluate the left expression before the right (DEC-051/064/066). |
+| `...` | 21 | Non-associative | Prefix spread: left `EMPTY`, right expression; looser than assignment, tighter than comma (DEC-095). Specification only; not implemented. |
+| `,` | 22 | Left | List operator; expressions may be evaluated in parallel, but need not be (DEC-064). |
+| `;` | 23 | Left | Expression sequence; evaluate the left expression before the right (DEC-051/064/066). |
 
 This table specifies precedence and associativity, not a complete operator
 semantics. Prefix/postfix forms use the generic binary operator model with

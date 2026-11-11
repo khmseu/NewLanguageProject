@@ -37,6 +37,122 @@ forms. This EBNF is deliberately an outline, not a complete grammar. DEC-076
 requires the parser to handle the language through the generic
 operator/operand model rather than these as dedicated parser productions.
 
+## SEM-003 adaptation (tentative)
+
+SEM-003 maps a subset of the proposal's production names to source forms over
+the existing CST. It is a **tentative semantic specification**, not an approved
+supersession, a new parser grammar, or an implemented semantic analyzer. The
+EBNF below makes its proposed source forms explicit; it does not change the
+status of the verbatim source rules in the inventory. In particular, DEC-019's
+accepted class model remains distinct from SEM-003's tentative declaration
+syntax.
+
+```ebnf
+qualified-name = identifier, { ".", identifier } ;
+sequence = sequence-element, { ";", sequence-element }, [ ";" ] ;
+scope-body = "{", [ sequence ], "}" ;
+
+constant-binding = "@", identifier, ":", expression ;
+variable-binding = "@", identifier, ":=", ( type-expression | expression ) ;
+type-binding = "@", identifier, "::=", type-expression ;
+template-application = expression, "[", type-expression,
+    { ",", type-expression }, "]" ;
+parameterized-binding =
+    "@", identifier, ":", "[", parameter-list, "]", expression ;
+
+struct-definition =
+    "@", identifier, "::=", "struct", scope-body, ";" ;
+enum-definition =
+    "@", identifier, "::=", "enum", "{",
+    enumerator, { ",", enumerator }, "}", ";" ;
+enumerator = identifier, [ "=", expression ] ;
+set-definition =
+    "@", identifier, "::=", "set", "{", type-expression, "}", ";" ;
+class-definition =
+    "@", identifier, "::=", "class", scope-body, ";" ;
+interface-definition =
+    "@", identifier, "::=", "interface", scope-body, ";" ;
+
+function-value-binding = "@", identifier, ":", scope-body, ";" ;
+function-type =
+    "(", [ parameter-list ], ")", "->", "(", [ parameter-list ], ")" ;
+parameter-list = parameter, { ",", parameter } ;
+parameter = constant-binding | variable-binding ;
+call = expression, "(", [ argument-list ], ")" ;
+argument-list = expression, { ",", expression } ;
+field-access = expression, ".", identifier ;
+
+if-form =
+    "if", "(", expression, ")", scope-body,
+    [ "else", scope-body ], ";" ;
+while-form =
+    "while", "(", expression, ")", scope-body, ";" ;
+for-form =
+    "for", "(", [ expression ], ";", [ expression ], ";",
+    [ expression ], ")", scope-body, ";" ;
+return-form = "return", "(", [ expression ], ")", ";" ;
+throw-form = "throw", "(", expression, ")", ";" ;
+break-form = "break", ";" ;
+continue-form = "continue", ";" ;
+try-form =
+    "try", scope-body,
+    ( "catch", "(", type-expression, ")", scope-body,
+      { "catch", "(", type-expression, ")", scope-body },
+      [ "finally", scope-body ]
+    | "finally", scope-body ), ";" ;
+```
+
+In this notation, expressions, types, names, and scope bodies are context-bound
+operands rather than extra parser productions. Each form must be recognized
+within one semicolon-separated sequence element; newline or adjacency does not
+separate declarations. Empty parameter/argument groups denote empty lists in
+those contexts only, and the final semicolon may leave an accepted empty
+sequence tail. Lists, bindings, member/type validity, lookup, and transfer
+behavior remain semantic questions. Grouping and operator binding remain those
+of the approved parser rules.
+
+The following crosswalk records SEM-003's production-specific adaptations and
+limitations. `N`, `T`, `E`, and `B` in the source specification denote a name,
+type expression, expression, and scope body; they are metanotation, not
+predefined identifiers. The complete construct vocabulary and excluded forms
+remain in [SEM-003](./design-research/Language-Design.md#sem-003--first-cst-compatible-adaptation-of-the-proposal-grammar).
+
+| Proposal production names | SEM-003 source form | SEM-003 note |
+| --- | --- | --- |
+| `CompilationUnit`, `PackageInterfaceFile`, `RemotePackageDef`, `PackageExportsFile` | No adapted compilation-unit goal or source-based manifest form | DEC-094 governs manifests; export-source syntax remains open. |
+| `Name`, `ModuleName`, `TypeName`, `PackageOrTypeName`, `ExpressionName`, `AmbiguousName` | `P.N` | Member paths use `.`; component resolution is contextual. |
+| `ContextDeclaration`, `ImportDeclaration` | `package P.N;`, `import P.N;` | Resolve package context/imports through manifests; source path literals and download operations are not implied. |
+| `ModuleDeclarationFile`, `DeclarationList`, `BlockStatements`, `BlockStatement`, `ClassBody`, `InterfaceBody`, `Block` | Semicolon-separated elements in `{ B }` scopes | No newline/adjacency separation; a final semicolon may leave an empty tail. |
+| `ClassBodyDeclaration`, `ClassMemberDeclaration` | Scope sequence of separately recognized forms | No Java alternative list is retained as a dedicated parser rule; forms use name-first bindings and bounded sequence elements. |
+| `FieldOrConstantDeclaration`, `FieldDeclaration`, `ConstantDeclaration`, `LocalVariableDeclaration`, `LocalVariableDeclarationStatement`, `VariableDeclarator`, `VariableDeclaratorId` | `@N : E`, `@N := T`, or `@N := E` | One name-first binding per sequence element; inference and initializer/type distinctions remain incomplete. |
+| `TypeDeclaration` | `@N ::= T;` | Replaces the proposal's `typedef T N` ordering. |
+| `Type`, `BasicType`, `UnannType`, `PrimitiveType`, `ReferenceType`, `ClassType`, `InterfaceType`, `TypeVariable` and related type aliases | Type-valued expressions, names/member paths, and applicable template application | The Java primitive-name list is not selected by this adaptation. |
+| `ValueTypeDeclaration`, `ComposedTypeDeclaration`, `StructDeclaration` | `@N ::= struct { B };` | Members use name-first bindings; derivation syntax is excluded. |
+| `OrdinalTypeDeclaration`, `EnumDeclaration`, `EnumDeclaratorList`, `EnumDeclarator` | `@N ::= enum { A, B };` with optional `A=E` | This is the custom enum shape, not the duplicate Java enum production; value rules remain open. |
+| `SetDeclaration` | `@N ::= set { T };` | The scope contains one type expression; element restrictions and representation remain open. |
+| `ReferenceTypeDeclaration`, `ClassDeclaration`, `NormalClassDeclaration` | `@N ::= class { B };` | Minimal class form; inheritance, modifiers, and constructors are deferred here. |
+| `Superclass`, `Superinterfaces`, `ClassModifier` and other modifier productions | No adapted source form | These Java-derived details are not part of this first subset; DEC-019's model-level superclass/interface/modifier concepts remain distinct. |
+| `InterfaceDeclaration`, `NormalInterfaceDeclaration`, `InterfaceMemberDeclaration` | `@N ::= interface { B };` | Requirements use binding/type forms, not Java method headers; conformance rules remain open. |
+| `TypeParameters`, `TypeParameterList`, `TypeParameter`, `TypeArguments`, `TypeArgumentList`, `TypeArgument` | `F[T]` or `@N : [PARAMS] E` | Uses DEC-011/063 square brackets; bounds, wildcards, and diamond syntax are excluded. |
+| `Result`, `MethodHeader`, `FormalParameterList`, `FormalParameters`, `FormalParameter`, `ArgumentList` | Parenthesized comma lists; `(INPARAMS)->(OUTPARAMS)` for function types | Uses name-first parameter bindings; varargs, receiver parameters, `void`, and throws clauses are excluded. |
+| `MethodDeclaration`, `MethodDeclarator`, `MethodBody`, `InterfaceMethodDeclaration`, `LambdaBody` | `@f : { B };` | Models a function value, not Java method headers or expression-body lambdas; no explicit type/body combination is invented. |
+| `ConstructorDeclaration`, `ConstructorDeclarator`, `ConstructorBody`, `ExplicitConstructorInvocation` | No adapted source form | Constructors and explicit `this`/`super` calls are deferred in SEM-003. |
+| `MethodInvocation`, selected `Primary`/`PostfixExpression` alternatives | `f(a,b)`; `obj.f(x)`; optionally `f[T](a,b)` | Calls are APPLY to a grouped argument list; other primary/postfix alternatives remain excluded unless separately adapted. |
+| `FieldAccess` | `obj.member`; `(f(x)).member` for access on a call result | Explicit grouping is needed for the latter tree shape; `super` forms are deferred. |
+| `Expression`, `AssignmentExpression`, `LeftHandSide`, `Assignment`, `AssignmentOperator`, `StatementExpression`, `StatementExpressionList`, `ConstantExpression`, arithmetic/comparison/logical productions | Existing expression, assignment, and comma-list trees | Use current binding and associativity; target mutability, assignability, types, and constant requirements remain semantic checks. `instanceof`, `>>>`, and `>>>=` are excluded. |
+| `ConditionalExpression` | `c ? a : b`; group a nested then-conditional, e.g. `c ? (d ? a : b) : e` | Follows DEC-056; no reassociation to the historical Java grammar. |
+| `EmptyStatement` | Final empty sequence tail or `EMPTY` in an empty scope | No independent statement node is added. |
+| `IfThenStatement`, `IfThenElseStatement`, `IfThenElseStatementNoShortIf`, `WhileStatement`, `WhileStatementNoShortIf` | `if(c){ B };`, `if(c){ B } else{ B };`, `while(c){ B };` | Braced-only forms; exact application spines are bounded to one sequence element; unbraced/dangling-else forms are excluded. |
+| `BasicForStatement`, `BasicForStatementNoShortIf`, `ForInit`, `ForUpdate` | `for(INIT;COND;UPDATE){ B };` | Three header positions; omitted `EMPTY` slots are allowed only in this context; enhanced-for is not adapted. |
+| `ReturnStatement`, `ThrowStatement`, `BreakStatement`, `ContinueStatement` | `return (E);`, `return ();`, `throw (E);`, `break;`, `continue;` | Grouping bounds return/throw operands; labels and transfer/exception behavior remain open. |
+| `TryStatement`, `Catches`, `CatchClause`, `Finally` | `try{ B } catch(T){ B } finally{ B };` | Restricted adaptation; caught-value binding, union catches, resources, and exception matching remain open. |
+
+SEM-003 also explicitly defers annotations, `@interface`, subranges, arrays and
+indexing, lambdas with ungrouped expression bodies, casts, method references,
+historical unary/postfix rules, unsigned shifts, `instanceof`, unbraced and
+labeled statements, switch, do/while, enhanced-for, synchronized blocks, and
+try-with-resources. See its deferred-production list for the full boundaries.
+
 ## Status key
 
 - **M — model-level provisional:** The concept is covered by the accepted

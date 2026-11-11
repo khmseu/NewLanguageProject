@@ -251,6 +251,7 @@ This table consolidates the currently agreed source forms; it is an inventory, n
 | Numeric suffix                                        | `#` followed by `[A-Za-z0-9]+`                                                                                                                                                              | ASCII case-insensitive; no empty body or underscore. After an unmarked integer from 2 through 36, the first `#` selects radix notation and a second `#` selects a suffix. Use `0d` to force decimal interpretation (DEC-047).                                                                                                                                                                                                                                                                                                                                                                                   |
 | Grouping / template / block delimiters                | `(` `)`, `{` `}`, `[` `]`                                                                                                                                                                   | Parentheses group; braces define blocks/scopes; square brackets delimit template parameters and arguments (DEC-011/063). Each pair encloses an operator tree, with an interior loosest-operator boundary, and acts as one operand outside. Empty groups contain one `EMPTY`; pairs must match, with missing closers inserted at EOF and diagnosed (DEC-072). Concrete CST layout remains open (Q-015).                                                                                                                                                                                                          |
 | Member-access / dot operator                          | `.`                                                                                                                                                                                         | Left-associative; exact operator form/semantics remain open (Q-007).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Spread operator | `...` | Prefix spread, with left `EMPTY`; non-associative between assignment and comma (DEC-095). Specification only: not yet implemented. |
 | Function type arrow                                   | `->`                                                                                                                                                                                        | Used in `(INPARAMS) -> (OUTPARAMS)` and as a function-definition operator; non-associative (DEC-037). `.` binds tighter (DEC-049); other form details remain open (Q-007).                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Binding operators                                     | `:` `:=` `::=`                                                                                                                                                                              | Constant, variable, and type binding meanings respectively; each requires a left `@name` operand (DEC-052). Other binding/type/initializer semantics remain open (Q-009/010).                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Initializer / assignment                              | `=`                                                                                                                                                                                         | Also appears as the initializer marker within a type form; expression form and semantics are tracked in Q-007/009.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -369,7 +370,7 @@ Consequences: `1e2e+3` gives error operand `1e2e`, `+`, `3`; `1fooE+2` gives err
 
 **Decision DEC-021 — approved:** Use GenLang's numeric priority scale as the starting point for the next language. Set `@` to priority 190; keep `.` left-associative; use `^` for XOR and `**` for exponentiation; use `->` for function definition; and set `?` to priority 45. DEC-022 resolves the remaining relative-order conflicts and assigns `**` a priority.
 
-**Decision DEC-022 — approved, with the original APPLY placement superseded by DEC-093:** Adopt the following relative precedence for the next language, from tightest to loosest. Each line is a distinct priority level; operators on one line share a level and, under DEC-066, associativity. This uses GenLang's relative ordering to resolve historical conflicts, with the explicit placements below, and makes `**` right-associative. Delimiters group syntax rather than introducing a separate associativity choice or precedence level.
+**Decision DEC-022 — approved, with the original APPLY placement superseded by DEC-093 and spread added by DEC-095:** Adopt the following relative precedence for the next language, from tightest to loosest. Each line is a distinct priority level; operators on one line share a level and, under DEC-066, associativity. This uses GenLang's relative ordering to resolve historical conflicts, with the explicit placements below, and makes `**` right-associative. Delimiters group syntax rather than introducing a separate associativity choice or precedence level.
 
 | Relative level (tightest first) | Operators                                                                          | Associativity / notes                                                                                                            |
 | ------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -393,6 +394,7 @@ Consequences: `1e2e+3` gives error operand `1e2e`, `+`, `3`; `1fooE+2` gives err
 |                                 | `?`                                                                                | Right-associative; begins a ternary conditional.                                                                                 |
 |                                 | `:` `::`                                                                           | Right-associative; `:` has conditional and binding meanings, while `::` is reserved (DEC-050/052/066).                           |
 |                                 | `=` `:=` `::=` `+=` `-=` `*=` `/=` `%=` `&=` <code>&#124;=</code> `^=` `<<=` `>>=` | Assignment/binding operators are right-associative. Binding meanings of `:=` and `::=` require a left `@name` operand (DEC-052). |
+|                                 | `...` | Non-associative prefix spread; looser than assignment and tighter than comma (DEC-095). Not implemented yet. |
 |                                 | `,`                                                                                | Left-associative list operator; expressions may be evaluated in parallel (DEC-064).                                              |
 | Loosest                         | `;`                                                                                | Left-associative expression sequence; left expression is evaluated before the right (DEC-051/064/066).                           |
 
@@ -405,6 +407,76 @@ The delimiters `(` `)` `{` `}` `[` `]` group syntax and have no operator binding
 The table adopts GenLang's relative order for bitwise versus comparison operators and `?` versus assignment/`:`, resolving those historical differences for this design. DEC-022 originally placed `APPLY` tighter than `.`, following GenLang; DEC-093 supersedes that placement and puts `APPLY` looser than `->` but tighter than the prefix/postfix level. The placement of reserved `::` and the binding operators is explicitly selected here rather than copied from GenLang. Historical source disagreements remain documented in the project knowledge view. Q-007 tracks operator meanings/forms and remaining binding interactions, not the adopted precedence and associativity table.
 
 **Decision DEC-093 — approved:** Move implicit `APPLY` to a distinct binding level looser than `->` and tighter than the shared `++`, `--`, `!`, `~` level. Keep `APPLY` left-associative. This supersedes DEC-022's original placement of `APPLY` with delimiters above `.`.
+
+### Spread binding
+
+**Decision DEC-095 — approved, specification only:** Add TypeScript-like prefix
+spread `...` at a dedicated **non-associative** level, looser than all
+assignment/binding operators and tighter than `,`. The user confirmed this
+placement and documentation-only scope on 2026-11-10 (KP-129). No compiler
+implementation is authorized by this step.
+
+Represent spread in the existing binary CST as `(... EMPTY expression)`.
+The left operand must be implicit `EMPTY`, and the right operand must be
+present; infix/postfix uses are semantically invalid. Use ordinary insertion
+and precedence rules, not a special unary parser rule. Ungrouped chains such
+as `... ...xs` are non-associative errors. Separate spread entries such as
+`f(...xs,...ys)` are not a chain at one level because comma separates them.
+Grouping may remove a syntactic chain but does not by itself make a nested
+spread semantically valid.
+
+TypeScript/ECMAScript spread is contextual syntax, not a general binary
+operator with conventional associativity. Its operand is an
+`AssignmentExpression`, so it includes assignments and conditionals but excludes
+an unparenthesized comma expression. Our separate level models this boundary;
+non-associativity is an explicit choice for our generic parser, not a claim that
+TypeScript specifies a non-associative binary operator.
+See [ECMAScript SpreadElement grammar](https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#prod-SpreadElement)
+and [MDN precedence table and spread note](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_precedence).
+
+Expected trees after implementation (not current parser output):
+
+| Source | Intended binding |
+| --- | --- |
+| `f(...xs, y)` | Argument list `spread(xs), y`. |
+| `f(...a + b, c)` | Argument list `spread(a + b), c`. |
+| `f(...x = y, z)` | Argument list `spread(x = y), z`. |
+| `f(...c ? a : b, d)` | Argument list `spread(c ? a : b), d`, using the existing conditional tree inside spread. |
+| `f(...(a,b))` | One spread whose operand is the explicitly grouped comma expression. |
+| `...xs; next` | Sequence of `spread(xs)` and `next`; semantic context validity remains separate. |
+
+This adopts spread notation and operand extent, not the whole JavaScript
+syntax/semantics. Existing `[]` template and `{}` scope roles remain unchanged;
+no array/object literal, rest parameter, destructuring or subrange meaning is
+selected by DEC-095 alone; the rest-parameter direction below extends this.
+Legal spread contexts, iterable versus property expansion, accepted
+types, evaluation order, duplicate names, argument matching and nested-spread
+rules remain open. No new predefined identifier is needed.
+
+Lexically, `...` is to become one longest-match operator, taking precedence
+over three dots; comments still separate spellings. This supersedes the
+three-dot tokenization in KP-127's historical measurement once implemented,
+but does not alter numeric-candidate rules or select a `..` operator.
+Numeric adjacency such as `1...x` needs regression coverage when implementing.
+The current lexer/parser still lack `...`; historical probe results and
+SEM-003's original subset remain evidence of that earlier inventory.
+
+**Rest-parameter direction — tentative (KP-130):** Reuse the same prefix
+`...` and binding level in parameter declarations. Since `:` binds tighter,
+`...@args : T` has the intended future CST
+`(... EMPTY (: (@ EMPTY args) T))`: the operator wraps the whole binding,
+not just its name or type. In a parameter-declaration context, semantic
+elaboration can turn that binding description into a rest-parameter binding;
+in an argument context, it expands a value. This does not require changing
+precedence or adding a postfix form.
+
+The user's feasibility observation does not yet settle the collected value's
+type, whether `T` denotes an element or collection type, permitted binding
+operators/defaults, rest position/count restrictions, or destructuring rest.
+Interpret the binding as a declaration description before installing it in the
+parameter scope; do not assume an already-created ordinary binding can be
+silently mutated into a rest parameter. This is a proposed elaboration model,
+not implemented behavior or a completed parameter specification.
 
 ### Conditional precedence check
 
@@ -764,6 +836,111 @@ universal HTTP download rule from `canonicalUrl`.
 Standalone versus compiler-integrated packaging, commands/UI, and detailed
 editing workflow remain open. No tool implementation or network operation is
 requested at this stage.
+
+### SEM-003 — First CST-compatible adaptation of the proposal grammar
+
+**Status: tentative specification, requested 2026-11-09 (KP-128); not an
+approved supersession or implemented semantic analyzer.** Adapt the directly
+usable subset of [newlang.ye](../../Proposals/newlang.ye) to the existing CST.
+The [compatibility assessment](../newlang-grammar-compatibility.md) remains the
+record of historical syntax and deferred conflicts. The proposal file itself
+is unchanged.
+
+#### Recognition and boundaries
+
+These are semantic patterns over existing nodes, not new parser productions.
+Identifiers with construct meanings are predefined identifiers resolved by
+lookup (DEC-012/018/053), not reserved keywords. Redefined identifiers do not
+automatically retain those meanings. Operators retain DEC-022/066/093 binding;
+no re-association or token-stream reparsing is implied.
+
+- `APPLY(a,b)` denotes the existing implicit application node; it has no source
+  spelling. `EMPTY` is the existing inserted operand, not an identifier.
+- A group retains its delimiter and enclosed expression. `()` groups expressions,
+  `{}` creates a scope, and `[]` supplies template parameters/arguments.
+- A sequence uses `;`, not newline or declaration adjacency. For this first
+  subset, separate complete declarations and control constructs explicitly with
+  `;`. A final `;` produces a trailing `EMPTY`; accept that as an empty sequence
+  tail, not another declaration. This is a semantic convention for these forms,
+  not a mandatory parser statement terminator.
+- Recognize an application spine only within one sequence element. For example,
+  `if(c){a;} else{b;};` has the spine
+  `[if, group(c), block(a;), else, block(b;)]`. Do not take an argument from the
+  next `;` branch. A chain containing extra heads/bodies is not implicitly a
+  sequence of declarations or statements.
+- Lists use the existing comma tree. An empty parameter/argument group contains
+  `EMPTY` and denotes an empty list in that context. Trailing commas, omitted
+  list entries and other `EMPTY` uses are not admitted by this first adaptation.
+- Require a diagnostic-free, complete parse before treating one of these forms
+  as successfully recognized. Wrong shapes or unresolved/invalid names need
+  semantic diagnostics, not fallback interpretation as a valid construct.
+
+In the table, `N` is a user-defined name, `Q` a qualified name, `T` a type
+expression, `E` an expression, and `B` a scope body. These are metanotation, not
+new predefined identifiers. List/member/type validity remains semantic work.
+
+#### Previous productions, adapted forms and vocabulary
+
+| Previous production names | Adapted form / CST role | Predefined identifiers needed | Operators needed |
+| --- | --- | --- | --- |
+| `Identifier`, `Literal`, `PackageName`, `SubPackageName`, `SimpleTypeName`, `MethodName` | Existing identifier/constant operands; package and type roles come from lookup/context. | None; names are supplied by the program or namespaces. | None |
+| `Name`, `ModuleName`, `TypeName`, `PackageOrTypeName`, `ExpressionName`, `AmbiguousName` | `P.N`, a left-associated member/name path. Resolve its components in the appropriate namespace. | None | `.` |
+| `ContextDeclaration` | `package P.N;`, an application of `package` to one qualified name, then sequencing. Connect to the containing manifest; agreement between the header and manifest remains to be specified. | `package` | `APPLY`, `.`, `;` |
+| `ImportDeclaration` | `import P.N;`, one name operand. Resolve through root manifest imports/system namespaces; no source path literal or download operation. Exact visibility rules remain open. | `import` | `APPLY`, `.`, `;` |
+| `ModuleDeclarationFile`, `DeclarationList`, `BlockStatements`, `BlockStatement`, `ClassBody`, `InterfaceBody`, `Block` | Semicolon-separated elements; bodies are `{ B }` scopes. A source file may begin with the context form. No special compilation-goal token or automatic declaration separation. | None beyond the contained constructs | `;`; `{}` groups |
+| `FieldOrConstantDeclaration`, `FieldDeclaration`, `ConstantDeclaration`, `LocalVariableDeclaration`, `LocalVariableDeclarationStatement`, `VariableDeclarator`, `VariableDeclaratorId` | Use name-first `@N : E` for a constant and `@N := T` or `@N := E` for a variable. One binding per sequence element; inference and type/initializer distinction follow DEC-011/052 and remain incomplete. | None | `@`, `:`, `:=`, `;` |
+| `TypeDeclaration` | Replace `typedef T N` with `@N ::= T;`. | No `typedef` needed | `@`, `::=`, `;` |
+| `Type`, `BasicType`, `UnannType`, `UnannPrimitiveType`, `UnannReferenceType`, `UnannClassType`, `UnannInterfaceType`, `UnannTypeVariable`, `PrimitiveType`, `NumericType`, `IntegralType`, `FloatingPointType`, `ReferenceType`, `ClassType`, `InterfaceType`, `TypeVariable`, `ClassOrInterfaceType`, `UnannClassOrInterfaceType` | A type is an expression whose result denotes a type; use names/member paths and, where applicable, template application. These production aliases do not introduce new CST nodes. | Type names supplied by the type environment; the Java list `byte`, `short`, `int`, `long`, `char`, `float`, `double`, `boolean` is **not** selected here. | `.`, `APPLY` as needed |
+| `ValueTypeDeclaration`, `ComposedTypeDeclaration`, `StructDeclaration` | `@N ::= struct { B };`; the body contains name-first member bindings. No derivation syntax in this subset. | `struct` | `@`, `::=`, `APPLY`, `;`; `{}` groups |
+| `OrdinalTypeDeclaration`, `EnumDeclaration`, `EnumDeclaratorList`, `EnumDeclarator` | `@N ::= enum { A,B };`, optionally explicit enumerator values such as `A=E`. This selects a tentative shape from the custom enum production, not the duplicate Java enum declaration. Enumeration value rules remain open. | `enum` | `@`, `::=`, `APPLY`, `,`, optional `=`, `;`; `{}` groups |
+| `SetDeclaration` | `@N ::= set { T };`; `T` is the sole expression in a scope. Element-type restrictions and resulting representation remain open. | `set` | `@`, `::=`, `APPLY`, `;`; `{}` groups |
+| `ReferenceTypeDeclaration`, `ClassDeclaration`, `NormalClassDeclaration` | Minimal `@N ::= class { B };`, using an outer type binding rather than a name consumed by a Java declaration. Inheritance, modifiers and constructors are deferred. | `class` | `@`, `::=`, `APPLY`, `;`; `{}` groups |
+| `InterfaceDeclaration`, `NormalInterfaceDeclaration`, `InterfaceMemberDeclaration` | Minimal `@N ::= interface { B };`; requirements inside the scope use the binding/type forms, not Java method headers. Conformance rules remain open. | `interface` | `@`, `::=`, `APPLY`, `;`; `{}` groups |
+| `TypeParameters`, `TypeParameterList`, `TypeParameter`, `TypeArguments`, `TypeArgumentList`, `TypeArgument` | Use `[]`, as already selected by DEC-011/063: `F[T]`, or the template group in `@N : [PARAMS] E`. Bounds, wildcards and diamond syntax are excluded. | None beyond parameter/type names | `APPLY`, `,`; `[]` groups; binding operators for named definitions |
+| `Result`, `MethodHeader`, `FormalParameterList`, `FormalParameters`, `FormalParameter`, `LastFormalParameter`, `InferredFormalParameterList`, `ArgumentList` | Parenthesized comma lists; named parameters use existing name-first bindings, not `T N`. Function type `(INPARAMS)->(OUTPARAMS)`. Varargs, receiver parameters, `void` and throws clauses are excluded. | None beyond the parameter/type environment | `@`, `:`, `:=` where applicable; `,`, `->`; `()` groups |
+| `MethodDeclaration`, `MethodDeclarator`, `MethodBody`, `InterfaceMethodDeclaration`, `LambdaBody` | Function value `{ B }`, named as `@f : { B };`; function type uses the preceding row. An explicit type/body combination is not invented here. Java named method headers and expression-body lambda arrows are not retained. | None; no `function` identifier is introduced | `@`, `:`, `;`; `{}` groups |
+| `MethodInvocation`, `Primary`, `PrimaryNoNewArray` (parenthesized/call/name/literal alternatives), `PostfixExpression` (primary/name alternatives) | `f(a,b)` is `APPLY(f, group(a,b))`; `obj.f(x)` applies the member path to a group. Template application may precede the argument group: `f[T](a,b)`. Other primary/postfix alternatives are excluded unless listed separately. | None | `APPLY`, `.`, `,`; `()`, `[]` groups |
+| `FieldAccess` | `obj.member`; explicitly group call results: `(f(x)).member`. `super`/qualified-super forms are deferred. | None | `.`, `APPLY` for the enclosed call; `()` groups |
+| `Expression`, `AssignmentExpression`, `LeftHandSide`, `Assignment`, `AssignmentOperator`, `StatementExpression`, `ExpressionStatement`, `StatementExpressionList`, `ConstantExpression` | Existing expression/assignment/list trees in applicable contexts. Validate target mutability, assignability and constant requirements semantically. `>>>=` is excluded. | None | `=`, `*=`, `/=`, `%=`, `+=`, `-=`, `<<=`, `>>=`, `&=`, `^=`, `|=`, `,`, `;` |
+| `AdditiveExpression`, `MultiplicativeExpression`, `ShiftExpression`, `RelationalExpression`, `EqualityExpression`, `AndExpression`, `ExclusiveOrExpression`, `InclusiveOrExpression`, `ConditionalAndExpression`, `ConditionalOrExpression` | Use the current operator trees and precedence, not the historical Java ordering. No `>>>` or `instanceof`. Exact allowed operand types and effects remain open. | None | `+`, `-`, `*`, `/`, `%`, `<<`, `>>`, `<`, `>`, `<=`, `>=`, `==`, `!=`, `&`, `^`, `\|`, `&&`, `\|\|` |
+| `ConditionalExpression` | `c ? a : b`; parenthesize a nested then-conditional: `c ? (d ? a : b) : e` (DEC-056). | None | `?`, `:`; `()` groups where required |
+| `EmptyStatement` | Empty sequence tail from a final `;`, or `EMPTY` inside an empty scope. No independent parser statement node is added. | None | `;`, implicit `EMPTY` |
+| `IfThenStatement`, `IfThenElseStatement`, `IfThenElseStatementNoShortIf`, `WhileStatement`, `WhileStatementNoShortIf` | Braced-only `if(c){ B };`, `if(c){ B } else{ B };`, `while(c){ B };`. Flatten the bounded application spine and match its exact heads/groups. No unbraced or dangling-else form. | `if`, `else`, `while` | `APPLY`, `;`; `()`, `{}` groups |
+| `BasicForStatement`, `BasicForStatementNoShortIf`, `ForInit`, `ForUpdate` | `for(INIT;COND;UPDATE){ B };`; the header is a three-position semicolon tree. Allow `EMPTY` for omitted slots only in this header context. Use current binding/expression forms in the slots; no enhanced-for adaptation yet. | `for` | `APPLY`, `;`; operators used by the slots; `()`, `{}` groups |
+| `ReturnStatement`, `ThrowStatement`, `BreakStatement`, `ContinueStatement` | `return (E);`, `return ();`, `throw (E);`, `break;`, `continue;`. Group the return/throw operand to bound its extent, including comma lists. Labels and exact transfer/exception behavior remain open. | `return`, `throw`, `break`, `continue` | `APPLY`, `;`, optional `,`; `()` groups |
+| `TryStatement`, `Catches`, `CatchClause`, `Finally` | Braced `try{ B } catch(T){ B } finally{ B };`, with one or more catch pairs and/or finally. `T` is a type expression; binding a caught value, union catches, resources and exact exception matching remain open. This is a restricted adaptation, not the full Java catch grammar. | `try`, `catch`, `finally` | `APPLY`, `;`; `()`, `{}` groups |
+
+The **candidate predefined identifier set** for this first adaptation is:
+`package`, `import`, `struct`, `enum`, `set`, `class`, `interface`, `if`, `else`,
+`while`, `for`, `return`, `throw`, `break`, `continue`, `try`, `catch`, `finally`.
+This list defines proposed construct heads, not a completed standard library or
+implemented names. All operators and delimiter families above already exist;
+no lexer or precedence extension is needed.
+
+#### Deliberately not adapted yet
+
+- `CompilationUnit` goal markers, undefined `PackageImportsFile`, historical
+  `PackageInterfaceFile`/`RemotePackageDef` and `PackageExportsFile` configuration
+  syntax: DEC-094 governs manifests; export-source declaration syntax stays open.
+- Java type-first declarations and multi-declarator type propagation; all
+  modifier/annotation productions, `@interface`, constructor/super/new forms,
+  inheritance clauses and throws clauses.
+- `Derivation`, `MixInDeclaration`, `SubrangeDeclaration`, `ArrayDeclaration`
+  and its undefined `Lambda`, array creation/indexing/dimensions/initializers,
+  angle-bracket bounds/wildcards/diamond, receiver and varargs forms.
+- `LambdaExpression` with an ungrouped expression body, cast productions,
+  method references using reserved `::`, historical recursive unary/postfix
+  productions, unsigned shifts and `instanceof`. No special unary rule is added.
+- Unbraced statements, labeled transfers, `assert`, switch labels/blocks,
+  do/while, enhanced for, synchronized statements, catch-value binding and
+  try-with-resources. These need further semantic/source-form decisions.
+
+Verification: 17 representative adapted forms passed exact-tree, complete-status
+and empty-diagnostic assertions using the built frontend, including bindings,
+type constructor scopes, template/call application, grouped member access,
+function types, grouped return values and braced control forms. This demonstrates
+CST shape compatibility only; semantic recognition and runtime behavior are not
+implemented or tested.
 
 ## Questions to resolve before parser implementation
 
