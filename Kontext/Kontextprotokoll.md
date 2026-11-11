@@ -2838,3 +2838,25 @@ destructuring rest. The user expressed feasibility, not answers to these questio
 
 **Verification:** Documentation-only analysis of specified precedence, not an
 actual parser result: ellipsis remains unimplemented.
+
+### KP-131 - Production overview extended with SEM-003 adaptation
+
+- Event/documentation date: 2026-11-11.
+- Source: latest review comment on PR #7 requesting SEM-003 annotations and EBNF,
+  after merging `main` to obtain the referenced SEM-003 specification.
+- Status: documentation cross-reference only; SEM-003 remains tentative and no
+  compiler behavior or language decision changed.
+
+**Nutzerangabe:** Include the SEM-003 notes for the relevant productions and EBNF
+for source forms provisionally accepted there.
+
+**Belegt:** Extended the [NewLang production overview](../docs/newlang-production-overview.md)
+with a SEM-003 production crosswalk, its constraints and the proposed source
+forms for adapted declarations, types, members, calls and control constructs.
+These are explicitly labeled tentative rather than promoted to approved
+language syntax. The original 231 source production occurrences remain verbatim
+and separately linked.
+
+**Verification:** Checked all copied source productions against their source
+lines and confirmed the adapted examples agree with SEM-003's table. Documentation
+whitespace and links were checked; no compiler tests or build were needed.
