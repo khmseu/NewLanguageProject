@@ -4,7 +4,7 @@
 
 - Project/workspace: `/bigdata/KAI/projects/NewLanguageProject`
 - Design and research documents: [Language Design](../docs/design-research/Language-Design.md) and [langlist](../docs/design-research/langlist), relocated from the project root (KP-090).
-- Last substantive update: 2026-11-09 (timezone +01:00); added executable [parse.sh](../parse.sh), forwarding arguments to `npm --silent run parse --` from the repository root (KP-126). Shell syntax, real help, quoted path/option forwarding and exit status checks pass. Earlier reduced JSON verification remains KP-125; package manifests/tooling remain DEC-094/REQ-006 (KP-124). No parser semantics changed.
+- Last substantive update: 2026-11-11 (timezone +01:00); added the [NewLang production overview](../docs/newlang-production-overview.md) for `Proposals/newlang.ye` (KP-127). It distinguishes the provisionally adopted class-model outline from unresolved source productions and unadopted Java-like material. No language decision or compiler behavior changed. Earlier parse-wrapper verification is KP-126; reduced JSON verification remains KP-125; package manifests/tooling remain DEC-094/REQ-006 (KP-124).
 - Sources reviewed: [langlist](../docs/design-research/langlist), the four listed directory roots, project manifests/readmes, and selected source files noted below.
 - Not reviewed: every file's contents, dependency trees, all archives, build outputs, and full version-control histories. No earlier project discussion history has been reconstructed.
 - Historical context: [Kontextprotokoll](./Kontextprotokoll.md)

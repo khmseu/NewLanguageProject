@@ -2710,3 +2710,29 @@ repository root without changing the working directory. Updated README usage.
 the wrapper. After creation, `sh -n`, executable-existence, real help (status
 0, clean stdout), and a quoted missing leading-hyphen path after `--` (status
 2, stderr only) passed. No compiler logic changed.
+
+### KP-127 - NewLang production overview
+
+- Event/documentation date: 2026-11-11.
+- Source: current issue request to document every production in
+  `Proposals/newlang.ye`.
+- Status: source inventory only; no new language decision or implementation.
+
+**Nutzerangabe:** Create an overview for each production, showing its source
+rule, an EBNF for provisionally accepted forms, or the reason it is not
+accepted.
+
+**Belegt:** Added
+[NewLang production overview](../docs/newlang-production-overview.md). It
+indexes all 231 production occurrences (226 distinct names) to their verbatim
+source locations, records duplicate definitions, separates the
+model-level class outline from its unresolved details, and identifies the
+unadopted Java-like grammar sections. The EBNF summarizes the provisional class
+model only; it is not a new parser grammar or a claim that the source RHSs are
+accepted verbatim. This follows DEC-019 and its limits, DEC-037/076's generic
+parser boundary, and DEC-011's square-bracket template syntax.
+
+**Verification:** A mechanical coverage check matched all 231 production
+occurrences to source-line links; all 232 relative links resolve, and
+`git diff --check` passes. Documentation-only; no compiler tests or build were
+needed.
